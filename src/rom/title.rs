@@ -11,8 +11,10 @@ fn range(cgb_flag: CGBFlag) -> RangeInclusive<usize> {
 
 pub fn load(rom_bytes: &[u8]) -> String {
     let bytes = &rom_bytes[range(CGBFlag::load(rom_bytes))];
-    ascii::from_bytes(match bytes.iter().position(|&x| x == 0x00) {
-        Some(index) => &bytes[..index],
-        None => bytes,
-    })
+    ascii::from_bytes(
+        bytes
+            .iter()
+            .position(|&x| x == 0x00)
+            .map_or(bytes, |index| &bytes[..index]),
+    )
 }

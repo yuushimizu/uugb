@@ -16,7 +16,7 @@ pub struct Rom {
     pub title: String,
     pub licensee: Licensee,
     pub sgb_flag: SGBFlag,
-    pub cartridge_type: Option<CartridgeType>,
+    pub cartridge_type: CartridgeType,
 }
 
 impl Rom {
