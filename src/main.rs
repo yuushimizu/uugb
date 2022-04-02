@@ -24,5 +24,5 @@ fn main() {
         std::process::exit(1);
     });
     let rom = rom::Rom::load(&bytes);
-    println!("{:?}", rom);
+    println!("{:#?}", rom);
 }

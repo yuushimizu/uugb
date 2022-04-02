@@ -7,8 +7,8 @@ pub enum SGBFlag {
 impl From<u8> for SGBFlag {
     fn from(value: u8) -> Self {
         match value {
-            0x03 => SGBFlag::Supported,
-            _ => SGBFlag::None,
+            0x03 => Self::Supported,
+            _ => Self::None,
         }
     }
 }

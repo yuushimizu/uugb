@@ -8,9 +8,9 @@ pub enum CGBFlag {
 impl From<u8> for CGBFlag {
     fn from(value: u8) -> Self {
         match value {
-            0x80 => CGBFlag::Supported,
-            0xC0 => CGBFlag::Only,
-            _ => CGBFlag::None,
+            0x80 => Self::Supported,
+            0xC0 => Self::Only,
+            _ => Self::None,
         }
     }
 }

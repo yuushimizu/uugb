@@ -1,8 +1,10 @@
+mod cartridge_type;
 mod cgb_flag;
 mod licensee;
 mod sgb_flag;
 mod title;
 
+pub use cartridge_type::{CartridgeType, MBCType};
 pub use cgb_flag::CGBFlag;
 pub use licensee::Licensee;
 pub use sgb_flag::SGBFlag;
@@ -14,6 +16,7 @@ pub struct Rom {
     pub title: String,
     pub licensee: Licensee,
     pub sgb_flag: SGBFlag,
+    pub cartridge_type: Option<CartridgeType>,
 }
 
 impl Rom {
@@ -24,6 +27,7 @@ impl Rom {
             title: title::load(bytes),
             licensee: licensee::Licensee::load(bytes),
             sgb_flag: SGBFlag::load(bytes),
+            cartridge_type: CartridgeType::load(bytes),
         }
     }
 }
