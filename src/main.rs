@@ -1,9 +1,10 @@
+mod rom;
+mod util;
+
 use clap::Parser;
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
-
-mod rom;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]

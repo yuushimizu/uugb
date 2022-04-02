@@ -15,10 +15,10 @@ impl From<u8> for CGBFlag {
     }
 }
 
-impl CGBFlag {
-    pub const POSITION: usize = 0x0143;
+const POSITION: usize = 0x0143;
 
-    pub fn load_from(rom_bytes: &[u8]) -> Self {
-        rom_bytes[Self::POSITION].into()
+impl CGBFlag {
+    pub fn load(rom_bytes: &[u8]) -> Self {
+        rom_bytes[POSITION].into()
     }
 }

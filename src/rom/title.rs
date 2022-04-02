@@ -1,4 +1,5 @@
 use super::cgb_flag::CGBFlag;
+use crate::util::ascii;
 use std::ops::RangeInclusive;
 
 fn range(cgb_flag: CGBFlag) -> RangeInclusive<usize> {
@@ -8,13 +9,10 @@ fn range(cgb_flag: CGBFlag) -> RangeInclusive<usize> {
     }
 }
 
-pub fn load_from(rom_bytes: &[u8]) -> String {
-    let bytes = &rom_bytes[range(CGBFlag::load_from(rom_bytes))];
-    let zero_index = bytes.iter().position(|&x| x == 0x00);
-    std::str::from_utf8(match zero_index {
+pub fn load(rom_bytes: &[u8]) -> String {
+    let bytes = &rom_bytes[range(CGBFlag::load(rom_bytes))];
+    ascii::from_bytes(match bytes.iter().position(|&x| x == 0x00) {
         Some(index) => &bytes[..index],
         None => bytes,
     })
-    .unwrap_or("UNKNOWN")
-    .into()
 }
