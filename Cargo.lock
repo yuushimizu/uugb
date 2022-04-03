@@ -62,11 +62,18 @@ dependencies = [
 ]
 
 [[package]]
-name = "gb-emulator"
+name = "core"
 version = "0.1.0"
 dependencies = [
  "byteorder",
+]
+
+[[package]]
+name = "gb-emulator"
+version = "0.1.0"
+dependencies = [
  "clap",
+ "core",
 ]
 
 [[package]]

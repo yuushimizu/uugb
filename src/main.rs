@@ -1,11 +1,4 @@
-mod cartridge;
-mod cpu;
-mod memory;
-mod util;
-
-use cartridge::Cartridge;
-use cpu::Cpu;
-use memory::Memory;
+use core::{cartridge, Cartridge, Cpu, Memory};
 
 use clap::Parser;
 use std::fs::File;

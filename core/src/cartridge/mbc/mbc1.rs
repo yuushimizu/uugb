@@ -1,5 +1,4 @@
-use super::Context;
-use super::Mbc;
+use super::{Context, Mbc};
 
 #[derive(Debug)]
 pub struct Mbc1 {

@@ -1,8 +1,8 @@
 mod mbc1;
 
-pub use super::context::Context;
 pub use mbc1::Mbc1;
 
+use super::context::Context;
 use std::fmt::Debug;
 
 pub trait Mbc
