@@ -1,6 +1,7 @@
 mod cartridge_type;
 mod cgb_flag;
 mod destination;
+mod entry_point;
 mod header_checksum;
 mod licensee;
 mod ram_size;
@@ -12,6 +13,7 @@ mod version;
 pub use cartridge_type::{CartridgeType, MBCType};
 pub use cgb_flag::CGBFlag;
 pub use destination::Destination;
+pub use entry_point::EntryPoint;
 pub use licensee::Licensee;
 pub use ram_size::RamSize;
 pub use rom_size::RomSize;
@@ -22,7 +24,7 @@ use std::result;
 
 #[derive(Debug)]
 pub struct Header {
-    pub entry_point: [u8; 4],
+    pub entry_point: EntryPoint,
     pub cgb_flag: CGBFlag,
     pub title: Title,
     pub licensee: Licensee,
@@ -50,7 +52,7 @@ impl Header {
             Err(Error::TooSmall)?
         }
         Ok(Self {
-            entry_point: bytes[0x0100..=0x0103].try_into().unwrap(),
+            entry_point: EntryPoint::load(bytes),
             cgb_flag: CGBFlag::load(bytes),
             title: Title::load(bytes),
             licensee: licensee::Licensee::load(bytes),
