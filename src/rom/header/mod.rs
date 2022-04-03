@@ -2,6 +2,7 @@ mod cartridge_type;
 mod cgb_flag;
 mod destination;
 mod entry_point;
+mod global_checksum;
 mod header_checksum;
 mod licensee;
 mod ram_size;
@@ -14,6 +15,7 @@ pub use cartridge_type::{CartridgeType, MBCType};
 pub use cgb_flag::CGBFlag;
 pub use destination::Destination;
 pub use entry_point::EntryPoint;
+pub use global_checksum::GlobalChecksum;
 pub use licensee::Licensee;
 pub use ram_size::RamSize;
 pub use rom_size::RomSize;
@@ -35,6 +37,7 @@ pub struct Header {
     pub destination: Destination,
     pub version: u8,
     pub header_checksum: u8,
+    pub global_checksum: GlobalChecksum,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -63,6 +66,7 @@ impl Header {
             destination: Destination::load(bytes),
             version: version::load(bytes),
             header_checksum: header_checksum::load(bytes),
+            global_checksum: GlobalChecksum::load(bytes),
         })
     }
 }
