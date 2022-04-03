@@ -1,5 +1,5 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum RomSize {
+pub enum RomSizeAmount {
     Unknown,
     Kb32,
     Kb64,
@@ -15,10 +15,10 @@ pub enum RomSize {
     Mb1P5,
 }
 
-impl From<u8> for RomSize {
-    fn from(value: u8) -> Self {
-        use RomSize::*;
-        match value {
+impl From<u8> for RomSizeAmount {
+    fn from(code: u8) -> Self {
+        use RomSizeAmount::*;
+        match code {
             0x00 => Kb32,
             0x01 => Kb64,
             0x02 => Kb128,
@@ -32,6 +32,21 @@ impl From<u8> for RomSize {
             0x53 => Mb1P2,
             0x54 => Mb1P5,
             _ => Unknown,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct RomSize {
+    code: u8,
+    amount: RomSizeAmount,
+}
+
+impl From<u8> for RomSize {
+    fn from(code: u8) -> Self {
+        Self {
+            code,
+            amount: code.into(),
         }
     }
 }
