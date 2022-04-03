@@ -51,4 +51,12 @@ impl Cartridge {
     pub fn header(&self) -> &Header {
         &self.header
     }
+
+    pub fn read(&self, address: u16) -> u8 {
+        self.mbc.read(&self.context, address)
+    }
+
+    pub fn write(&mut self, address: u16, value: u8) {
+        self.mbc.write(&mut self.context, address, value)
+    }
 }
