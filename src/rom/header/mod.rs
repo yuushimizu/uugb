@@ -14,12 +14,13 @@ pub use licensee::Licensee;
 pub use ram_size::RamSize;
 pub use rom_size::RomSize;
 pub use sgb_flag::SGBFlag;
+pub use title::Title;
 
 #[derive(Debug)]
 pub struct Header {
     pub entry_point: [u8; 4],
     pub cgb_flag: CGBFlag,
-    pub title: String,
+    pub title: Title,
     pub licensee: Licensee,
     pub sgb_flag: SGBFlag,
     pub cartridge_type: CartridgeType,
@@ -33,7 +34,7 @@ impl Header {
         Self {
             entry_point: bytes[0x0100..=0x0103].try_into().unwrap(),
             cgb_flag: CGBFlag::load(bytes),
-            title: title::load(bytes),
+            title: Title::load(bytes),
             licensee: licensee::Licensee::load(bytes),
             sgb_flag: SGBFlag::load(bytes),
             cartridge_type: CartridgeType::load(bytes),
