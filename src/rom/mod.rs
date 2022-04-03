@@ -1,6 +1,7 @@
 mod cartridge_type;
 mod cgb_flag;
 mod licensee;
+mod ram_size;
 mod rom_size;
 mod sgb_flag;
 mod title;
@@ -8,6 +9,7 @@ mod title;
 pub use cartridge_type::{CartridgeType, MBCType};
 pub use cgb_flag::CGBFlag;
 pub use licensee::Licensee;
+pub use ram_size::RamSize;
 pub use rom_size::RomSize;
 pub use sgb_flag::SGBFlag;
 
@@ -20,6 +22,7 @@ pub struct Rom {
     pub sgb_flag: SGBFlag,
     pub cartridge_type: CartridgeType,
     pub rom_size: RomSize,
+    pub ram_size: RamSize,
 }
 
 impl Rom {
@@ -32,6 +35,7 @@ impl Rom {
             sgb_flag: SGBFlag::load(bytes),
             cartridge_type: CartridgeType::load(bytes),
             rom_size: RomSize::load(bytes),
+            ram_size: RamSize::load(bytes),
         }
     }
 }
