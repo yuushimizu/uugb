@@ -1,14 +1,29 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum SGBFlag {
+pub enum SGBSupport {
     None,
     Supported,
 }
 
-impl From<u8> for SGBFlag {
-    fn from(value: u8) -> Self {
-        match value {
+impl From<u8> for SGBSupport {
+    fn from(code: u8) -> Self {
+        match code {
             0x03 => Self::Supported,
             _ => Self::None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct SGBFlag {
+    code: u8,
+    support: SGBSupport,
+}
+
+impl From<u8> for SGBFlag {
+    fn from(code: u8) -> Self {
+        Self {
+            code,
+            support: code.into(),
         }
     }
 }
