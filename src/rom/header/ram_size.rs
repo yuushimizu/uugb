@@ -1,23 +1,34 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum RamSize {
+pub enum RamSizeAmount {
     Unknown,
-    Kb0,
-    Kb8,
-    Kb32,
-    Kb128,
-    Kb64,
+    Kb(i64),
+}
+
+impl From<u8> for RamSizeAmount {
+    fn from(code: u8) -> Self {
+        use RamSizeAmount::*;
+        match code {
+            0x00 => Kb(0),
+            0x02 => Kb(8),
+            0x03 => Kb(32),
+            0x04 => Kb(128),
+            0x05 => Kb(64),
+            _ => Unknown,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct RamSize {
+    code: u8,
+    amount: RamSizeAmount,
 }
 
 impl From<u8> for RamSize {
-    fn from(value: u8) -> Self {
-        use RamSize::*;
-        match value {
-            0x00 => Kb0,
-            0x02 => Kb8,
-            0x03 => Kb32,
-            0x04 => Kb128,
-            0x05 => Kb64,
-            _ => Unknown,
+    fn from(code: u8) -> Self {
+        Self {
+            code,
+            amount: code.into(),
         }
     }
 }
