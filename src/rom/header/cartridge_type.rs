@@ -28,15 +28,16 @@ pub enum CartridgeOption {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CartridgeType {
+    pub code: u8,
     pub mbc_type: MBCType,
     pub options: HashSet<CartridgeOption>,
 }
 
 impl From<u8> for CartridgeType {
-    fn from(value: u8) -> Self {
+    fn from(code: u8) -> Self {
         use CartridgeOption::*;
         use MBCType::*;
-        let (mbc_type, options) = match value {
+        let (mbc_type, options) = match code {
             0x00 => (NoMBC, vec![]),
             0x01 => (Mbc1, vec![]),
             0x02 => (Mbc1, vec![Ram]),
@@ -68,6 +69,7 @@ impl From<u8> for CartridgeType {
             _ => (Unknown, vec![]),
         };
         Self {
+            code: code,
             mbc_type,
             options: HashSet::from_iter(options),
         }
