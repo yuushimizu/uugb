@@ -1,6 +1,7 @@
 mod cartridge_type;
 mod cgb_flag;
 mod destination;
+mod header_checksum;
 mod licensee;
 mod ram_size;
 mod rom_size;
@@ -29,6 +30,7 @@ pub struct Header {
     pub ram_size: RamSize,
     pub destination: Destination,
     pub version: u8,
+    pub header_checksum: u8,
 }
 
 impl Header {
@@ -44,6 +46,7 @@ impl Header {
             ram_size: RamSize::load(bytes),
             destination: Destination::load(bytes),
             version: version::load(bytes),
+            header_checksum: header_checksum::load(bytes),
         }
     }
 }
