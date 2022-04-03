@@ -2,19 +2,19 @@ use std::ops::RangeInclusive;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Logo {
-    bytes: Vec<u8>,
+    pub bytes: Vec<u8>,
 }
 
 const RANGE: RangeInclusive<usize> = 0x0104..=0x0133;
 
 impl Logo {
-    pub fn load(rom_bytes: &[u8]) -> Self {
+    pub fn load(rom: &[u8]) -> Self {
         Logo {
-            bytes: rom_bytes[RANGE].into(),
+            bytes: rom[RANGE].into(),
         }
     }
 
-    pub fn decode(self: &Self) -> Vec<Vec<bool>> {
+    pub fn decode(&self) -> Vec<Vec<bool>> {
         const COLUMNS: usize = 12;
         const ROWS: usize = 2;
         const BLOCK_SIZE: usize = COLUMNS * ROWS;
@@ -39,7 +39,7 @@ impl Logo {
             .collect()
     }
 
-    pub fn to_ascii_art(self: &Self) -> String {
+    pub fn to_ascii_art(&self) -> String {
         self.decode()
             .iter()
             .map(|line| line.iter().map(|&on| if on { '█' } else { ' ' }).collect())

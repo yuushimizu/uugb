@@ -10,8 +10,8 @@ impl Memory {
         Self { cartridge }
     }
 
-    pub fn read(self: &Self, address: u16) -> u8 {
-        println!("Memory: read from {:#06x}", address);
+    pub fn read(&self, address: u16) -> u8 {
+        println!("Memory: read from {:04X}", address);
         0
     }
 }

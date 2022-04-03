@@ -56,15 +56,15 @@ pub struct Cpu {
 }
 
 impl Cpu {
-    fn popFromPC(self: &mut Self, memory: &mut Memory) -> u8 {
+    fn popFromPC(&mut self, memory: &mut Memory) -> u8 {
         let opcode = memory.read(self.registers.pc);
         self.registers.pc += 1;
         opcode
     }
 
-    pub fn executeNext(self: &mut Self, memory: &mut Memory) {
+    pub fn executeNext(&mut self, memory: &mut Memory) {
         match self.popFromPC(memory) {
-            opcode => panic!("This Opcode is not implemented!: {:#04x}", opcode),
+            opcode => panic!("This Opcode is not implemented!: {:02X}", opcode),
         }
     }
 }

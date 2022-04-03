@@ -1,13 +1,15 @@
+use std::fmt;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum CGBSupport {
+pub enum CgbSupport {
     None,
     Supported,
     Only,
 }
 
-impl From<u8> for CGBSupport {
+impl From<u8> for CgbSupport {
     fn from(code: u8) -> Self {
-        use CGBSupport::*;
+        use CgbSupport::*;
         match code {
             0x80 => Supported,
             0xC0 => Only,
@@ -16,25 +18,46 @@ impl From<u8> for CGBSupport {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct CGBFlag {
-    pub code: u8,
-    pub support: CGBSupport,
+impl fmt::Display for CgbSupport {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use CgbSupport::*;
+        write!(
+            f,
+            "{}",
+            match self {
+                None => "None",
+                Supported => "Supported",
+                Only => "Only",
+            }
+        )
+    }
 }
 
-impl From<u8> for CGBFlag {
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct CgbFlag {
+    pub code: u8,
+}
+
+impl From<u8> for CgbFlag {
     fn from(code: u8) -> Self {
-        Self {
-            code,
-            support: code.into(),
-        }
+        Self { code }
     }
 }
 
 const POSITION: usize = 0x0143;
 
-impl CGBFlag {
-    pub fn load(rom_bytes: &[u8]) -> Self {
-        rom_bytes[POSITION].into()
+impl CgbFlag {
+    pub fn load(rom: &[u8]) -> Self {
+        rom[POSITION].into()
+    }
+
+    pub fn support(&self) -> CgbSupport {
+        self.code.into()
+    }
+}
+
+impl fmt::Display for CgbFlag {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} ({:02X})", self.support(), self.code)
     }
 }

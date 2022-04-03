@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum RamSizeAmount {
     Unknown,
@@ -22,25 +24,49 @@ impl From<u8> for RamSizeAmount {
     }
 }
 
+impl fmt::Display for RamSizeAmount {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use RamSizeAmount::*;
+        write!(
+            f,
+            "{}",
+            match self {
+                Unknown => "Unknown",
+                None => "None",
+                Kb8 => "8KB",
+                Kb32 => "32KB",
+                Kb128 => "128KB",
+                Kb64 => "64KB",
+            }
+        )
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct RamSize {
-    code: u8,
-    amount: RamSizeAmount,
+    pub code: u8,
 }
 
 impl From<u8> for RamSize {
     fn from(code: u8) -> Self {
-        Self {
-            code,
-            amount: code.into(),
-        }
+        Self { code }
     }
 }
 
 const POSITION: usize = 0x0149;
 
 impl RamSize {
-    pub fn load(rom_bytes: &[u8]) -> Self {
-        rom_bytes[POSITION].into()
+    pub fn load(rom: &[u8]) -> Self {
+        rom[POSITION].into()
+    }
+
+    pub fn amount(&self) -> RamSizeAmount {
+        self.code.into()
+    }
+}
+
+impl fmt::Display for RamSize {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} ({:02X})", self.amount(), self.code)
     }
 }

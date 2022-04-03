@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum RomSizeAmount {
     Unknown,
@@ -10,9 +12,9 @@ pub enum RomSizeAmount {
     Mb2,
     Mb4,
     Mb8,
-    Mb1P1,
-    Mb1P2,
-    Mb1P5,
+    Mb1p1,
+    Mb1p2,
+    Mb1p5,
 }
 
 impl From<u8> for RomSizeAmount {
@@ -28,33 +30,64 @@ impl From<u8> for RomSizeAmount {
             0x06 => Mb2,
             0x07 => Mb4,
             0x08 => Mb8,
-            0x52 => Mb1P1,
-            0x53 => Mb1P2,
-            0x54 => Mb1P5,
+            0x52 => Mb1p1,
+            0x53 => Mb1p2,
+            0x54 => Mb1p5,
             _ => Unknown,
         }
+    }
+}
+
+impl fmt::Display for RomSizeAmount {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use RomSizeAmount::*;
+        write!(
+            f,
+            "{}",
+            match self {
+                Unknown => "Unknown",
+                Kb32 => "32KB",
+                Kb64 => "64KB",
+                Kb128 => "128KB",
+                Kb256 => "256KB",
+                Kb512 => "512KB",
+                Mb1 => "1MB",
+                Mb2 => "2MB",
+                Mb4 => "4MB",
+                Mb8 => "8MB",
+                Mb1p1 => "1.1MB",
+                Mb1p2 => "1.2MB",
+                Mb1p5 => "1.5MB",
+            }
+        )
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct RomSize {
     code: u8,
-    amount: RomSizeAmount,
 }
 
 impl From<u8> for RomSize {
     fn from(code: u8) -> Self {
-        Self {
-            code,
-            amount: code.into(),
-        }
+        Self { code }
     }
 }
 
 const POSITION: usize = 0x0148;
 
 impl RomSize {
-    pub fn load(rom_bytes: &[u8]) -> Self {
-        rom_bytes[POSITION].into()
+    pub fn load(rom: &[u8]) -> Self {
+        rom[POSITION].into()
+    }
+
+    pub fn amount(&self) -> RomSizeAmount {
+        self.code.into()
+    }
+}
+
+impl fmt::Display for RomSize {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{} ({:02X})", self.amount(), self.code)
     }
 }

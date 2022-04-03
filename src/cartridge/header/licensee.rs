@@ -1,19 +1,19 @@
 use crate::util::ascii;
+use std::fmt;
 use std::ops::RangeInclusive;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Licensee {
     pub old_code: u8,
-    pub new_code: Option<[u8; 2]>,
-    pub name: &'static str,
+    pub new_code: Option<Vec<u8>>,
 }
 
 const OLD_POSITION: usize = 0x014B;
 
 const NEW_RANGE: RangeInclusive<usize> = 0x0144..=0x0145;
 
-fn name_from_old_code(value: u8) -> &'static str {
-    match value {
+fn name_from_old_code(code: u8) -> &'static str {
+    match code {
         0x00 => "None",
         0x01 => "Nintendo",
         0x08 => "CAPCOM",
@@ -164,47 +164,63 @@ fn name_from_old_code(value: u8) -> &'static str {
     }
 }
 
-fn name_from_new_code(value: [u8; 2]) -> &'static str {
-    u8::from_str_radix(ascii::from_bytes(&value).as_str(), 16).map_or("", |combined| match combined
-    {
-        0x19 => "B-AI",
-        0x20 => "KSS",
-        0x22 => "POW",
-        0x28 => "KEMCO",
-        0x30 => "Viacom",
-        0x33 => "Ocean/Acclaim",
-        0x37 => "TAITO",
-        0x38 => "Hudson",
-        0x47 => "Bullet-Proof",
-        0x54 => "KONAMI",
-        0x55 => "Hi Tech Entertainment",
-        0x58 => "Mattel",
-        0x64 => "LucasArts",
-        0x75 => "SCI",
-        0x87 => "Tsukuda Original",
-        0x93 => "Ocean/Acclaim",
-        0x99 => "PACK-IN-SOFT",
-        combined => name_from_old_code(combined),
-    })
+fn name_from_new_code(code: &[u8]) -> &'static str {
+    u8::from_str_radix(ascii::from_bytes(&code).as_str(), 16).map_or(
+        "",
+        |combined| match combined {
+            0x19 => "B-AI",
+            0x20 => "KSS",
+            0x22 => "POW",
+            0x28 => "KEMCO",
+            0x30 => "Viacom",
+            0x33 => "Ocean/Acclaim",
+            0x37 => "TAITO",
+            0x38 => "Hudson",
+            0x47 => "Bullet-Proof",
+            0x54 => "KONAMI",
+            0x55 => "Hi Tech Entertainment",
+            0x58 => "Mattel",
+            0x64 => "LucasArts",
+            0x75 => "SCI",
+            0x87 => "Tsukuda Original",
+            0x93 => "Ocean/Acclaim",
+            0x99 => "PACK-IN-SOFT",
+            combined => name_from_old_code(combined),
+        },
+    )
 }
 
 impl Licensee {
-    pub fn load(rom_bytes: &[u8]) -> Self {
-        let old_code = rom_bytes[OLD_POSITION];
-        match old_code {
-            0x33 => {
-                let new_code: Option<[u8; 2]> = rom_bytes[NEW_RANGE].try_into().ok();
-                Self {
-                    old_code,
-                    new_code,
-                    name: new_code.map_or("", name_from_new_code),
-                }
-            }
-            value => Self {
-                old_code,
-                new_code: None,
-                name: name_from_old_code(value),
+    pub fn load(rom: &[u8]) -> Self {
+        let old_code = rom[OLD_POSITION];
+        Self {
+            old_code,
+            new_code: match old_code {
+                0x33 => Some(rom[NEW_RANGE].into()),
+                _ => None,
             },
+        }
+    }
+
+    pub fn name(&self) -> &str {
+        self.new_code.as_ref().map_or_else(
+            || name_from_old_code(self.old_code),
+            |new_code| name_from_new_code(new_code),
+        )
+    }
+}
+
+impl fmt::Display for Licensee {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match &self.new_code {
+            Some(new_code) => write!(
+                f,
+                "{} ({:02X}/{})",
+                self.name(),
+                self.old_code,
+                ascii::from_bytes(new_code)
+            ),
+            None => write!(f, "{} ({:02X})", self.name(), self.old_code),
         }
     }
 }

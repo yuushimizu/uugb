@@ -1,29 +1,38 @@
-use super::cgb_flag::{CGBFlag, CGBSupport};
+use super::cgb_flag::{CgbFlag, CgbSupport};
 use crate::util::ascii;
+use std::fmt;
 use std::ops::RangeInclusive;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Title {
     bytes: Vec<u8>,
-    ascii: String,
 }
 
-fn range(cgb_flag: CGBFlag) -> RangeInclusive<usize> {
-    match cgb_flag.support {
-        CGBSupport::None => 0x0134..=0x0143,
+fn range(cgb_flag: CgbFlag) -> RangeInclusive<usize> {
+    match cgb_flag.support() {
+        CgbSupport::None => 0x0134..=0x0143,
         _ => 0x0134..=0x0142,
     }
 }
 
 impl Title {
-    pub fn load(rom_bytes: &[u8]) -> Self {
-        let bytes: Vec<u8> = rom_bytes[range(CGBFlag::load(rom_bytes))].into();
-        let ascii = ascii::from_bytes(
-            bytes
+    pub fn load(rom: &[u8]) -> Self {
+        let bytes: Vec<u8> = rom[range(CgbFlag::load(rom))].into();
+        Self { bytes }
+    }
+
+    pub fn ascii(&self) -> String {
+        ascii::from_bytes(
+            self.bytes
                 .iter()
                 .position(|&x| x == 0x00)
-                .map_or(&bytes, |index| &bytes[..index]),
-        );
-        Self { bytes, ascii }
+                .map_or(&self.bytes, |index| &self.bytes[..index]),
+        )
+    }
+}
+
+impl fmt::Display for Title {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.ascii())
     }
 }
