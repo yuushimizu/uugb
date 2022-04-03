@@ -4,7 +4,7 @@ pub use header::Header;
 
 use std::result;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Cartridge {
     pub header: Header,
 }

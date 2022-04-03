@@ -1,7 +1,12 @@
 mod cartridge;
+mod cpu;
+mod memory;
 mod util;
 
 use cartridge::Cartridge;
+use cpu::Cpu;
+use memory::Memory;
+
 use clap::Parser;
 use std::fs::File;
 use std::io::Read;
@@ -12,7 +17,15 @@ use std::path::PathBuf;
 struct Args {
     file: PathBuf,
     #[clap(long)]
+    info: bool,
+    #[clap(long)]
     logo: bool,
+}
+
+fn boot(cartridge: Cartridge) {
+    let mut memory = Memory::new(cartridge);
+    let mut cpu = Cpu::default();
+    cpu.executeNext(&mut memory);
 }
 
 fn main() {
@@ -30,9 +43,13 @@ fn main() {
         eprintln!("Could not load cartridge data from the file: {:?}", err);
         std::process::exit(1);
     });
+    if arg.info {
+        println!("{:#?}", cartridge);
+        return;
+    }
     if arg.logo {
         println!("{}", cartridge.header.logo.to_ascii_art());
-    } else {
-        println!("{:#?}", cartridge);
+        return;
     }
+    boot(cartridge)
 }
