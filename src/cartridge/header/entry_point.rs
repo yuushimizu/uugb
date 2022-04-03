@@ -5,12 +5,12 @@ pub struct EntryPoint {
     bytes: Vec<u8>,
 }
 
-const NEW_RANGE: RangeInclusive<usize> = 0x0100..=0x0103;
+const RANGE: RangeInclusive<usize> = 0x0100..=0x0103;
 
 impl EntryPoint {
     pub fn load(rom_bytes: &[u8]) -> Self {
         Self {
-            bytes: rom_bytes[NEW_RANGE].into(),
+            bytes: rom_bytes[RANGE].into(),
         }
     }
 }

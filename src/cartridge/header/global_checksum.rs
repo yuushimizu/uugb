@@ -8,11 +8,11 @@ pub struct GlobalChecksum {
     value: u16,
 }
 
-const NEW_RANGE: RangeInclusive<usize> = 0x014E..=0x014F;
+const RANGE: RangeInclusive<usize> = 0x014E..=0x014F;
 
 impl GlobalChecksum {
     pub fn load(rom_bytes: &[u8]) -> Self {
-        let bytes = rom_bytes[NEW_RANGE].into();
+        let bytes = rom_bytes[RANGE].into();
         let value = Cursor::new(&bytes).read_u16::<BigEndian>().unwrap_or(0);
         Self { bytes, value }
     }

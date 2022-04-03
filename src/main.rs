@@ -11,6 +11,8 @@ use std::path::PathBuf;
 #[clap(author, version, about, long_about = None)]
 struct Args {
     file: PathBuf,
+    #[clap(long)]
+    logo: bool,
 }
 
 fn main() {
@@ -21,9 +23,16 @@ fn main() {
     });
     let mut bytes = Vec::new();
     file.read_to_end(&mut bytes).unwrap_or_else(|_err| {
-        eprintln!("Could not read from the file: {}", arg.file.display());
+        eprintln!("Could not read the file: {}", arg.file.display());
         std::process::exit(1);
     });
-    let cartridge = Cartridge::load(&bytes);
-    println!("{:#?}", cartridge);
+    let cartridge = Cartridge::load(&bytes).unwrap_or_else(|err| {
+        eprintln!("Could not load cartridge data from the file: {:?}", err);
+        std::process::exit(1);
+    });
+    if arg.logo {
+        println!("{}", cartridge.header.logo.to_ascii_art());
+    } else {
+        println!("{:#?}", cartridge);
+    }
 }

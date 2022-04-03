@@ -5,6 +5,7 @@ mod entry_point;
 mod global_checksum;
 mod header_checksum;
 mod licensee;
+mod logo;
 mod ram_size;
 mod rom_size;
 mod sgb_flag;
@@ -17,6 +18,7 @@ pub use destination::Destination;
 pub use entry_point::EntryPoint;
 pub use global_checksum::GlobalChecksum;
 pub use licensee::Licensee;
+pub use logo::Logo;
 pub use ram_size::RamSize;
 pub use rom_size::RomSize;
 pub use sgb_flag::SGBFlag;
@@ -27,6 +29,7 @@ use std::result;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Header {
     pub entry_point: EntryPoint,
+    pub logo: Logo,
     pub cgb_flag: CGBFlag,
     pub title: Title,
     pub licensee: Licensee,
@@ -56,6 +59,7 @@ impl Header {
         }
         Ok(Self {
             entry_point: EntryPoint::load(bytes),
+            logo: Logo::load(bytes),
             cgb_flag: CGBFlag::load(bytes),
             title: Title::load(bytes),
             licensee: licensee::Licensee::load(bytes),
