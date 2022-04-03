@@ -4,8 +4,8 @@ use std::ops::RangeInclusive;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Licensee {
-    pub old_code: u8,
-    pub new_code: Option<Vec<u8>>,
+    old_code: u8,
+    new_code: Option<Vec<u8>>,
 }
 
 const OLD_POSITION: usize = 0x014B;
@@ -200,6 +200,14 @@ impl Licensee {
                 _ => None,
             },
         }
+    }
+
+    pub fn old_code(&self) -> u8 {
+        self.old_code
+    }
+
+    pub fn new_code(&self) -> Option<&[u8]> {
+        self.new_code.as_deref()
     }
 
     pub fn name(&self) -> &str {

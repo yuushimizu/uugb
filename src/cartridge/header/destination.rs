@@ -31,7 +31,7 @@ impl fmt::Display for DestinationType {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Destination {
-    pub code: u8,
+    code: u8,
 }
 
 impl From<u8> for Destination {
@@ -45,6 +45,10 @@ const POSITION: usize = 0x014A;
 impl Destination {
     pub fn load(rom: &[u8]) -> Self {
         rom[POSITION].into()
+    }
+
+    pub fn code(&self) -> u8 {
+        self.code
     }
 
     pub fn destination_type(&self) -> DestinationType {

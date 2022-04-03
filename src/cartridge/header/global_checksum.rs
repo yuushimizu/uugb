@@ -5,7 +5,7 @@ use std::ops::RangeInclusive;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct GlobalChecksum {
-    pub bytes: Vec<u8>,
+    bytes: Vec<u8>,
 }
 
 const RANGE: RangeInclusive<usize> = 0x014E..=0x014F;
@@ -15,6 +15,10 @@ impl GlobalChecksum {
         Self {
             bytes: rom_bytes[RANGE].into(),
         }
+    }
+
+    pub fn bytes(&self) -> &[u8] {
+        &self.bytes
     }
 
     pub fn value(&self) -> u16 {

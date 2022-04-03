@@ -1,14 +1,14 @@
-use std::fmt;
-
 mod cartridge_option;
 mod mbc_type;
 
 pub use cartridge_option::CartridgeOption;
 pub use mbc_type::MbcType;
 
+use std::fmt;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CartridgeType {
-    pub code: u8,
+    code: u8,
 }
 
 impl From<u8> for CartridgeType {
@@ -44,7 +44,7 @@ fn decode(code: u8) -> (MbcType, Vec<CartridgeOption>) {
         0x1D => (Mbc5, vec![Ram, Rumble]),
         0x1E => (Mbc5, vec![Ram, Battery, Rumble]),
         0x20 => (Mbc6, vec![]),
-        0x22 => (Mbc7, vec![Ram, Battery, Rumble, Accelerometer]),
+        0x22 => (Mbc7, vec![Ram, Battery, Rumble, Sensor]),
         0xFC => (PocketCamera, vec![]),
         0xFD => (BandaiTama5, vec![]),
         0xFE => (Huc3, vec![]),
@@ -58,6 +58,10 @@ const POSITION: usize = 0x0147;
 impl CartridgeType {
     pub fn load(rom: &[u8]) -> Self {
         rom[POSITION].into()
+    }
+
+    pub fn code(&self) -> u8 {
+        return self.code;
     }
 
     pub fn mbc_type(&self) -> MbcType {

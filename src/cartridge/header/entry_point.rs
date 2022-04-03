@@ -3,7 +3,7 @@ use std::ops::RangeInclusive;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct EntryPoint {
-    pub bytes: Vec<u8>,
+    bytes: Vec<u8>,
 }
 
 const RANGE: RangeInclusive<usize> = 0x0100..=0x0103;
@@ -13,6 +13,10 @@ impl EntryPoint {
         Self {
             bytes: rom[RANGE].into(),
         }
+    }
+
+    pub fn bytes(&self) -> &[u8] {
+        &self.bytes
     }
 }
 

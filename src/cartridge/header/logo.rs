@@ -2,7 +2,7 @@ use std::ops::RangeInclusive;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Logo {
-    pub bytes: Vec<u8>,
+    bytes: Vec<u8>,
 }
 
 const RANGE: RangeInclusive<usize> = 0x0104..=0x0133;
@@ -12,6 +12,10 @@ impl Logo {
         Logo {
             bytes: rom[RANGE].into(),
         }
+    }
+
+    pub fn bytes(&self) -> &[u8] {
+        &self.bytes
     }
 
     pub fn decode(&self) -> Vec<Vec<bool>> {

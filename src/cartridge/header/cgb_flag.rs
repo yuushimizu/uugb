@@ -35,7 +35,7 @@ impl fmt::Display for CgbSupport {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct CgbFlag {
-    pub code: u8,
+    code: u8,
 }
 
 impl From<u8> for CgbFlag {
@@ -49,6 +49,10 @@ const POSITION: usize = 0x0143;
 impl CgbFlag {
     pub fn load(rom: &[u8]) -> Self {
         rom[POSITION].into()
+    }
+
+    pub fn code(&self) -> u8 {
+        self.code
     }
 
     pub fn support(&self) -> CgbSupport {

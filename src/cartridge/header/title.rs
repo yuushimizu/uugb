@@ -21,6 +21,10 @@ impl Title {
         Self { bytes }
     }
 
+    pub fn bytes(&self) -> &[u8] {
+        &self.bytes
+    }
+
     pub fn ascii(&self) -> String {
         ascii::from_bytes(
             self.bytes

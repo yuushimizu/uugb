@@ -6,7 +6,7 @@ pub enum CartridgeOption {
     Battery,
     Rtc,
     Rumble,
-    Accelerometer,
+    Sensor,
 }
 
 impl fmt::Display for CartridgeOption {
@@ -20,7 +20,7 @@ impl fmt::Display for CartridgeOption {
                 Battery => "BATTERY",
                 Rtc => "RTC",
                 Rumble => "RUMBLE",
-                Accelerometer => "ACCELEROMETER",
+                Sensor => "SENSOR",
             }
         )
     }

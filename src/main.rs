@@ -22,6 +22,20 @@ struct Args {
     logo: bool,
 }
 
+fn load_header(rom: &[u8]) -> cartridge::Header {
+    cartridge::Header::load(rom).unwrap_or_else(|err| {
+        eprintln!("Could not load cartridge header: {:?}", err);
+        std::process::exit(1);
+    })
+}
+
+fn create_cartridge(rom: Vec<u8>) -> Cartridge {
+    Cartridge::new(rom).unwrap_or_else(|err| {
+        eprintln!("Could not load cartridge: {:?}", err);
+        std::process::exit(1);
+    })
+}
+
 fn print_cartridge_info(header: &cartridge::Header) {
     println!("Title: {}", header.title);
     println!("Entry Point: {}", header.entry_point);
@@ -40,7 +54,7 @@ fn print_cartridge_info(header: &cartridge::Header) {
 fn boot(cartridge: Cartridge) {
     let mut memory = Memory::new(cartridge);
     let mut cpu = Cpu::default();
-    cpu.executeNext(&mut memory);
+    cpu.execute_next(&mut memory);
 }
 
 fn main() {
@@ -54,18 +68,13 @@ fn main() {
         eprintln!("Could not read the file: {}", arg.file.display());
         std::process::exit(1);
     });
-    let cartridge = Cartridge::new(&rom);
-    let header = cartridge.header().unwrap_or_else(|err| {
-        eprintln!("Could not load cartridge data from the file: {:?}", err);
-        std::process::exit(1);
-    });
     if arg.info {
-        print_cartridge_info(&header);
+        print_cartridge_info(&load_header(&rom));
         return;
     }
     if arg.logo {
-        println!("{}", header.logo.to_ascii_art());
+        println!("{}", load_header(&rom).logo.to_ascii_art());
         return;
     }
-    boot(cartridge)
+    boot(create_cartridge(rom))
 }

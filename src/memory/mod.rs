@@ -1,6 +1,6 @@
 use crate::cartridge::Cartridge;
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Memory {
     cartridge: Cartridge,
 }

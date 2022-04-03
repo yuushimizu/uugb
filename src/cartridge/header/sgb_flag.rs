@@ -47,6 +47,10 @@ impl SgbFlag {
         rom[POSITION].into()
     }
 
+    pub fn code(&self) -> u8 {
+        self.code
+    }
+
     pub fn support(&self) -> SgbSupport {
         self.code.into()
     }

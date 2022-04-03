@@ -1,14 +1,18 @@
+mod context;
 mod header;
 mod mbc;
 
 pub use header::*;
 pub use mbc::Mbc;
 
+use context::Context;
 use std::result;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug)]
 pub struct Cartridge {
-    rom: Vec<u8>,
+    context: Context,
+    header: Header,
+    mbc: Box<dyn Mbc>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -19,21 +23,31 @@ pub enum Error {
 
 pub type Result<T> = result::Result<T, Error>;
 
+pub fn create_mbc(header: &Header) -> Result<Box<dyn Mbc>> {
+    use MbcType::*;
+    let cartridge_type = &header.cartridge_type;
+    match cartridge_type.mbc_type() {
+        Mbc1 => Ok(Box::new(mbc::Mbc1::new())),
+        _ => Err(Error::MbcNotImplemented(cartridge_type.clone())),
+    }
+}
+
 impl Cartridge {
-    pub fn new(rom: &[u8]) -> Self {
-        Self { rom: rom.into() }
+    pub fn new(rom: Vec<u8>) -> Result<Self> {
+        let header = Header::load(&rom).map_err(|err| Error::HeaderError(err))?;
+        let context = Context {
+            rom,
+            ram: vec![0u8; header.ram_size.amount()],
+        };
+        let mbc = create_mbc(&header)?;
+        Ok(Self {
+            context,
+            header,
+            mbc,
+        })
     }
 
-    pub fn header(&self) -> Result<Header> {
-        Header::load(&self.rom).map_err(|err| Error::HeaderError(err))
-    }
-
-    pub fn mbc(&self) -> Result<Box<dyn Mbc>> {
-        use MbcType::*;
-        let cartridge_type = self.header()?.cartridge_type;
-        match cartridge_type.mbc_type() {
-            Mbc1 => Ok(Box::new(mbc::Mbc1::new(self.rom.clone()))),
-            _ => Err(Error::MbcNotImplemented(cartridge_type)),
-        }
+    pub fn header(&self) -> &Header {
+        &self.header
     }
 }
