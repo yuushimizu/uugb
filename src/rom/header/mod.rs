@@ -6,6 +6,7 @@ mod ram_size;
 mod rom_size;
 mod sgb_flag;
 mod title;
+mod version;
 
 pub use cartridge_type::{CartridgeType, MBCType};
 pub use cgb_flag::CGBFlag;
@@ -27,6 +28,7 @@ pub struct Header {
     pub rom_size: RomSize,
     pub ram_size: RamSize,
     pub destination: Destination,
+    pub version: u8,
 }
 
 impl Header {
@@ -41,6 +43,7 @@ impl Header {
             rom_size: RomSize::load(bytes),
             ram_size: RamSize::load(bytes),
             destination: Destination::load(bytes),
+            version: version::load(bytes),
         }
     }
 }
