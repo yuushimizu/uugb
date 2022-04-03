@@ -5,7 +5,7 @@ pub use header::Header;
 use std::result;
 
 #[derive(Debug)]
-pub struct Rom {
+pub struct Cartridge {
     pub header: Header,
 }
 
@@ -16,7 +16,7 @@ pub enum Error {
 
 pub type Result<T> = result::Result<T, Error>;
 
-impl Rom {
+impl Cartridge {
     pub fn load(bytes: &[u8]) -> Result<Self> {
         Ok(Self {
             header: Header::load(bytes).map_err(|err| Error::HeaderError(err))?,

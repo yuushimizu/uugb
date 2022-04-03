@@ -1,6 +1,7 @@
-mod rom;
+mod cartridge;
 mod util;
 
+use cartridge::Cartridge;
 use clap::Parser;
 use std::fs::File;
 use std::io::Read;
@@ -23,6 +24,6 @@ fn main() {
         eprintln!("Could not read from the file: {}", arg.file.display());
         std::process::exit(1);
     });
-    let rom = rom::Rom::load(&bytes);
-    println!("{:#?}", rom);
+    let cartridge = Cartridge::load(&bytes);
+    println!("{:#?}", cartridge);
 }
