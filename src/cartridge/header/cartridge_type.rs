@@ -1,7 +1,16 @@
-use std::collections::HashSet;
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CartridgeType {
+    pub code: u8,
+}
+
+impl From<u8> for CartridgeType {
+    fn from(code: u8) -> Self {
+        Self { code: code }
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum MBCType {
+pub enum MbcType {
     Unknown,
     NoMBC,
     Mbc1,
@@ -26,18 +35,17 @@ pub enum CartridgeOption {
     Accelerometer,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct CartridgeType {
-    pub code: u8,
-    pub mbc_type: MBCType,
-    pub options: HashSet<CartridgeOption>,
-}
+const POSITION: usize = 0x0147;
 
-impl From<u8> for CartridgeType {
-    fn from(code: u8) -> Self {
+impl CartridgeType {
+    pub fn load(rom: &[u8]) -> Self {
+        rom[POSITION].into()
+    }
+
+    fn decode(self: &Self) -> (MbcType, Vec<CartridgeOption>) {
         use CartridgeOption::*;
-        use MBCType::*;
-        let (mbc_type, options) = match code {
+        use MbcType::*;
+        match self.code {
             0x00 => (NoMBC, vec![]),
             0x01 => (Mbc1, vec![]),
             0x02 => (Mbc1, vec![Ram]),
@@ -67,19 +75,14 @@ impl From<u8> for CartridgeType {
             0xFE => (HuC3, vec![]),
             0xFF => (HuC1, vec![Ram, Battery]),
             _ => (Unknown, vec![]),
-        };
-        Self {
-            code: code,
-            mbc_type,
-            options: HashSet::from_iter(options),
         }
     }
-}
 
-const POSITION: usize = 0x0147;
+    pub fn mbc_type(self: &Self) -> MbcType {
+        self.decode().0
+    }
 
-impl CartridgeType {
-    pub fn load(rom_bytes: &[u8]) -> Self {
-        rom_bytes[POSITION].into()
+    pub fn options(self: &Self) -> Vec<CartridgeOption> {
+        self.decode().1
     }
 }
