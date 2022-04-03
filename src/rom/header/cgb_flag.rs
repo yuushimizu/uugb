@@ -1,16 +1,32 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum CGBFlag {
+pub enum CGBSupport {
     None,
     Supported,
     Only,
 }
 
+impl From<u8> for CGBSupport {
+    fn from(code: u8) -> Self {
+        use CGBSupport::*;
+        match code {
+            0x80 => Supported,
+            0xC0 => Only,
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct CGBFlag {
+    pub code: u8,
+    pub support: CGBSupport,
+}
+
 impl From<u8> for CGBFlag {
-    fn from(value: u8) -> Self {
-        match value {
-            0x80 => Self::Supported,
-            0xC0 => Self::Only,
-            _ => Self::None,
+    fn from(code: u8) -> Self {
+        Self {
+            code,
+            support: code.into(),
         }
     }
 }

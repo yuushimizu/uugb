@@ -1,10 +1,10 @@
-use super::cgb_flag::CGBFlag;
+use super::cgb_flag::{CGBFlag, CGBSupport};
 use crate::util::ascii;
 use std::ops::RangeInclusive;
 
 fn range(cgb_flag: CGBFlag) -> RangeInclusive<usize> {
-    match cgb_flag {
-        CGBFlag::None => 0x0134..=0x0143,
+    match cgb_flag.support {
+        CGBSupport::None => 0x0134..=0x0143,
         _ => 0x0134..=0x0142,
     }
 }
