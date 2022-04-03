@@ -13,7 +13,7 @@ impl From<u8> for SGBSupport {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SGBFlag {
     code: u8,
     support: SGBSupport,

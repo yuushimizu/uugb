@@ -16,7 +16,7 @@ impl From<u8> for CGBSupport {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct CGBFlag {
     pub code: u8,
     pub support: CGBSupport,

@@ -1,7 +1,7 @@
 use crate::util::ascii;
 use std::ops::RangeInclusive;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Licensee {
     pub old_code: u8,
     pub new_code: Option<[u8; 2]>,

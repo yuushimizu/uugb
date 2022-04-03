@@ -22,7 +22,7 @@ impl From<u8> for RamSizeAmount {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct RamSize {
     code: u8,
     amount: RamSizeAmount,

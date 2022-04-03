@@ -14,7 +14,7 @@ impl From<u8> for DestinationType {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Destination {
     code: u8,
     destination_type: DestinationType,

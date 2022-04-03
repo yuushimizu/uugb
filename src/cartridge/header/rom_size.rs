@@ -36,7 +36,7 @@ impl From<u8> for RomSizeAmount {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct RomSize {
     code: u8,
     amount: RomSizeAmount,

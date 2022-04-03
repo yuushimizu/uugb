@@ -24,7 +24,7 @@ pub use title::Title;
 
 use std::result;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Header {
     pub entry_point: EntryPoint,
     pub cgb_flag: CGBFlag,
