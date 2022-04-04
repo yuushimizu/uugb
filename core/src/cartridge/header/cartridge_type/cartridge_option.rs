@@ -4,7 +4,7 @@ use std::fmt;
 pub enum CartridgeOption {
     Ram,
     Battery,
-    Rtc,
+    Timer,
     Rumble,
     Sensor,
 }
@@ -18,7 +18,7 @@ impl fmt::Display for CartridgeOption {
             match self {
                 Ram => "RAM",
                 Battery => "BATTERY",
-                Rtc => "RTC",
+                Timer => "TIMER",
                 Rumble => "RUMBLE",
                 Sensor => "SENSOR",
             }

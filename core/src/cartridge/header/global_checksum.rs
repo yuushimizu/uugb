@@ -1,6 +1,4 @@
-use byteorder::{BigEndian, ReadBytesExt};
 use std::fmt;
-use std::io::Cursor;
 use std::ops::RangeInclusive;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -22,9 +20,7 @@ impl GlobalChecksum {
     }
 
     pub fn value(&self) -> u16 {
-        Cursor::new(&self.bytes)
-            .read_u16::<BigEndian>()
-            .unwrap_or(0)
+        ((self.bytes[0] as u16) << 8) | self.bytes[1] as u16
     }
 }
 

@@ -41,7 +41,7 @@ impl Default for Registers {
             d: 0xFF,
             e: 0x56,
             h: 0x00,
-            l: 0x0d,
+            l: 0x0D,
             pc: 0x0100,
             sp: 0xFFFE,
         }

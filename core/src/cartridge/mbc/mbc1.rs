@@ -46,7 +46,7 @@ impl Mbc1 {
     }
 
     fn rom_bank_number(&self) -> u8 {
-        self.rom_bank_number_lower | self.ram_bank_number_or_rom_bank_number_upper << 5
+        self.ram_bank_number_or_rom_bank_number_upper << 5 | self.rom_bank_number_lower
     }
 
     fn ram_bank_number(&self) -> u8 {
