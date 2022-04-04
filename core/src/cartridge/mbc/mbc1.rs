@@ -1,6 +1,7 @@
 use super::{Context, Mbc};
 use log;
-use std::cmp::{max, min};
+use std::cmp::max;
+use std::ops::Range;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum BankingMode {
@@ -8,10 +9,20 @@ enum BankingMode {
     Advanced,
 }
 
+impl From<u8> for BankingMode {
+    fn from(value: u8) -> Self {
+        if value & 0b1 == 0b0 {
+            Self::Simple
+        } else {
+            Self::Advanced
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct Mbc1 {
-    rom_bank: u8,
-    ram_bank_or_rom_bank_upper: u8,
+    rom_bank_number_lower: u8,
+    ram_bank_number_or_rom_bank_number_upper: u8,
     ram_enabled: bool,
     banking_mode: BankingMode,
 }
@@ -19,11 +30,47 @@ pub struct Mbc1 {
 impl Mbc1 {
     pub fn new() -> Self {
         Self {
-            rom_bank: 1,
-            ram_bank_or_rom_bank_upper: 0,
+            rom_bank_number_lower: 1,
+            ram_bank_number_or_rom_bank_number_upper: 0,
             ram_enabled: false,
             banking_mode: BankingMode::Simple,
         }
+    }
+
+    fn first_rom_bank_number(&self) -> u8 {
+        use BankingMode::*;
+        match self.banking_mode {
+            Simple => 0,
+            Advanced => self.ram_bank_number_or_rom_bank_number_upper << 5,
+        }
+    }
+
+    fn rom_bank_number(&self) -> u8 {
+        self.rom_bank_number_lower | self.ram_bank_number_or_rom_bank_number_upper << 5
+    }
+
+    fn ram_bank_number(&self) -> u8 {
+        use BankingMode::*;
+        match self.banking_mode {
+            Simple => 0,
+            Advanced => self.ram_bank_number_or_rom_bank_number_upper,
+        }
+    }
+
+    fn set_rom_bank_number_lower(&mut self, value: u8) {
+        self.rom_bank_number_lower = max(1, value & 0b0001_1111);
+    }
+
+    fn set_ram_bank_number_or_rom_bank_number_upper(&mut self, value: u8) {
+        self.ram_bank_number_or_rom_bank_number_upper = value & 0b11
+    }
+
+    fn set_ram_enabled(&mut self, value: u8) {
+        self.ram_enabled = value & 0xF == 0xA
+    }
+
+    fn set_banking_mode(&mut self, value: u8) {
+        self.banking_mode = value.into()
     }
 }
 
@@ -62,27 +109,27 @@ impl Context {
         bit_mask(((self.ram_size() as f64 / RAM_BANK_SIZE as f64).ceil() as u8).saturating_sub(1))
     }
 
-    fn ram_bank(&self, number: u8) -> &[u8] {
+    fn ram_bank_range(&self, number: u8) -> Range<usize> {
         let start = (number & self.ram_bank_mask()) as usize * RAM_BANK_SIZE;
-        &self.ram[start..start + RAM_BANK_SIZE]
+        start..start + RAM_BANK_SIZE
+    }
+
+    fn ram_bank(&self, number: u8) -> &[u8] {
+        &self.ram[self.ram_bank_range(number)]
+    }
+
+    fn ram_bank_mut(&mut self, number: u8) -> &mut [u8] {
+        let range = self.ram_bank_range(number);
+        &mut self.ram[range]
     }
 }
 
 impl Mbc for Mbc1 {
     fn read(self: &Self, context: &Context, address: u16) -> u8 {
-        use BankingMode::*;
         match address {
-            0x0000..=0x3FFF => context.rom_bank(match self.banking_mode {
-                Simple => 0,
-                Advanced => self.ram_bank_or_rom_bank_upper << 5,
-            })[address as usize],
-            0x4000..=0x7FFF => context
-                .rom_bank(self.rom_bank | self.ram_bank_or_rom_bank_upper << 5)
-                [address as usize - 0x4000],
-            0xA000..=0xBFFF => context.ram_bank(match self.banking_mode {
-                Simple => 0,
-                Advanced => self.ram_bank_or_rom_bank_upper,
-            })[address as usize - 0xA000],
+            0x0000..=0x3FFF => context.rom_bank(self.first_rom_bank_number())[address as usize],
+            0x4000..=0x7FFF => context.rom_bank(self.rom_bank_number())[address as usize - 0x4000],
+            0xA000..=0xBFFF => context.ram_bank(self.ram_bank_number())[address as usize - 0xA000],
             _ => {
                 log::warn!("MBC1: Reading from the address {:04X}", address);
                 0
@@ -92,16 +139,13 @@ impl Mbc for Mbc1 {
 
     fn write(self: &mut Self, context: &mut Context, address: u16, value: u8) {
         match address {
-            0x0000..=0x1FFF => self.ram_enabled = value & 0b1111 == 0b1010,
-            0x2000..=0x3FFF => {
-                self.rom_bank = max(1, value & context.rom_bank_mask() & 0b0001_1111);
-            }
-            0x4000..=0x5FFF => self.ram_bank_or_rom_bank_upper = value & 0b11,
-            0x6000..=0x7FFF => {
-                self.banking_mode = if value & 0b1 == 0b0 {
-                    BankingMode::Simple
-                } else {
-                    BankingMode::Advanced
+            0x0000..=0x1FFF => self.set_ram_enabled(value),
+            0x2000..=0x3FFF => self.set_rom_bank_number_lower(value),
+            0x4000..=0x5FFF => self.set_ram_bank_number_or_rom_bank_number_upper(value),
+            0x6000..=0x7FFF => self.set_banking_mode(value),
+            0xA000..=0xBFFF => {
+                if self.ram_enabled {
+                    context.ram_bank_mut(self.ram_bank_number())[address as usize] = value
                 }
             }
             _ => log::warn!(
