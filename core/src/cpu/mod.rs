@@ -1,8 +1,11 @@
 mod command;
+mod context;
 mod registers;
 
 pub use command::Command;
 pub use registers::Registers;
+
+use context::Context;
 
 use crate::memory::Memory;
 
@@ -11,16 +14,34 @@ pub struct Cpu {
     registers: Registers,
 }
 
-impl Cpu {
-    fn pop_from_pc(&mut self, memory: &mut Memory) -> u8 {
-        let opcode = memory.read(self.registers.pc);
-        self.registers.pc += 1;
-        opcode
+struct CpuContext<'a> {
+    cpu: &'a mut Cpu,
+    memory: &'a mut Memory,
+}
+
+impl<'a> Context for CpuContext<'a> {
+    fn registers(&self) -> &Registers {
+        &self.cpu.registers
     }
 
-    pub fn execute_next(&mut self, memory: &mut Memory) {
-        match self.pop_from_pc(memory) {
-            opcode => panic!("This Opcode is not implemented!: {:02X}", opcode),
-        }
+    fn registers_mut(&mut self) -> &mut Registers {
+        &mut self.cpu.registers
+    }
+
+    fn memory(&self) -> &Memory {
+        &self.memory
+    }
+
+    fn memory_mut(&mut self) -> &mut Memory {
+        &mut self.memory
+    }
+}
+
+impl Cpu {
+    pub fn step(&mut self, memory: &mut Memory) -> Command {
+        let mut context = CpuContext { cpu: self, memory };
+        let command = Command::next(&mut context);
+        command.execute(&mut context);
+        command
     }
 }

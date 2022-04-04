@@ -47,7 +47,9 @@ fn print_cartridge_info(header: &cartridge::Header) {
 fn boot(cartridge: Cartridge) {
     let mut memory = Memory::new(cartridge);
     let mut cpu = Cpu::default();
-    cpu.execute_next(&mut memory);
+    cpu.step(&mut memory);
+    cpu.step(&mut memory);
+    cpu.step(&mut memory);
 }
 
 fn main() {
