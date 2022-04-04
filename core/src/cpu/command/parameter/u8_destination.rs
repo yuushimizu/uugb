@@ -25,23 +25,20 @@ impl fmt::Debug for U8Destination {
     }
 }
 
-pub const B: U8Destination = U8Destination {
-    name: "B",
-    write: |context, value| {
-        context.registers_mut().b = value;
-    },
-};
+macro_rules! register {
+    ($name: ident, $field: ident) => {
+        pub const $name: U8Destination = U8Destination {
+            name: stringify!($name),
+            write: |context, value| {
+                context.registers_mut().$field = value;
+            },
+        };
+    };
+}
 
-pub const C: U8Destination = U8Destination {
-    name: "C",
-    write: |context, value| {
-        context.registers_mut().c = value;
-    },
-};
-
-pub const D: U8Destination = U8Destination {
-    name: "D",
-    write: |context, value| {
-        context.registers_mut().d = value;
-    },
-};
+register!(B, b);
+register!(C, c);
+register!(D, d);
+register!(E, e);
+register!(H, h);
+register!(L, l);

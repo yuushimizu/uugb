@@ -50,6 +50,9 @@ impl Command {
             0x06 => ld_n(u8_destination::B),
             0x0E => ld_n(u8_destination::C),
             0x16 => ld_n(u8_destination::D),
+            0x1E => ld_n(u8_destination::E),
+            0x26 => ld_n(u8_destination::H),
+            0x2E => ld_n(u8_destination::L),
             // Miscellaneous
             0x00 => command("NOP", 4, Box::new(|_| {})),
             // Jumps
