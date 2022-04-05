@@ -48,6 +48,11 @@ pub const LITERAL: &Indirection = &Indirection {
     address: |context| context.pop16_from_pc(),
 };
 
+pub const U8_LITERAL: &Indirection = &Indirection {
+    name: "(n)",
+    address: |context| 0xFF00 | context.pop_from_pc() as u16,
+};
+
 pub const C: &Indirection = &Indirection {
     name: "(C)",
     address: |context| 0xFF00 | context.registers().c as u16,
