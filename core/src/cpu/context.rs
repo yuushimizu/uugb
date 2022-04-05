@@ -10,14 +10,14 @@ pub trait Context {
 
     fn memory_mut(&mut self) -> &mut Memory;
 
-    fn pop_from_pc(&mut self) -> u8 {
+    fn fetch_pc(&mut self) -> u8 {
         let value = self.memory().read(self.registers().pc);
         self.registers_mut().pc += 1;
         value
     }
 
-    fn pop16_from_pc(&mut self) -> u16 {
-        self.pop_from_pc() as u16 | (self.pop_from_pc() as u16) << 8
+    fn fetch16_pc(&mut self) -> u16 {
+        self.fetch_pc() as u16 | (self.fetch_pc() as u16) << 8
     }
 
     fn read16(&mut self, address: u16) -> u16 {
@@ -29,7 +29,7 @@ pub trait Context {
         self.memory_mut().write(address + 1, (value >> 8) as u8);
     }
 
-    fn add_i8_to_sp(&mut self, n: u8) -> u16 {
+    fn add_sp(&mut self, n: u8) -> u16 {
         let sp = self.registers().sp;
         let n16 = n as i8 as u16;
         self.registers_mut().f = Flags {

@@ -69,12 +69,12 @@ register!(HL, bc);
 
 pub const LITERAL: &Indirection = &Indirection {
     name: "(nn)",
-    address: |context| context.pop16_from_pc(),
+    address: |context| context.fetch16_pc(),
 };
 
 pub const LITERAL_8: &Indirection = &Indirection {
     name: "(n)",
-    address: |context| 0xFF00 | context.pop_from_pc() as u16,
+    address: |context| 0xFF00 | context.fetch_pc() as u16,
 };
 
 pub const C: &Indirection = &Indirection {

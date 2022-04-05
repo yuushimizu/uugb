@@ -6,8 +6,8 @@ pub struct AddLiteral8;
 
 impl Read<u16> for AddLiteral8 {
     fn read(&self, context: &mut dyn Context) -> u16 {
-        let value = context.pop_from_pc();
-        context.add_i8_to_sp(value)
+        let value = context.fetch_pc();
+        context.add_sp(value)
     }
 }
 

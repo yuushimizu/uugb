@@ -6,13 +6,13 @@ pub struct Literal;
 
 impl Read<u8> for Literal {
     fn read(&self, context: &mut dyn Context) -> u8 {
-        context.pop_from_pc()
+        context.fetch_pc()
     }
 }
 
 impl Read<u16> for Literal {
     fn read(&self, context: &mut dyn Context) -> u16 {
-        context.pop16_from_pc()
+        context.fetch16_pc()
     }
 }
 

@@ -23,6 +23,6 @@ pub fn pop(destination: WriteRef<u16>) -> Operator {
 pub fn add_sp(rhs: ReadRef<u8>) -> Operator {
     Operator::new("ADD", |context| {
         let value = rhs.read(context);
-        context.registers_mut().sp = context.add_i8_to_sp(value)
+        context.registers_mut().sp = context.add_sp(value)
     })
 }

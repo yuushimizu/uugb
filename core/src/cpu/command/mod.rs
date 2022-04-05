@@ -7,6 +7,7 @@ use std::fmt;
 
 pub struct Command {
     opcode: u8,
+    sub_opcode: Option<u8>,
     operator: Operator,
     cycles: u64,
 }
@@ -26,10 +27,11 @@ impl Command {
         self.operator.execute(context)
     }
 
-    pub fn from_opcode(opcode: u8) -> Self {
+    pub fn next(context: &mut dyn Context) -> Self {
         use operand::register::*;
         use operand::*;
         use operator::*;
+        let opcode = context.fetch_pc();
         let (operator, cycles) = match opcode {
             // 8-Bit Loads
             // LD r, n
@@ -273,7 +275,7 @@ impl Command {
             // Jumps
             0xC3 => (
                 Operator::new("JP", |context| {
-                    context.registers_mut().pc = context.pop16_from_pc();
+                    context.registers_mut().pc = context.fetch16_pc();
                 }),
                 12,
             ),
@@ -282,12 +284,9 @@ impl Command {
         };
         Self {
             opcode,
+            sub_opcode: None,
             operator,
             cycles,
         }
-    }
-
-    pub fn next(context: &mut dyn Context) -> Self {
-        Self::from_opcode(context.pop_from_pc())
     }
 }
