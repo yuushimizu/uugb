@@ -14,7 +14,7 @@ pub struct Command {
 impl fmt::Debug for Command {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Command")
-            .field("name", &self.opcode)
+            .field("opcode", &self.opcode)
             .field("mnemonic", &self.mnemonic)
             .field("cycles", &self.cycles)
             .finish()
