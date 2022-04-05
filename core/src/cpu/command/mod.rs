@@ -264,6 +264,15 @@ impl Command {
                 0x24 => inc(H, 4),
                 0x2C => inc(L, 4),
                 0x34 => inc(indirection::HL, 12),
+                // DEC n
+                0x3D => dec(A, 4),
+                0x05 => dec(B, 4),
+                0x0D => dec(C, 4),
+                0x15 => dec(D, 4),
+                0x1D => dec(E, 4),
+                0x25 => dec(H, 4),
+                0x2D => dec(L, 4),
+                0x35 => dec(indirection::HL, 12),
                 // Miscellaneous
                 0x00 => command("NOP", |_| {}, 4),
                 // Jumps

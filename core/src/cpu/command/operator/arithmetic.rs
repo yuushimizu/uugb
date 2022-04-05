@@ -99,3 +99,21 @@ pub fn inc(operand: ReadWriteRef<u8>, cycles: u64) -> Content {
         cycles,
     }
 }
+
+pub fn dec(operand: ReadWriteRef<u8>, cycles: u64) -> Content {
+    Content {
+        mnemonic: "INC",
+        execute: Box::new(|context| {
+            let (current, writer) = operand.read_and_writer(context);
+            let result = current.wrapping_sub(1);
+            writer(context, result);
+            context.registers_mut().f = Flags {
+                z: result == 0,
+                n: true,
+                h: (current & 0xF).overflowing_sub(1).1,
+                ..context.registers().f
+            };
+        }),
+        cycles,
+    }
+}
