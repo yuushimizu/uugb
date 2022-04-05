@@ -16,6 +16,7 @@ impl fmt::Debug for Command {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Command")
             .field("opcode", &self.opcode)
+            .field("sub_opcode", &self.sub_opcode)
             .field("operator", &self.operator)
             .field("cycles", &self.cycles)
             .finish()
@@ -305,6 +306,7 @@ impl Command {
             0xCB => return Self::next_cb(context, opcode),
             // DDA
             0x27 => (daa(), 4),
+            // NOP
             0x00 => (Operator::new("NOP", |_| {}), 4),
             // Jumps
             0xC3 => (
