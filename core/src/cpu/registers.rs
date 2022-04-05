@@ -52,6 +52,10 @@ fn to_u16(n: u8, m: u8) -> u16 {
     (n as u16) << 8 | m as u16
 }
 
+fn to_u8s(n: u16) -> (u8, u8) {
+    ((n >> 8) as u8, (n & 0xFF) as u8)
+}
+
 impl Registers {
     pub fn bc(&self) -> u16 {
         to_u16(self.b, self.c)
@@ -63,5 +67,9 @@ impl Registers {
 
     pub fn hl(&self) -> u16 {
         to_u16(self.h, self.l)
+    }
+
+    pub fn set_hl(&mut self, value: u16) {
+        (self.h, self.l) = to_u8s(value);
     }
 }

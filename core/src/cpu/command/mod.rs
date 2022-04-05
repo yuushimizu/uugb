@@ -136,6 +136,14 @@ impl Command {
             0xF2 => ld(A, indirection::C, 8),
             // LD (C), A
             0xE2 => ld(indirection::C, A, 8),
+            // LD A, (HLD)
+            0x3A => ld(A, indirection::HLD, 8),
+            // LD (HLD), A
+            0x32 => ld(indirection::HLD, A, 8),
+            // LD A, (HLI)
+            0x2A => ld(A, indirection::HLI, 8),
+            // LD (HLI), A
+            0x22 => ld(indirection::HLI, A, 8),
             // Miscellaneous
             0x00 => command("NOP", 4, Box::new(|_| {})),
             // Jumps

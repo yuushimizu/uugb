@@ -52,3 +52,21 @@ pub const C: &Indirection = &Indirection {
     name: "(C)",
     address: |context| 0xFF00 | context.registers().c as u16,
 };
+
+pub const HLD: &Indirection = &Indirection {
+    name: "(HLD)",
+    address: |context| {
+        let address = context.registers().hl();
+        context.registers_mut().set_hl(address.wrapping_sub(1));
+        address
+    },
+};
+
+pub const HLI: &Indirection = &Indirection {
+    name: "(HLI)",
+    address: |context| {
+        let address = context.registers().hl();
+        context.registers_mut().set_hl(address.wrapping_add(1));
+        address
+    },
+};
