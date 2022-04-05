@@ -245,6 +245,16 @@ impl Command {
                 0xAD => xor(L, 4),
                 0xAE => xor(indirection::HL, 8),
                 0xEE => xor(LITERAL, 8),
+                // CP n
+                0xBF => cp(A, 4),
+                0xB8 => cp(B, 4),
+                0xB9 => cp(C, 4),
+                0xBA => cp(D, 4),
+                0xBB => cp(E, 4),
+                0xBC => cp(H, 4),
+                0xBD => cp(L, 4),
+                0xBE => cp(indirection::HL, 8),
+                0xFE => cp(LITERAL, 8),
                 // Miscellaneous
                 0x00 => command("NOP", |_| {}, 4),
                 // Jumps

@@ -42,6 +42,7 @@ fn sub_generic(
     parameter: SourceRef<u8>,
     cycles: u64,
     with_carry: bool,
+    with_result: bool,
 ) -> Content {
     Content {
         mnemonic,
@@ -51,7 +52,9 @@ fn sub_generic(
             let (result, overflow) = current.overflowing_sub(rhs);
             let carry = (with_carry && context.registers().f.c) as u8;
             let (result, carry_overflow) = result.overflowing_sub(carry);
-            context.registers_mut().a = result;
+            if with_result {
+                context.registers_mut().a = result;
+            }
             let (half_result, half_overflow) = (current & 0xF).overflowing_sub(rhs & 0xF);
             context.registers_mut().f = Flags {
                 z: result == 0,
@@ -65,9 +68,13 @@ fn sub_generic(
 }
 
 pub fn sub(parameter: SourceRef<u8>, cycles: u64) -> Content {
-    sub_generic("SUB", parameter, cycles, false)
+    sub_generic("SUB", parameter, cycles, false, true)
 }
 
 pub fn sbc(parameter: SourceRef<u8>, cycles: u64) -> Content {
-    sub_generic("SBC", parameter, cycles, true)
+    sub_generic("SBC", parameter, cycles, true, true)
+}
+
+pub fn cp(parameter: SourceRef<u8>, cycles: u64) -> Content {
+    sub_generic("CP", parameter, cycles, false, false)
 }
