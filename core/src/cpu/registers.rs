@@ -47,3 +47,9 @@ impl Default for Registers {
         }
     }
 }
+
+impl Registers {
+    pub fn hl(&self) -> u16 {
+        (self.h as u16) << 8 | self.l as u16
+    }
+}

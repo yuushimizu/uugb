@@ -1,3 +1,4 @@
+pub mod indirection;
 pub mod literal;
 pub mod register;
 pub mod u8_destination;
