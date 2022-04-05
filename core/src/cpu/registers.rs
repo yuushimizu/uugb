@@ -48,8 +48,20 @@ impl Default for Registers {
     }
 }
 
+fn to_u16(n: u8, m: u8) -> u16 {
+    (n as u16) << 8 | m as u16
+}
+
 impl Registers {
+    pub fn bc(&self) -> u16 {
+        to_u16(self.b, self.c)
+    }
+
+    pub fn de(&self) -> u16 {
+        to_u16(self.d, self.e)
+    }
+
     pub fn hl(&self) -> u16 {
-        (self.h as u16) << 8 | self.l as u16
+        to_u16(self.h, self.l)
     }
 }

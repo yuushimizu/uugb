@@ -30,7 +30,20 @@ impl U8Destination for Indirection {
     }
 }
 
-pub const HL: &Indirection = &Indirection {
-    name: "HL",
-    address: |context| context.registers().hl(),
+macro_rules! register {
+    ($name: ident, $field: ident) => {
+        pub const $name: &Indirection = &Indirection {
+            name: concat!("(", stringify!($name), ")"),
+            address: |context| context.registers().$field(),
+        };
+    };
+}
+
+register!(BC, bc);
+register!(DE, bc);
+register!(HL, bc);
+
+pub const LITERAL: &Indirection = &Indirection {
+    name: "(nn)",
+    address: |context| context.pop16_from_pc(),
 };

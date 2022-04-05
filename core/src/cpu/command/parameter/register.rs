@@ -30,7 +30,7 @@ impl U8Destination for Register {
     }
 }
 
-macro_rules! register {
+macro_rules! define {
     ($name: ident, $field: ident) => {
         pub const $name: &Register = &Register {
             name: stringify!($name),
@@ -40,10 +40,10 @@ macro_rules! register {
     };
 }
 
-register!(A, a);
-register!(B, b);
-register!(C, c);
-register!(D, d);
-register!(E, e);
-register!(H, h);
-register!(L, l);
+define!(A, a);
+define!(B, b);
+define!(C, c);
+define!(D, d);
+define!(E, e);
+define!(H, h);
+define!(L, l);
