@@ -26,11 +26,10 @@ impl Command {
         self.operator.execute(context)
     }
 
-    pub fn next(context: &mut dyn Context) -> Self {
+    pub fn from_opcode(opcode: u8) -> Self {
         use operand::register::*;
         use operand::*;
         use operator::*;
-        let opcode = context.pop_from_pc();
         let (operator, cycles) = match opcode {
             // 8-Bit Loads
             // LD r, n
@@ -271,5 +270,9 @@ impl Command {
             operator,
             cycles,
         }
+    }
+
+    pub fn next(context: &mut dyn Context) -> Self {
+        Self::from_opcode(context.pop_from_pc())
     }
 }
