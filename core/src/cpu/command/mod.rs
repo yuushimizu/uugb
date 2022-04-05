@@ -322,6 +322,9 @@ impl Command {
             0xF3 => (di(), 4),
             // EI
             0xFB => (ei(), 4),
+            // Rotates & Shifts
+            // RLCA
+            0x07 => (rlca(), 4),
             // Jumps
             0xC3 => (
                 Operator::new("JP", |context| {

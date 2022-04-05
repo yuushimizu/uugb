@@ -1,5 +1,8 @@
 use super::Operator;
-use crate::cpu::{command::operand::ReadWriteRef, registers::Flags};
+use crate::cpu::{
+    command::operand::{register, ReadWriteRef},
+    registers::Flags,
+};
 
 pub fn swap(operand: ReadWriteRef<u8>) -> Operator {
     Operator::new("SWAP", |context| {
@@ -24,4 +27,22 @@ pub fn cpl() -> Operator {
             ..context.flags()
         });
     })
+}
+
+fn rlc_u8(mnemonic: &'static str, operand: ReadWriteRef<u8>) -> Operator {
+    Operator::new(mnemonic, |context| {
+        let (current, writer) = operand.read_and_writer(context);
+        let result = current.rotate_left(1);
+        writer(context, result);
+        context.set_flags(Flags {
+            z: result == 0,
+            n: false,
+            h: false,
+            c: current & 0b1 << 7 != 0,
+        })
+    })
+}
+
+pub fn rlca() -> Operator {
+    rlc_u8("RLCA", register::A)
 }
