@@ -235,6 +235,16 @@ impl Command {
                 0xB5 => or(L, 4),
                 0xB6 => or(indirection::HL, 8),
                 0xF6 => or(LITERAL, 8),
+                // XOR n
+                0xAF => xor(A, 4),
+                0xA8 => xor(B, 4),
+                0xA9 => xor(C, 4),
+                0xAA => xor(D, 4),
+                0xAB => xor(E, 4),
+                0xAC => xor(H, 4),
+                0xAD => xor(L, 4),
+                0xAE => xor(indirection::HL, 8),
+                0xEE => xor(LITERAL, 8),
                 // Miscellaneous
                 0x00 => command("NOP", |_| {}, 4),
                 // Jumps
