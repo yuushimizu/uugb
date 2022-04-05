@@ -1,7 +1,7 @@
+mod operator;
 mod parameter;
 
 use super::Context;
-use parameter::*;
 use std::fmt;
 
 pub struct Content {
@@ -41,72 +41,15 @@ fn command(mnemonic: &'static str, execute: fn(&mut dyn Context), cycles: u64) -
     }
 }
 
-fn generic_ld<T: Copy>(
-    destination: &'static dyn Destination<T>,
-    source: &'static dyn Source<T>,
-    cycles: u64,
-) -> Content {
-    Content {
-        mnemonic: "LD",
-        execute: Box::new(|context| {
-            let writer = destination.writer(context);
-            let value = source.read(context);
-            writer(context, value);
-        }),
-        cycles,
-    }
-}
-
-fn ld(
-    destination: &'static dyn Destination<u8>,
-    source: &'static dyn Source<u8>,
-    cycles: u64,
-) -> Content {
-    generic_ld(destination, source, cycles)
-}
-
-fn ld16(
-    destination: &'static dyn Destination<u16>,
-    source: &'static dyn Source<u16>,
-    cycles: u64,
-) -> Content {
-    generic_ld(destination, source, cycles)
-}
-
-fn push(source: &'static dyn Source<u16>, cycles: u64) -> Content {
-    Content {
-        mnemonic: "PUSH",
-        execute: Box::new(|context| {
-            let value = source.read(context);
-            let address = context.registers().sp;
-            context.write16(address, value);
-            context.registers_mut().sp = address.wrapping_sub(2);
-        }),
-        cycles,
-    }
-}
-
-fn pop(destination: &'static dyn Destination<u16>, cycles: u64) -> Content {
-    Content {
-        mnemonic: "POP",
-        execute: Box::new(|context| {
-            let writer = destination.writer(context);
-            let address = context.registers().sp;
-            let value = context.read16(address);
-            writer(context, value);
-            context.registers_mut().sp = address.wrapping_add(2);
-        }),
-        cycles,
-    }
-}
-
 impl Command {
     pub fn execute(&self, context: &mut dyn Context) {
         (self.content.execute)(context)
     }
 
     pub fn next(context: &mut dyn Context) -> Self {
+        use operator::*;
         use parameter::register::*;
+        use parameter::*;
         let opcode = context.pop_from_pc();
         Self {
             opcode,
