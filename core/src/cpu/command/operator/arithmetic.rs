@@ -53,7 +53,7 @@ fn sub_u8(
             let (result, overflow) = current.overflowing_sub(n);
             let (result, carry_overflow) = result.overflowing_sub(carry);
             if with_result {
-                context.registers_mut().a = result;
+                writer(context, result);
             }
             let (half_result, half_overflow) = (current & 0xF).overflowing_sub(n & 0xF);
             context.registers_mut().f = Flags {
