@@ -195,6 +195,26 @@ impl Command {
                 0x8D => adc(L, 4),
                 0x8E => adc(indirection::HL, 8),
                 0xCE => adc(LITERAL, 8),
+                // SUB A, n
+                0x97 => sub(A, 4),
+                0x90 => sub(B, 4),
+                0x91 => sub(C, 4),
+                0x92 => sub(D, 4),
+                0x93 => sub(E, 4),
+                0x94 => sub(H, 4),
+                0x95 => sub(L, 4),
+                0x96 => sub(indirection::HL, 8),
+                0xD6 => sub(LITERAL, 8),
+                // SBC A, n
+                0x9F => sbc(A, 4),
+                0x98 => sbc(B, 4),
+                0x99 => sbc(C, 4),
+                0x9A => sbc(D, 4),
+                0x9B => sbc(E, 4),
+                0x9C => sbc(H, 4),
+                0x9D => sbc(L, 4),
+                0x9E => sbc(indirection::HL, 8),
+                0xDE => sbc(LITERAL, 8),
                 // Miscellaneous
                 0x00 => command("NOP", |_| {}, 4),
                 // Jumps
