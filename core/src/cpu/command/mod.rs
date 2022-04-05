@@ -318,6 +318,10 @@ impl Command {
             0x76 => (halt(), 4),
             // STOP
             0x10 => (stop(), 4),
+            // DI
+            0xF3 => (di(), 4),
+            // EI
+            0xFB => (ei(), 4),
             // Jumps
             0xC3 => (
                 Operator::new("JP", |context| {

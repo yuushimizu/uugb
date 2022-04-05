@@ -14,6 +14,10 @@ pub trait Context {
 
     fn stop(&mut self);
 
+    fn disable_interrupts(&mut self);
+
+    fn enable_interrupts(&mut self);
+
     fn flags(&self) -> Flags {
         self.registers().f.clone()
     }

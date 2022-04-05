@@ -44,6 +44,14 @@ impl<'a> Context for CpuContext<'a> {
     fn stop(&mut self) {
         todo!("STOP");
     }
+
+    fn disable_interrupts(&mut self) {
+        todo!("DI");
+    }
+
+    fn enable_interrupts(&mut self) {
+        todo!("EI");
+    }
 }
 
 impl Cpu {
