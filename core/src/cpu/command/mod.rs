@@ -35,17 +35,6 @@ impl Command {
                 cycles,
                 execute,
             };
-        let ld_n = |destination: U8Destination| {
-            command(
-                "LD",
-                8,
-                Box::new(move |context| {
-                    let writer = destination.writer(context);
-                    let value = context.pop_from_pc();
-                    writer(context, value);
-                }),
-            )
-        };
         let ld = |destination: U8Destination, source: U8Source, cycles: u64| {
             command(
                 "LD",
@@ -59,13 +48,14 @@ impl Command {
         };
         match opcode {
             // 8-Bit Loads
-            0x06 => ld_n(u8_destination::B),
-            0x0E => ld_n(u8_destination::C),
-            0x16 => ld_n(u8_destination::D),
-            0x1E => ld_n(u8_destination::E),
-            0x26 => ld_n(u8_destination::H),
-            0x2E => ld_n(u8_destination::L),
+            0x06 => ld(u8_destination::B, u8_source::LITERAL, 4),
+            0x0E => ld(u8_destination::C, u8_source::LITERAL, 4),
+            0x16 => ld(u8_destination::D, u8_source::LITERAL, 4),
+            0x1E => ld(u8_destination::E, u8_source::LITERAL, 4),
+            0x26 => ld(u8_destination::H, u8_source::LITERAL, 4),
+            0x2E => ld(u8_destination::L, u8_source::LITERAL, 4),
             0x7F => ld(u8_destination::A, u8_source::A, 4),
+            0x78 => ld(u8_destination::A, u8_source::B, 4),
             // Miscellaneous
             0x00 => command("NOP", 4, Box::new(|_| {})),
             // Jumps

@@ -41,3 +41,8 @@ register!(D, d);
 register!(E, e);
 register!(H, h);
 register!(L, l);
+
+pub const LITERAL: U8Source = U8Source {
+    name: "n",
+    read: |context| context.pop_from_pc(),
+};
