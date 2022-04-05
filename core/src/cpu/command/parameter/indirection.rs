@@ -1,4 +1,4 @@
-use super::{Read, Write, Writer};
+use super::{Read, ReadWrite, Write, Writer};
 use crate::cpu::Context;
 use std::fmt;
 
@@ -27,6 +27,16 @@ impl Write<u8> for Indirection {
     fn writer(&self, context: &mut dyn Context) -> Writer<u8> {
         let address = (self.address)(context);
         Box::new(move |context, value| context.memory_mut().write(address, value))
+    }
+}
+
+impl ReadWrite<u8> for Indirection {
+    fn read_and_writer(&self, context: &mut dyn Context) -> (u8, Writer<u8>) {
+        let address = (self.address)(context);
+        (
+            context.memory().read(address),
+            Box::new(move |context, value| context.memory_mut().write(address, value)),
+        )
     }
 }
 

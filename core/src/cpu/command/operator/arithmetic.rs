@@ -1,5 +1,8 @@
 use crate::cpu::{
-    command::{parameter::ReadRef, Content},
+    command::{
+        parameter::{ReadRef, ReadWriteRef},
+        Content,
+    },
     registers::Flags,
 };
 
@@ -77,4 +80,22 @@ pub fn sbc(parameter: ReadRef<u8>, cycles: u64) -> Content {
 
 pub fn cp(parameter: ReadRef<u8>, cycles: u64) -> Content {
     sub_generic("CP", parameter, cycles, false, false)
+}
+
+pub fn inc(parameter: ReadWriteRef<u8>, cycles: u64) -> Content {
+    Content {
+        mnemonic: "INC",
+        execute: Box::new(|context| {
+            let (current, writer) = parameter.read_and_writer(context);
+            let result = current.wrapping_add(1);
+            writer(context, result);
+            context.registers_mut().f = Flags {
+                z: result == 0,
+                n: false,
+                h: (current & 0xF) + 1 > 0xF,
+                ..context.registers().f
+            };
+        }),
+        cycles,
+    }
 }

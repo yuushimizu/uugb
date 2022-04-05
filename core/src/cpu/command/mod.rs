@@ -255,6 +255,15 @@ impl Command {
                 0xBD => cp(L, 4),
                 0xBE => cp(indirection::HL, 8),
                 0xFE => cp(LITERAL, 8),
+                // INC n
+                0x3C => inc(A, 4),
+                0x04 => inc(B, 4),
+                0x0C => inc(C, 4),
+                0x14 => inc(D, 4),
+                0x1C => inc(E, 4),
+                0x24 => inc(H, 4),
+                0x2C => inc(L, 4),
+                0x34 => inc(indirection::HL, 12),
                 // Miscellaneous
                 0x00 => command("NOP", |_| {}, 4),
                 // Jumps

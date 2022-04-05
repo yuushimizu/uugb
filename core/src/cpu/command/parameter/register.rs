@@ -1,10 +1,10 @@
-use super::{Read, Write, Writer};
+use super::{Read, ReadWrite, Write, Writer};
 use crate::cpu::Context;
 
 macro_rules! register {
     ($name: ident, $field: ident) => {
         mod $field {
-            use super::{Context, Read, Write, Writer};
+            use super::{Context, Read, ReadWrite, Write, Writer};
 
             #[derive(Debug, Clone)]
             pub struct $name;
@@ -18,6 +18,12 @@ macro_rules! register {
             impl Write<u8> for $name {
                 fn writer(&self, _context: &mut dyn Context) -> Writer<u8> {
                     Box::new(|context, value| context.registers_mut().$field = value)
+                }
+            }
+
+            impl ReadWrite<u8> for $name {
+                fn read_and_writer(&self, context: &mut dyn Context) -> (u8, Writer<u8>) {
+                    (self.read(context), self.writer(context))
                 }
             }
         }
