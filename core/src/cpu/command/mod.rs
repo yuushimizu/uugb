@@ -155,6 +155,9 @@ impl Command {
             // 16-Bit Loads
             // LD n, nn
             0x01 => ld16(BC, LITERAL, 12),
+            0x11 => ld16(DE, LITERAL, 12),
+            0x21 => ld16(HL, LITERAL, 12),
+            0x31 => ld16(SP, LITERAL, 12),
             // Miscellaneous
             0x00 => command("NOP", 4, Box::new(|_| {})),
             // Jumps
