@@ -259,15 +259,12 @@ impl Command {
             // ADD SP, n
             0xE8 => (add_sp(LITERAL), 16),
             // Miscellaneous
-            0x00 => (Operator::new("NOP", Box::new(|_| {})), 4),
+            0x00 => (Operator::new("NOP", |_| {}), 4),
             // Jumps
             0xC3 => (
-                Operator::new(
-                    "JP",
-                    Box::new(|context| {
-                        context.registers_mut().pc = context.pop16_from_pc();
-                    }),
-                ),
+                Operator::new("JP", |context| {
+                    context.registers_mut().pc = context.pop16_from_pc();
+                }),
                 12,
             ),
             // Not Implemented

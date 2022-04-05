@@ -5,20 +5,17 @@ use crate::cpu::{
 };
 
 fn and_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
-    Operator::new(
-        "AND",
-        Box::new(|context| {
-            let (current, writer) = lhs.read_and_writer(context);
-            let result = current & rhs.read(context);
-            writer(context, result);
-            context.registers_mut().f = Flags {
-                z: result == 0,
-                n: false,
-                h: true,
-                c: false,
-            }
-        }),
-    )
+    Operator::new("AND", |context| {
+        let (current, writer) = lhs.read_and_writer(context);
+        let result = current & rhs.read(context);
+        writer(context, result);
+        context.registers_mut().f = Flags {
+            z: result == 0,
+            n: false,
+            h: true,
+            c: false,
+        }
+    })
 }
 
 pub fn and(rhs: ReadRef<u8>) -> Operator {
@@ -26,20 +23,17 @@ pub fn and(rhs: ReadRef<u8>) -> Operator {
 }
 
 fn or_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
-    Operator::new(
-        "OR",
-        Box::new(|context| {
-            let (current, writer) = lhs.read_and_writer(context);
-            let result = current | rhs.read(context);
-            writer(context, result);
-            context.registers_mut().f = Flags {
-                z: result == 0,
-                n: false,
-                h: false,
-                c: false,
-            }
-        }),
-    )
+    Operator::new("OR", |context| {
+        let (current, writer) = lhs.read_and_writer(context);
+        let result = current | rhs.read(context);
+        writer(context, result);
+        context.registers_mut().f = Flags {
+            z: result == 0,
+            n: false,
+            h: false,
+            c: false,
+        }
+    })
 }
 
 pub fn or(rhs: ReadRef<u8>) -> Operator {
@@ -47,20 +41,17 @@ pub fn or(rhs: ReadRef<u8>) -> Operator {
 }
 
 fn xor_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
-    Operator::new(
-        "XOR",
-        Box::new(|context| {
-            let (current, writer) = lhs.read_and_writer(context);
-            let result = current ^ rhs.read(context);
-            writer(context, result);
-            context.registers_mut().f = Flags {
-                z: result == 0,
-                n: false,
-                h: false,
-                c: false,
-            }
-        }),
-    )
+    Operator::new("XOR", |context| {
+        let (current, writer) = lhs.read_and_writer(context);
+        let result = current ^ rhs.read(context);
+        writer(context, result);
+        context.registers_mut().f = Flags {
+            z: result == 0,
+            n: false,
+            h: false,
+            c: false,
+        }
+    })
 }
 
 pub fn xor(rhs: ReadRef<u8>) -> Operator {

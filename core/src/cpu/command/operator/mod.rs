@@ -25,8 +25,14 @@ impl fmt::Debug for Operator {
 }
 
 impl Operator {
-    pub fn new(mnemonic: &'static str, execute: Box<dyn Fn(&mut dyn Context)>) -> Self {
-        Self { mnemonic, execute }
+    pub fn new<E>(mnemonic: &'static str, execute: E) -> Self
+    where
+        E: Fn(&mut dyn Context) + 'static,
+    {
+        Self {
+            mnemonic,
+            execute: Box::new(execute),
+        }
     }
 
     pub fn execute(&self, context: &mut dyn Context) {
