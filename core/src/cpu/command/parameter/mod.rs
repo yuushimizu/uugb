@@ -1,9 +1,9 @@
+pub mod destination;
 pub mod indirection;
 pub mod literal;
 pub mod register;
-pub mod u8_destination;
-pub mod u8_source;
+pub mod source;
 
-pub use literal::U8_LITERAL;
-pub use u8_destination::{U8Destination, U8Writer};
-pub use u8_source::U8Source;
+pub use destination::{Destination16, Destination8, Writer16, Writer8};
+pub use literal::LITERAL;
+pub use source::{Source16, Source8};

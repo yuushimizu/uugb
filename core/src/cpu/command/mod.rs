@@ -36,9 +36,21 @@ impl Command {
                 cycles,
                 execute,
             };
-        let ld = |destination: &'static dyn U8Destination,
-                  source: &'static dyn U8Source,
-                  cycles: u64| {
+        let ld =
+            |destination: &'static dyn Destination8, source: &'static dyn Source8, cycles: u64| {
+                command(
+                    "LD",
+                    cycles,
+                    Box::new(|context| {
+                        let writer = destination.writer(context);
+                        let value = source.read(context);
+                        writer(context, value);
+                    }),
+                )
+            };
+        let ld16 = |destination: &'static dyn Destination16,
+                    source: &'static dyn Source16,
+                    cycles: u64| {
             command(
                 "LD",
                 cycles,
@@ -52,12 +64,12 @@ impl Command {
         match opcode {
             // 8-Bit Loads
             // LD r, n
-            0x06 => ld(B, U8_LITERAL, 8),
-            0x0E => ld(C, U8_LITERAL, 8),
-            0x16 => ld(D, U8_LITERAL, 8),
-            0x1E => ld(E, U8_LITERAL, 8),
-            0x26 => ld(H, U8_LITERAL, 8),
-            0x2E => ld(L, U8_LITERAL, 8),
+            0x06 => ld(B, LITERAL, 8),
+            0x0E => ld(C, LITERAL, 8),
+            0x16 => ld(D, LITERAL, 8),
+            0x1E => ld(E, LITERAL, 8),
+            0x26 => ld(H, LITERAL, 8),
+            0x2E => ld(L, LITERAL, 8),
             // LD r1, r2
             0x7F => ld(A, A, 4),
             0x78 => ld(A, B, 4),
@@ -115,12 +127,12 @@ impl Command {
             0x73 => ld(indirection::HL, E, 8),
             0x74 => ld(indirection::HL, H, 8),
             0x75 => ld(indirection::HL, L, 8),
-            0x36 => ld(indirection::HL, U8_LITERAL, 12),
+            0x36 => ld(indirection::HL, LITERAL, 12),
             // LD A, n
             0x0A => ld(A, indirection::BC, 8),
             0x1A => ld(A, indirection::DE, 8),
             0xFA => ld(A, indirection::LITERAL, 16),
-            0x3E => ld(A, U8_LITERAL, 8),
+            0x3E => ld(A, LITERAL, 8),
             // LD n, A
             0x47 => ld(B, A, 4),
             0x4F => ld(C, A, 4),
@@ -145,9 +157,12 @@ impl Command {
             // LD (HLI), A
             0x22 => ld(indirection::HLI, A, 8),
             // LDH (n), A
-            0xE0 => ld(indirection::U8_LITERAL, A, 12),
+            0xE0 => ld(indirection::LITERAL_8, A, 12),
             // LDH A, (n)
-            0xF0 => ld(A, indirection::U8_LITERAL, 12),
+            0xF0 => ld(A, indirection::LITERAL_8, 12),
+            // 16-Bit Loads
+            // LD n, nn
+            0x01 => ld16(BC, LITERAL, 12),
             // Miscellaneous
             0x00 => command("NOP", 4, Box::new(|_| {})),
             // Jumps

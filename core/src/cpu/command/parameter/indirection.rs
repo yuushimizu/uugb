@@ -1,4 +1,4 @@
-use super::{U8Destination, U8Source, U8Writer};
+use super::{Destination8, Source8, Writer8};
 use crate::cpu::Context;
 use std::fmt;
 
@@ -16,15 +16,15 @@ impl fmt::Debug for Indirection {
     }
 }
 
-impl U8Source for Indirection {
+impl Source8 for Indirection {
     fn read(&self, context: &mut dyn Context) -> u8 {
         let address = (self.address)(context);
         context.memory().read(address)
     }
 }
 
-impl U8Destination for Indirection {
-    fn writer(&self, context: &mut dyn Context) -> U8Writer {
+impl Destination8 for Indirection {
+    fn writer(&self, context: &mut dyn Context) -> Writer8 {
         let address = (self.address)(context);
         Box::new(move |context, value| context.memory_mut().write(address, value))
     }
@@ -48,7 +48,7 @@ pub const LITERAL: &Indirection = &Indirection {
     address: |context| context.pop16_from_pc(),
 };
 
-pub const U8_LITERAL: &Indirection = &Indirection {
+pub const LITERAL_8: &Indirection = &Indirection {
     name: "(n)",
     address: |context| 0xFF00 | context.pop_from_pc() as u16,
 };

@@ -1,13 +1,19 @@
-use super::U8Source;
+use super::{Source16, Source8};
 use crate::cpu::Context;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
-pub struct U8Literal;
+pub struct Literal;
 
-impl U8Source for U8Literal {
+impl Source8 for Literal {
     fn read(&self, context: &mut dyn Context) -> u8 {
         context.pop_from_pc()
     }
 }
 
-pub const U8_LITERAL: &U8Literal = &U8Literal;
+impl Source16 for Literal {
+    fn read(&self, context: &mut dyn Context) -> u16 {
+        context.pop16_from_pc()
+    }
+}
+
+pub const LITERAL: &Literal = &Literal;

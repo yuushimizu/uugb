@@ -61,8 +61,16 @@ impl Registers {
         to_u16(self.b, self.c)
     }
 
+    pub fn set_bc(&mut self, value: u16) {
+        (self.b, self.l) = to_u8s(value);
+    }
+
     pub fn de(&self) -> u16 {
         to_u16(self.d, self.e)
+    }
+
+    pub fn set_de(&mut self, value: u16) {
+        (self.d, self.e) = to_u8s(value);
     }
 
     pub fn hl(&self) -> u16 {

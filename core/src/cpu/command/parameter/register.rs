@@ -1,49 +1,85 @@
-use super::{U8Destination, U8Source, U8Writer};
+use super::{Destination16, Destination8, Source16, Source8, Writer16, Writer8};
 use crate::cpu::{Context, Registers};
-use std::fmt;
 
-#[derive(Clone)]
-pub struct Register {
-    name: &'static str,
-    read: fn(&Registers) -> u8,
-    write: fn(&mut Registers, value: u8),
-}
-
-impl fmt::Debug for Register {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Register")
-            .field("name", &self.name)
-            .finish()
-    }
-}
-
-impl U8Source for Register {
-    fn read(&self, context: &mut dyn Context) -> u8 {
-        (self.read)(context.registers())
-    }
-}
-
-impl U8Destination for Register {
-    fn writer(&self, _context: &mut dyn Context) -> U8Writer {
-        let write = self.write;
-        Box::new(move |context, value| (write)(context.registers_mut(), value))
-    }
-}
-
-macro_rules! define {
+macro_rules! register {
     ($name: ident, $field: ident) => {
-        pub const $name: &Register = &Register {
-            name: stringify!($name),
-            read: |registers| registers.$field,
-            write: |registers, value| registers.$field = value,
-        };
+        mod $field {
+            use super::{Context, Destination8, Source8, Writer8};
+
+            #[derive(Debug, Clone)]
+            pub struct $name;
+
+            impl Source8 for $name {
+                fn read(&self, context: &mut dyn Context) -> u8 {
+                    context.registers().$field
+                }
+            }
+
+            impl Destination8 for $name {
+                fn writer(&self, _context: &mut dyn Context) -> Writer8 {
+                    Box::new(|context, value| context.registers_mut().$field = value)
+                }
+            }
+        }
+
+        pub const $name: &$field::$name = &$field::$name;
     };
 }
 
-define!(A, a);
-define!(B, b);
-define!(C, c);
-define!(D, d);
-define!(E, e);
-define!(H, h);
-define!(L, l);
+register!(A, a);
+register!(B, b);
+register!(C, c);
+register!(D, d);
+register!(E, e);
+register!(H, h);
+register!(L, l);
+
+macro_rules! register_pair {
+    ($name: ident, $field: ident, $setter: ident) => {
+        mod $field {
+            use super::{Context, Destination16, Source16, Writer16};
+
+            #[derive(Debug, Clone)]
+            pub struct $name;
+
+            impl Source16 for $name {
+                fn read(&self, context: &mut dyn Context) -> u16 {
+                    context.registers().$field()
+                }
+            }
+
+            impl Destination16 for $name {
+                fn writer(&self, _context: &mut dyn Context) -> Writer16 {
+                    Box::new(|context, value| context.registers_mut().$setter(value))
+                }
+            }
+        }
+
+        pub const $name: &$field::$name = &$field::$name;
+    };
+}
+
+register_pair!(BC, bc, set_bc);
+register_pair!(DE, de, set_de);
+register_pair!(HL, hl, set_hl);
+
+mod sp {
+    use super::{Context, Destination16, Source16, Writer16};
+
+    #[derive(Debug, Clone)]
+    pub struct SP;
+
+    impl Source16 for SP {
+        fn read(&self, context: &mut dyn Context) -> u16 {
+            context.registers().sp
+        }
+    }
+
+    impl Destination16 for SP {
+        fn writer(&self, _context: &mut dyn Context) -> Writer16 {
+            Box::new(|context, value| context.registers_mut().sp = value)
+        }
+    }
+}
+
+pub const SP: &sp::SP = &sp::SP;
