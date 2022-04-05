@@ -13,16 +13,16 @@ fn add_u8(
     Operator::new(mnemonic, move |context| {
         let (current, writer) = lhs.read_and_writer(context);
         let n = rhs.read(context);
-        let carry = (with_carry && context.registers().f.c) as u8;
+        let carry = (with_carry && context.flags().c) as u8;
         let (result, overflow) = current.overflowing_add(n);
         let (result, carry_overflow) = result.overflowing_add(carry);
         writer(context, result);
-        context.registers_mut().f = Flags {
+        context.set_flags(Flags {
             z: result == 0,
             n: false,
             h: (current & 0xF) + (n & 0xF) + carry > 0xF,
             c: overflow || carry_overflow,
-        };
+        });
     })
 }
 
@@ -44,19 +44,19 @@ fn sub_u8(
     Operator::new(mnemonic, move |context| {
         let (current, writer) = lhs.read_and_writer(context);
         let n = rhs.read(context);
-        let carry = (with_carry && context.registers().f.c) as u8;
+        let carry = (with_carry && context.flags().c) as u8;
         let (result, overflow) = current.overflowing_sub(n);
         let (result, carry_overflow) = result.overflowing_sub(carry);
         if with_result {
             writer(context, result);
         }
         let (half_result, half_overflow) = (current & 0xF).overflowing_sub(n & 0xF);
-        context.registers_mut().f = Flags {
+        context.set_flags(Flags {
             z: result == 0,
             n: true,
             h: half_overflow || half_result.overflowing_sub(carry).1,
             c: overflow || carry_overflow,
-        }
+        });
     })
 }
 
@@ -77,12 +77,12 @@ pub fn inc(operand: ReadWriteRef<u8>) -> Operator {
         let (current, writer) = operand.read_and_writer(context);
         let result = current.wrapping_add(1);
         writer(context, result);
-        context.registers_mut().f = Flags {
+        context.set_flags(Flags {
             z: result == 0,
             n: false,
             h: (current & 0xF) + 1 > 0xF,
-            ..context.registers().f
-        };
+            ..context.flags()
+        });
     })
 }
 
@@ -91,12 +91,12 @@ pub fn dec(operand: ReadWriteRef<u8>) -> Operator {
         let (current, writer) = operand.read_and_writer(context);
         let result = current.wrapping_sub(1);
         writer(context, result);
-        context.registers_mut().f = Flags {
+        context.set_flags(Flags {
             z: result == 0,
             n: true,
             h: (current & 0xF).overflowing_sub(1).1,
-            ..context.registers().f
-        };
+            ..context.flags()
+        });
     })
 }
 
@@ -106,12 +106,12 @@ fn add_u16(mnemonic: &'static str, lhs: ReadWriteRef<u16>, rhs: ReadRef<u16>) ->
         let n = rhs.read(context);
         let (result, overflow) = current.overflowing_add(n);
         writer(context, result);
-        context.registers_mut().f = Flags {
+        context.set_flags(Flags {
             n: false,
             h: (current & 0x0FFF) + (n & 0x0FFF) > 0x0FFF,
             c: overflow,
-            ..context.registers().f
-        };
+            ..context.flags()
+        });
     })
 }
 

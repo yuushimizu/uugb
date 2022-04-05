@@ -10,6 +10,14 @@ pub trait Context {
 
     fn memory_mut(&mut self) -> &mut Memory;
 
+    fn flags(&self) -> Flags {
+        self.registers().f.clone()
+    }
+
+    fn set_flags(&mut self, flags: Flags) {
+        self.registers_mut().f = flags;
+    }
+
     fn fetch_pc(&mut self) -> u8 {
         let value = self.memory().read(self.registers().pc);
         self.registers_mut().pc += 1;
@@ -32,12 +40,12 @@ pub trait Context {
     fn add_sp(&mut self, n: u8) -> u16 {
         let sp = self.registers().sp;
         let n16 = n as i8 as u16;
-        self.registers_mut().f = Flags {
+        self.set_flags(Flags {
             z: false,
             n: false,
             h: ((sp & 0xF) + (n16 & 0xF)) > 0xF,
             c: ((sp & 0xFF) + (n16 & 0xFF)) > 0xFF,
-        };
+        });
         sp.wrapping_add(n16)
     }
 }

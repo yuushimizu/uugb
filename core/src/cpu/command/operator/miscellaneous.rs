@@ -6,18 +6,18 @@ pub fn swap(operand: ReadWriteRef<u8>) -> Operator {
         let (current, writer) = operand.read_and_writer(context);
         let result = current.rotate_left(4);
         writer(context, result);
-        context.registers_mut().f = Flags {
+        context.set_flags(Flags {
             z: result == 0,
             n: false,
             h: false,
             c: false,
-        }
+        });
     })
 }
 
 pub fn daa() -> Operator {
     Operator::new("DAA", |context| {
-        let flags = context.registers().f.clone();
+        let flags = context.flags();
         let current = context.registers().a;
         let adjust_higher = flags.c || (!flags.n && current > 0x99);
         let adjust_lower = flags.h || (!flags.n && current & 0xF > 0x9);
@@ -29,22 +29,33 @@ pub fn daa() -> Operator {
             current.wrapping_sub(adjust_value)
         };
         context.registers_mut().a = result;
-        context.registers_mut().f = Flags {
+        context.set_flags(Flags {
             z: result == 0,
             h: false,
             c: adjust_higher,
             ..flags
-        };
+        });
     })
 }
 
 pub fn cpl() -> Operator {
     Operator::new("CPL", |context| {
         context.registers_mut().a = !context.registers().a;
-        context.registers_mut().f = Flags {
+        context.set_flags(Flags {
             n: true,
             h: true,
-            ..context.registers().f
-        };
+            ..context.flags()
+        });
+    })
+}
+
+pub fn ccf() -> Operator {
+    Operator::new("CCF", |context| {
+        context.set_flags(Flags {
+            n: false,
+            h: false,
+            c: !context.registers().f.c,
+            ..context.flags()
+        });
     })
 }

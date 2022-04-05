@@ -308,6 +308,8 @@ impl Command {
             0x27 => (daa(), 4),
             // CPL
             0x2F => (cpl(), 4),
+            // CCF
+            0x3F => (ccf(), 4),
             // NOP
             0x00 => (Operator::new("NOP", |_| {}), 4),
             // Jumps

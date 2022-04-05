@@ -9,12 +9,12 @@ fn and_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
         let (current, writer) = lhs.read_and_writer(context);
         let result = current & rhs.read(context);
         writer(context, result);
-        context.registers_mut().f = Flags {
+        context.set_flags(Flags {
             z: result == 0,
             n: false,
             h: true,
             c: false,
-        }
+        });
     })
 }
 
@@ -27,12 +27,12 @@ fn or_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
         let (current, writer) = lhs.read_and_writer(context);
         let result = current | rhs.read(context);
         writer(context, result);
-        context.registers_mut().f = Flags {
+        context.set_flags(Flags {
             z: result == 0,
             n: false,
             h: false,
             c: false,
-        }
+        });
     })
 }
 
@@ -45,12 +45,12 @@ fn xor_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
         let (current, writer) = lhs.read_and_writer(context);
         let result = current ^ rhs.read(context);
         writer(context, result);
-        context.registers_mut().f = Flags {
+        context.set_flags(Flags {
             z: result == 0,
             n: false,
             h: false,
             c: false,
-        }
+        });
     })
 }
 
