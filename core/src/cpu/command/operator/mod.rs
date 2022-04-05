@@ -1,10 +1,12 @@
 pub mod arithmetic;
+pub mod cpu_state;
 pub mod ld;
 pub mod logic;
 pub mod miscellaneous;
 pub mod stack;
 
 pub use arithmetic::*;
+pub use cpu_state::*;
 pub use ld::*;
 pub use logic::*;
 pub use miscellaneous::*;
