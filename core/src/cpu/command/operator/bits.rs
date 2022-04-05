@@ -3,6 +3,7 @@ use crate::cpu::{
     command::operand::{register, ReadWriteRef},
     registers::Flags,
 };
+use crate::util::bits::Bits;
 
 pub fn swap(operand: ReadWriteRef<u8>) -> Operator {
     Operator::new("SWAP", |context| {
@@ -38,7 +39,7 @@ fn rlc_u8(mnemonic: &'static str, operand: ReadWriteRef<u8>) -> Operator {
             z: result == 0,
             n: false,
             h: false,
-            c: current & 0b1 << 7 != 0,
+            c: current.bit(7),
         })
     })
 }

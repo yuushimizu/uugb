@@ -1,3 +1,4 @@
+use crate::util::bits::Bits;
 use std::ops::RangeInclusive;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -30,10 +31,8 @@ impl Logo {
                         (0..COLUMNS)
                             .flat_map(|column| {
                                 (0..4).rev().map(move |bit| {
-                                    (self.bytes[block * BLOCK_SIZE + row + column * ROWS]
-                                        >> (bit_offset + bit))
-                                        & 1
-                                        == 1
+                                    self.bytes[block * BLOCK_SIZE + row + column * ROWS]
+                                        .bit(bit_offset + bit)
                                 })
                             })
                             .collect()

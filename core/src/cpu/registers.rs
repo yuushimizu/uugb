@@ -1,3 +1,5 @@
+use crate::util::bits::Bits;
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Flags {
     pub z: bool,
@@ -26,10 +28,10 @@ impl From<Flags> for u8 {
 impl From<u8> for Flags {
     fn from(byte: u8) -> Self {
         Self {
-            z: byte & 0b1 << 7 != 0,
-            n: byte & 0b1 << 6 != 0,
-            h: byte & 0b1 << 5 != 0,
-            c: byte & 0b1 << 4 != 0,
+            z: byte.bit(7),
+            n: byte.bit(6),
+            h: byte.bit(5),
+            c: byte.bit(4),
         }
     }
 }
