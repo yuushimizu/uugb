@@ -7,8 +7,8 @@ use std::fmt;
 pub struct Command {
     opcode: u8,
     mnemonic: &'static str,
-    cycles: u64,
     execute: Box<dyn Fn(&mut dyn Context)>,
+    cycles: u64,
 }
 
 impl fmt::Debug for Command {
@@ -27,12 +27,12 @@ fn ld_constructor<T: Copy>(
     Box::new(move |destination, source, cycles| Command {
         opcode,
         mnemonic: "LD",
-        cycles,
         execute: Box::new(|context| {
             let writer = destination.writer(context);
             let value = source.read(context);
             writer(context, value);
         }),
+        cycles,
     })
 }
 
@@ -44,13 +44,12 @@ impl Command {
     pub fn next(context: &mut dyn Context) -> Self {
         use parameter::register::*;
         let opcode = context.pop_from_pc();
-        let command =
-            |mnemonic: &'static str, cycles: u64, execute: Box<dyn Fn(&mut dyn Context)>| Self {
-                opcode,
-                mnemonic,
-                cycles,
-                execute,
-            };
+        let command = |mnemonic, execute: fn(&mut dyn Context), cycles| Self {
+            opcode,
+            mnemonic,
+            execute: Box::new(execute),
+            cycles,
+        };
         let ld = ld_constructor::<u8>(opcode);
         let ld16 = ld_constructor::<u16>(opcode);
         match opcode {
@@ -158,15 +157,18 @@ impl Command {
             0x11 => ld16(DE, LITERAL, 12),
             0x21 => ld16(HL, LITERAL, 12),
             0x31 => ld16(SP, LITERAL, 12),
+            // LD SP, HL
+            0xF9 => ld16(SP, HL, 8),
+            // LDHL PS, n
             // Miscellaneous
-            0x00 => command("NOP", 4, Box::new(|_| {})),
+            0x00 => command("NOP", |_| {}, 4),
             // Jumps
             0xC3 => command(
                 "JP",
-                12,
-                Box::new(|context| {
+                |context| {
                     context.registers_mut().pc = context.pop16_from_pc();
-                }),
+                },
+                12,
             ),
             // Not Implemented
             _ => panic!("This opcode is not implemented!: {:02X}", opcode),
