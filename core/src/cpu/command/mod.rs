@@ -215,6 +215,16 @@ impl Command {
                 0x9D => sbc(L, 4),
                 0x9E => sbc(indirection::HL, 8),
                 0xDE => sbc(LITERAL, 8),
+                // AND n
+                0xA7 => and(A, 4),
+                0xA0 => and(B, 4),
+                0xA1 => and(C, 4),
+                0xA2 => and(D, 4),
+                0xA3 => and(E, 4),
+                0xA4 => and(H, 4),
+                0xA5 => and(L, 4),
+                0xA6 => and(indirection::HL, 8),
+                0xE6 => and(LITERAL, 8),
                 // Miscellaneous
                 0x00 => command("NOP", |_| {}, 4),
                 // Jumps
