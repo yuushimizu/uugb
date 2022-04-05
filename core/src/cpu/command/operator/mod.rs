@@ -1,11 +1,13 @@
 pub mod arithmetic;
 pub mod ld;
 pub mod logic;
+pub mod miscellaneous;
 pub mod stack;
 
 pub use arithmetic::*;
 pub use ld::*;
 pub use logic::*;
+pub use miscellaneous::*;
 pub use stack::*;
 
 use crate::cpu::Context;

@@ -27,6 +27,36 @@ impl Command {
         self.operator.execute(context)
     }
 
+    fn next_cb(context: &mut dyn Context, opcode: u8) -> Self {
+        use operand::register::*;
+        use operand::*;
+        use operator::*;
+        let sub_opcode = context.fetch_pc();
+        let (operator, cycles) = match sub_opcode {
+            // Miscellaneous
+            // SWAP n
+            0x37 => (swap(A), 8),
+            0x30 => (swap(B), 8),
+            0x31 => (swap(C), 8),
+            0x32 => (swap(D), 8),
+            0x33 => (swap(E), 8),
+            0x34 => (swap(H), 8),
+            0x35 => (swap(L), 8),
+            0x36 => (swap(indirection::HL), 16),
+            // Not Implemented
+            _ => panic!(
+                "This opcode is not implemented!: {:02X} {:02X}",
+                opcode, sub_opcode
+            ),
+        };
+        Self {
+            opcode,
+            sub_opcode: Some(sub_opcode),
+            operator,
+            cycles,
+        }
+    }
+
     pub fn next(context: &mut dyn Context) -> Self {
         use operand::register::*;
         use operand::*;
@@ -271,6 +301,7 @@ impl Command {
             0x2B => (dec16(HL), 8),
             0x3B => (dec16(SP), 8),
             // Miscellaneous
+            0xCB => return Self::next_cb(context, opcode),
             0x00 => (Operator::new("NOP", |_| {}), 4),
             // Jumps
             0xC3 => (
