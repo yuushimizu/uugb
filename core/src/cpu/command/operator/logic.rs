@@ -1,12 +1,16 @@
 use super::Operator;
-use crate::cpu::{command::operand::ReadRef, registers::Flags};
+use crate::cpu::{
+    command::operand::{register, ReadRef, ReadWriteRef},
+    registers::Flags,
+};
 
-pub fn and(operand: ReadRef<u8>) -> Operator {
+fn and_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
     Operator {
         mnemonic: "AND",
         execute: Box::new(|context| {
-            let result = context.registers().a & operand.read(context);
-            context.registers_mut().a = result;
+            let (current, writer) = lhs.read_and_writer(context);
+            let result = current & rhs.read(context);
+            writer(context, result);
             context.registers_mut().f = Flags {
                 z: result == 0,
                 n: false,
@@ -17,12 +21,17 @@ pub fn and(operand: ReadRef<u8>) -> Operator {
     }
 }
 
-pub fn or(operand: ReadRef<u8>) -> Operator {
+pub fn and(rhs: ReadRef<u8>) -> Operator {
+    and_u8(register::A, rhs)
+}
+
+fn or_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
     Operator {
         mnemonic: "OR",
         execute: Box::new(|context| {
-            let result = context.registers().a | operand.read(context);
-            context.registers_mut().a = result;
+            let (current, writer) = lhs.read_and_writer(context);
+            let result = current | rhs.read(context);
+            writer(context, result);
             context.registers_mut().f = Flags {
                 z: result == 0,
                 n: false,
@@ -33,12 +42,17 @@ pub fn or(operand: ReadRef<u8>) -> Operator {
     }
 }
 
-pub fn xor(operand: ReadRef<u8>) -> Operator {
+pub fn or(rhs: ReadRef<u8>) -> Operator {
+    or_u8(register::A, rhs)
+}
+
+fn xor_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
     Operator {
         mnemonic: "XOR",
         execute: Box::new(|context| {
-            let result = context.registers().a ^ operand.read(context);
-            context.registers_mut().a = result;
+            let (current, writer) = lhs.read_and_writer(context);
+            let result = current ^ rhs.read(context);
+            writer(context, result);
             context.registers_mut().f = Flags {
                 z: result == 0,
                 n: false,
@@ -47,4 +61,8 @@ pub fn xor(operand: ReadRef<u8>) -> Operator {
             }
         }),
     }
+}
+
+pub fn xor(rhs: ReadRef<u8>) -> Operator {
+    xor_u8(register::A, rhs)
 }

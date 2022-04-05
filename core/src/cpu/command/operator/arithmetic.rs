@@ -1,55 +1,61 @@
 use super::Operator;
 use crate::cpu::{
-    command::operand::{ReadRef, ReadWriteRef},
+    command::operand::{register, ReadRef, ReadWriteRef},
     registers::Flags,
 };
 
-fn add_generic(mnemonic: &'static str, operand: ReadRef<u8>, with_carry: bool) -> Operator {
+fn add_u8(
+    mnemonic: &'static str,
+    lhs: ReadWriteRef<u8>,
+    rhs: ReadRef<u8>,
+    with_carry: bool,
+) -> Operator {
     Operator::new(
         mnemonic,
         Box::new(move |context| {
-            let lhs = context.registers().a;
-            let rhs = operand.read(context);
-            let (result, overflow) = lhs.overflowing_add(rhs);
+            let (current, writer) = lhs.read_and_writer(context);
+            let n = rhs.read(context);
             let carry = (with_carry && context.registers().f.c) as u8;
+            let (result, overflow) = current.overflowing_add(n);
             let (result, carry_overflow) = result.overflowing_add(carry);
-            context.registers_mut().a = result;
+            writer(context, result);
             context.registers_mut().f = Flags {
                 z: result == 0,
                 n: false,
-                h: (lhs & 0xF) + (rhs & 0xF) + carry > 0xF,
+                h: (current & 0xF) + (n & 0xF) + carry > 0xF,
                 c: overflow || carry_overflow,
             };
         }),
     )
 }
 
-pub fn add(operand: ReadRef<u8>) -> Operator {
-    add_generic("ADD", operand, false)
+pub fn add(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
+    add_u8("ADD", lhs, rhs, false)
 }
 
-pub fn adc(operand: ReadRef<u8>) -> Operator {
-    add_generic("ADC", operand, true)
+pub fn adc(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
+    add_u8("ADC", lhs, rhs, true)
 }
 
-fn sub_generic(
+fn sub_u8(
     mnemonic: &'static str,
-    operand: ReadRef<u8>,
+    lhs: ReadWriteRef<u8>,
+    rhs: ReadRef<u8>,
     with_carry: bool,
     with_result: bool,
 ) -> Operator {
     Operator::new(
         mnemonic,
         Box::new(move |context| {
-            let current = context.registers().a;
-            let rhs = operand.read(context);
-            let (result, overflow) = current.overflowing_sub(rhs);
+            let (current, writer) = lhs.read_and_writer(context);
+            let n = rhs.read(context);
             let carry = (with_carry && context.registers().f.c) as u8;
+            let (result, overflow) = current.overflowing_sub(n);
             let (result, carry_overflow) = result.overflowing_sub(carry);
             if with_result {
                 context.registers_mut().a = result;
             }
-            let (half_result, half_overflow) = (current & 0xF).overflowing_sub(rhs & 0xF);
+            let (half_result, half_overflow) = (current & 0xF).overflowing_sub(n & 0xF);
             context.registers_mut().f = Flags {
                 z: result == 0,
                 n: true,
@@ -60,16 +66,16 @@ fn sub_generic(
     )
 }
 
-pub fn sub(operand: ReadRef<u8>) -> Operator {
-    sub_generic("SUB", operand, false, true)
+pub fn sub(rhs: ReadRef<u8>) -> Operator {
+    sub_u8("SUB", register::A, rhs, false, true)
 }
 
-pub fn sbc(operand: ReadRef<u8>) -> Operator {
-    sub_generic("SBC", operand, true, true)
+pub fn sbc(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
+    sub_u8("SBC", lhs, rhs, true, true)
 }
 
-pub fn cp(operand: ReadRef<u8>) -> Operator {
-    sub_generic("CP", operand, false, false)
+pub fn cp(rhs: ReadRef<u8>) -> Operator {
+    sub_u8("CP", register::A, rhs, false, false)
 }
 
 pub fn inc(operand: ReadWriteRef<u8>) -> Operator {
