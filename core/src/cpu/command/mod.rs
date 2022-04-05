@@ -301,7 +301,10 @@ impl Command {
             0x2B => (dec16(HL), 8),
             0x3B => (dec16(SP), 8),
             // Miscellaneous
+            // CB instructions
             0xCB => return Self::next_cb(context, opcode),
+            // DDA
+            0x27 => (daa(), 4),
             0x00 => (Operator::new("NOP", |_| {}), 4),
             // Jumps
             0xC3 => (
