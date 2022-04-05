@@ -1,20 +1,13 @@
+use super::Operator;
 use crate::cpu::{
-    command::{
-        operand::{ReadRef, ReadWriteRef},
-        Content,
-    },
+    command::operand::{ReadRef, ReadWriteRef},
     registers::Flags,
 };
 
-fn add_generic(
-    mnemonic: &'static str,
-    operand: ReadRef<u8>,
-    cycles: u64,
-    with_carry: bool,
-) -> Content {
-    Content {
+fn add_generic(mnemonic: &'static str, operand: ReadRef<u8>, with_carry: bool) -> Operator {
+    Operator::new(
         mnemonic,
-        execute: Box::new(move |context| {
+        Box::new(move |context| {
             let lhs = context.registers().a;
             let rhs = operand.read(context);
             let (result, overflow) = lhs.overflowing_add(rhs);
@@ -28,28 +21,26 @@ fn add_generic(
                 c: overflow || carry_overflow,
             };
         }),
-        cycles,
-    }
+    )
 }
 
-pub fn add(operand: ReadRef<u8>, cycles: u64) -> Content {
-    add_generic("ADD", operand, cycles, false)
+pub fn add(operand: ReadRef<u8>) -> Operator {
+    add_generic("ADD", operand, false)
 }
 
-pub fn adc(operand: ReadRef<u8>, cycles: u64) -> Content {
-    add_generic("ADC", operand, cycles, true)
+pub fn adc(operand: ReadRef<u8>) -> Operator {
+    add_generic("ADC", operand, true)
 }
 
 fn sub_generic(
     mnemonic: &'static str,
     operand: ReadRef<u8>,
-    cycles: u64,
     with_carry: bool,
     with_result: bool,
-) -> Content {
-    Content {
+) -> Operator {
+    Operator::new(
         mnemonic,
-        execute: Box::new(move |context| {
+        Box::new(move |context| {
             let current = context.registers().a;
             let rhs = operand.read(context);
             let (result, overflow) = current.overflowing_sub(rhs);
@@ -66,26 +57,25 @@ fn sub_generic(
                 c: overflow || carry_overflow,
             }
         }),
-        cycles,
-    }
+    )
 }
 
-pub fn sub(operand: ReadRef<u8>, cycles: u64) -> Content {
-    sub_generic("SUB", operand, cycles, false, true)
+pub fn sub(operand: ReadRef<u8>) -> Operator {
+    sub_generic("SUB", operand, false, true)
 }
 
-pub fn sbc(operand: ReadRef<u8>, cycles: u64) -> Content {
-    sub_generic("SBC", operand, cycles, true, true)
+pub fn sbc(operand: ReadRef<u8>) -> Operator {
+    sub_generic("SBC", operand, true, true)
 }
 
-pub fn cp(operand: ReadRef<u8>, cycles: u64) -> Content {
-    sub_generic("CP", operand, cycles, false, false)
+pub fn cp(operand: ReadRef<u8>) -> Operator {
+    sub_generic("CP", operand, false, false)
 }
 
-pub fn inc(operand: ReadWriteRef<u8>, cycles: u64) -> Content {
-    Content {
-        mnemonic: "INC",
-        execute: Box::new(|context| {
+pub fn inc(operand: ReadWriteRef<u8>) -> Operator {
+    Operator::new(
+        "INC",
+        Box::new(|context| {
             let (current, writer) = operand.read_and_writer(context);
             let result = current.wrapping_add(1);
             writer(context, result);
@@ -96,14 +86,13 @@ pub fn inc(operand: ReadWriteRef<u8>, cycles: u64) -> Content {
                 ..context.registers().f
             };
         }),
-        cycles,
-    }
+    )
 }
 
-pub fn dec(operand: ReadWriteRef<u8>, cycles: u64) -> Content {
-    Content {
-        mnemonic: "INC",
-        execute: Box::new(|context| {
+pub fn dec(operand: ReadWriteRef<u8>) -> Operator {
+    Operator::new(
+        "DEC",
+        Box::new(|context| {
             let (current, writer) = operand.read_and_writer(context);
             let result = current.wrapping_sub(1);
             writer(context, result);
@@ -114,6 +103,5 @@ pub fn dec(operand: ReadWriteRef<u8>, cycles: u64) -> Content {
                 ..context.registers().f
             };
         }),
-        cycles,
-    }
+    )
 }

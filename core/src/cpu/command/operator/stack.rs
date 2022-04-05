@@ -1,10 +1,8 @@
-use crate::cpu::command::{
-    operand::{ReadRef, WriteRef},
-    Content,
-};
+use super::Operator;
+use crate::cpu::command::operand::{ReadRef, WriteRef};
 
-pub fn push(source: ReadRef<u16>, cycles: u64) -> Content {
-    Content {
+pub fn push(source: ReadRef<u16>) -> Operator {
+    Operator {
         mnemonic: "PUSH",
         execute: Box::new(|context| {
             let value = source.read(context);
@@ -12,12 +10,11 @@ pub fn push(source: ReadRef<u16>, cycles: u64) -> Content {
             context.write16(address, value);
             context.registers_mut().sp = address.wrapping_sub(2);
         }),
-        cycles,
     }
 }
 
-pub fn pop(destination: WriteRef<u16>, cycles: u64) -> Content {
-    Content {
+pub fn pop(destination: WriteRef<u16>) -> Operator {
+    Operator {
         mnemonic: "POP",
         execute: Box::new(|context| {
             let writer = destination.writer(context);
@@ -26,6 +23,5 @@ pub fn pop(destination: WriteRef<u16>, cycles: u64) -> Content {
             writer(context, value);
             context.registers_mut().sp = address.wrapping_add(2);
         }),
-        cycles,
     }
 }
