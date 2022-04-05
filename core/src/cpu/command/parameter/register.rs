@@ -1,22 +1,22 @@
-use super::{Destination16, Destination8, Source16, Source8, Writer16, Writer8};
-use crate::cpu::{Context, Registers};
+use super::{Destination, Source, Writer};
+use crate::cpu::Context;
 
 macro_rules! register {
     ($name: ident, $field: ident) => {
         mod $field {
-            use super::{Context, Destination8, Source8, Writer8};
+            use super::{Context, Destination, Source, Writer};
 
             #[derive(Debug, Clone)]
             pub struct $name;
 
-            impl Source8 for $name {
+            impl Source<u8> for $name {
                 fn read(&self, context: &mut dyn Context) -> u8 {
                     context.registers().$field
                 }
             }
 
-            impl Destination8 for $name {
-                fn writer(&self, _context: &mut dyn Context) -> Writer8 {
+            impl Destination<u8> for $name {
+                fn writer(&self, _context: &mut dyn Context) -> Writer<u8> {
                     Box::new(|context, value| context.registers_mut().$field = value)
                 }
             }
@@ -37,19 +37,19 @@ register!(L, l);
 macro_rules! register_pair {
     ($name: ident, $field: ident, $setter: ident) => {
         mod $field {
-            use super::{Context, Destination16, Source16, Writer16};
+            use super::{Context, Destination, Source, Writer};
 
             #[derive(Debug, Clone)]
             pub struct $name;
 
-            impl Source16 for $name {
+            impl Source<u16> for $name {
                 fn read(&self, context: &mut dyn Context) -> u16 {
                     context.registers().$field()
                 }
             }
 
-            impl Destination16 for $name {
-                fn writer(&self, _context: &mut dyn Context) -> Writer16 {
+            impl Destination<u16> for $name {
+                fn writer(&self, _context: &mut dyn Context) -> Writer<u16> {
                     Box::new(|context, value| context.registers_mut().$setter(value))
                 }
             }
@@ -64,19 +64,19 @@ register_pair!(DE, de, set_de);
 register_pair!(HL, hl, set_hl);
 
 mod sp {
-    use super::{Context, Destination16, Source16, Writer16};
+    use super::{Context, Destination, Source, Writer};
 
     #[derive(Debug, Clone)]
     pub struct SP;
 
-    impl Source16 for SP {
+    impl Source<u16> for SP {
         fn read(&self, context: &mut dyn Context) -> u16 {
             context.registers().sp
         }
     }
 
-    impl Destination16 for SP {
-        fn writer(&self, _context: &mut dyn Context) -> Writer16 {
+    impl Destination<u16> for SP {
+        fn writer(&self, _context: &mut dyn Context) -> Writer<u16> {
             Box::new(|context, value| context.registers_mut().sp = value)
         }
     }

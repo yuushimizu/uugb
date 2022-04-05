@@ -21,6 +21,21 @@ impl fmt::Debug for Command {
     }
 }
 
+fn ld_constructor<T: Copy>(
+    opcode: u8,
+) -> Box<dyn Fn(&'static dyn Destination<T>, &'static dyn Source<T>, u64) -> Command> {
+    Box::new(move |destination, source, cycles| Command {
+        opcode,
+        mnemonic: "LD",
+        cycles,
+        execute: Box::new(|context| {
+            let writer = destination.writer(context);
+            let value = source.read(context);
+            writer(context, value);
+        }),
+    })
+}
+
 impl Command {
     pub fn execute(&self, context: &mut dyn Context) {
         (self.execute)(context)
@@ -36,31 +51,8 @@ impl Command {
                 cycles,
                 execute,
             };
-        let ld =
-            |destination: &'static dyn Destination8, source: &'static dyn Source8, cycles: u64| {
-                command(
-                    "LD",
-                    cycles,
-                    Box::new(|context| {
-                        let writer = destination.writer(context);
-                        let value = source.read(context);
-                        writer(context, value);
-                    }),
-                )
-            };
-        let ld16 = |destination: &'static dyn Destination16,
-                    source: &'static dyn Source16,
-                    cycles: u64| {
-            command(
-                "LD",
-                cycles,
-                Box::new(|context| {
-                    let writer = destination.writer(context);
-                    let value = source.read(context);
-                    writer(context, value);
-                }),
-            )
-        };
+        let ld = ld_constructor::<u8>(opcode);
+        let ld16 = ld_constructor::<u16>(opcode);
         match opcode {
             // 8-Bit Loads
             // LD r, n
