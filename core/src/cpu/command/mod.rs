@@ -1,5 +1,5 @@
+mod operand;
 mod operator;
-mod parameter;
 
 use super::Context;
 use std::fmt;
@@ -47,9 +47,9 @@ impl Command {
     }
 
     pub fn next(context: &mut dyn Context) -> Self {
+        use operand::register::*;
+        use operand::*;
         use operator::*;
-        use parameter::register::*;
-        use parameter::*;
         let opcode = context.pop_from_pc();
         Self {
             opcode,

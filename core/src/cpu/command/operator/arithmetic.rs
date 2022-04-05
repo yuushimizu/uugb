@@ -1,6 +1,6 @@
 use crate::cpu::{
     command::{
-        parameter::{ReadRef, ReadWriteRef},
+        operand::{ReadRef, ReadWriteRef},
         Content,
     },
     registers::Flags,
@@ -8,7 +8,7 @@ use crate::cpu::{
 
 fn add_generic(
     mnemonic: &'static str,
-    parameter: ReadRef<u8>,
+    operand: ReadRef<u8>,
     cycles: u64,
     with_carry: bool,
 ) -> Content {
@@ -16,7 +16,7 @@ fn add_generic(
         mnemonic,
         execute: Box::new(move |context| {
             let lhs = context.registers().a;
-            let rhs = parameter.read(context);
+            let rhs = operand.read(context);
             let (result, overflow) = lhs.overflowing_add(rhs);
             let carry = (with_carry && context.registers().f.c) as u8;
             let (result, carry_overflow) = result.overflowing_add(carry);
@@ -32,17 +32,17 @@ fn add_generic(
     }
 }
 
-pub fn add(parameter: ReadRef<u8>, cycles: u64) -> Content {
-    add_generic("ADD", parameter, cycles, false)
+pub fn add(operand: ReadRef<u8>, cycles: u64) -> Content {
+    add_generic("ADD", operand, cycles, false)
 }
 
-pub fn adc(parameter: ReadRef<u8>, cycles: u64) -> Content {
-    add_generic("ADC", parameter, cycles, true)
+pub fn adc(operand: ReadRef<u8>, cycles: u64) -> Content {
+    add_generic("ADC", operand, cycles, true)
 }
 
 fn sub_generic(
     mnemonic: &'static str,
-    parameter: ReadRef<u8>,
+    operand: ReadRef<u8>,
     cycles: u64,
     with_carry: bool,
     with_result: bool,
@@ -51,7 +51,7 @@ fn sub_generic(
         mnemonic,
         execute: Box::new(move |context| {
             let current = context.registers().a;
-            let rhs = parameter.read(context);
+            let rhs = operand.read(context);
             let (result, overflow) = current.overflowing_sub(rhs);
             let carry = (with_carry && context.registers().f.c) as u8;
             let (result, carry_overflow) = result.overflowing_sub(carry);
@@ -70,23 +70,23 @@ fn sub_generic(
     }
 }
 
-pub fn sub(parameter: ReadRef<u8>, cycles: u64) -> Content {
-    sub_generic("SUB", parameter, cycles, false, true)
+pub fn sub(operand: ReadRef<u8>, cycles: u64) -> Content {
+    sub_generic("SUB", operand, cycles, false, true)
 }
 
-pub fn sbc(parameter: ReadRef<u8>, cycles: u64) -> Content {
-    sub_generic("SBC", parameter, cycles, true, true)
+pub fn sbc(operand: ReadRef<u8>, cycles: u64) -> Content {
+    sub_generic("SBC", operand, cycles, true, true)
 }
 
-pub fn cp(parameter: ReadRef<u8>, cycles: u64) -> Content {
-    sub_generic("CP", parameter, cycles, false, false)
+pub fn cp(operand: ReadRef<u8>, cycles: u64) -> Content {
+    sub_generic("CP", operand, cycles, false, false)
 }
 
-pub fn inc(parameter: ReadWriteRef<u8>, cycles: u64) -> Content {
+pub fn inc(operand: ReadWriteRef<u8>, cycles: u64) -> Content {
     Content {
         mnemonic: "INC",
         execute: Box::new(|context| {
-            let (current, writer) = parameter.read_and_writer(context);
+            let (current, writer) = operand.read_and_writer(context);
             let result = current.wrapping_add(1);
             writer(context, result);
             context.registers_mut().f = Flags {

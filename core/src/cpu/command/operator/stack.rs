@@ -1,5 +1,5 @@
 use crate::cpu::command::{
-    parameter::{ReadRef, WriteRef},
+    operand::{ReadRef, WriteRef},
     Content,
 };
 
