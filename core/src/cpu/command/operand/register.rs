@@ -43,7 +43,7 @@ register!(L, l);
 macro_rules! register_pair {
     ($name: ident, $field: ident, $setter: ident) => {
         mod $field {
-            use super::{Context, Read, Write, Writer};
+            use super::{Context, Read, ReadWrite, Write, Writer};
 
             #[derive(Debug, Clone)]
             pub struct $name;
@@ -57,6 +57,12 @@ macro_rules! register_pair {
             impl Write<u16> for $name {
                 fn writer(&self, _context: &mut dyn Context) -> Writer<u16> {
                     Box::new(|context, value| context.registers_mut().$setter(value))
+                }
+            }
+
+            impl ReadWrite<u16> for $name {
+                fn read_and_writer(&self, context: &mut dyn Context) -> (u16, Writer<u16>) {
+                    (self.read(context), self.writer(context))
                 }
             }
         }

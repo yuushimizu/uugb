@@ -111,3 +111,25 @@ pub fn dec(operand: ReadWriteRef<u8>) -> Operator {
         }),
     )
 }
+
+fn add_u16(mnemonic: &'static str, lhs: ReadWriteRef<u16>, rhs: ReadRef<u16>) -> Operator {
+    Operator::new(
+        mnemonic,
+        Box::new(|context| {
+            let (current, writer) = lhs.read_and_writer(context);
+            let n = rhs.read(context);
+            let (result, overflow) = current.overflowing_add(n);
+            writer(context, result);
+            context.registers_mut().f = Flags {
+                n: false,
+                h: (current & 0x0FFF) + (n & 0x0FFF) > 0x0FFF,
+                c: overflow,
+                ..context.registers().f
+            };
+        }),
+    )
+}
+
+pub fn add16(lhs: ReadWriteRef<u16>, rhs: ReadRef<u16>) -> Operator {
+    add_u16("ADD", lhs, rhs)
+}
