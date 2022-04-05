@@ -27,6 +27,7 @@ impl Command {
     }
 
     pub fn next(context: &mut dyn Context) -> Self {
+        use parameter::register::*;
         let opcode = context.pop_from_pc();
         let command =
             |mnemonic: &'static str, cycles: u64, execute: Box<dyn Fn(&mut dyn Context)>| Self {
@@ -35,11 +36,13 @@ impl Command {
                 cycles,
                 execute,
             };
-        let ld = |destination: U8Destination, source: U8Source, cycles: u64| {
+        let ld = |destination: &'static dyn U8Destination,
+                  source: &'static dyn U8Source,
+                  cycles: u64| {
             command(
                 "LD",
                 cycles,
-                Box::new(move |context| {
+                Box::new(|context| {
                     let writer = destination.writer(context);
                     let value = source.read(context);
                     writer(context, value);
@@ -48,14 +51,14 @@ impl Command {
         };
         match opcode {
             // 8-Bit Loads
-            0x06 => ld(u8_destination::B, u8_source::LITERAL, 4),
-            0x0E => ld(u8_destination::C, u8_source::LITERAL, 4),
-            0x16 => ld(u8_destination::D, u8_source::LITERAL, 4),
-            0x1E => ld(u8_destination::E, u8_source::LITERAL, 4),
-            0x26 => ld(u8_destination::H, u8_source::LITERAL, 4),
-            0x2E => ld(u8_destination::L, u8_source::LITERAL, 4),
-            0x7F => ld(u8_destination::A, u8_source::A, 4),
-            0x78 => ld(u8_destination::A, u8_source::B, 4),
+            0x06 => ld(B, U8_LITERAL, 4),
+            0x0E => ld(C, U8_LITERAL, 4),
+            0x16 => ld(D, U8_LITERAL, 4),
+            0x1E => ld(E, U8_LITERAL, 4),
+            0x26 => ld(H, U8_LITERAL, 4),
+            0x2E => ld(L, U8_LITERAL, 4),
+            0x7F => ld(A, A, 4),
+            0x78 => ld(A, B, 4),
             // Miscellaneous
             0x00 => command("NOP", 4, Box::new(|_| {})),
             // Jumps
