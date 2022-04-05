@@ -1,9 +1,9 @@
 use crate::cpu::command::{
-    parameter::{DestinationRef, SourceRef},
+    parameter::{ReadRef, WriteRef},
     Content,
 };
 
-pub fn push(source: SourceRef<u16>, cycles: u64) -> Content {
+pub fn push(source: ReadRef<u16>, cycles: u64) -> Content {
     Content {
         mnemonic: "PUSH",
         execute: Box::new(|context| {
@@ -16,7 +16,7 @@ pub fn push(source: SourceRef<u16>, cycles: u64) -> Content {
     }
 }
 
-pub fn pop(destination: DestinationRef<u16>, cycles: u64) -> Content {
+pub fn pop(destination: WriteRef<u16>, cycles: u64) -> Content {
     Content {
         mnemonic: "POP",
         execute: Box::new(|context| {

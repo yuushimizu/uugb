@@ -1,13 +1,9 @@
 use crate::cpu::command::{
-    parameter::{DestinationRef, SourceRef},
+    parameter::{ReadRef, WriteRef},
     Content,
 };
 
-fn ld_generic<T: Copy>(
-    destination: DestinationRef<T>,
-    source: SourceRef<T>,
-    cycles: u64,
-) -> Content {
+fn ld_generic<T: Copy>(destination: WriteRef<T>, source: ReadRef<T>, cycles: u64) -> Content {
     Content {
         mnemonic: "LD",
         execute: Box::new(|context| {
@@ -19,10 +15,10 @@ fn ld_generic<T: Copy>(
     }
 }
 
-pub fn ld(destination: DestinationRef<u8>, source: SourceRef<u8>, cycles: u64) -> Content {
+pub fn ld(destination: WriteRef<u8>, source: ReadRef<u8>, cycles: u64) -> Content {
     ld_generic(destination, source, cycles)
 }
 
-pub fn ld16(destination: DestinationRef<u16>, source: SourceRef<u16>, cycles: u64) -> Content {
+pub fn ld16(destination: WriteRef<u16>, source: ReadRef<u16>, cycles: u64) -> Content {
     ld_generic(destination, source, cycles)
 }

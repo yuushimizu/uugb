@@ -1,10 +1,10 @@
-use super::Source;
+use super::Read;
 use crate::cpu::{registers::Flags, Context};
 
 #[derive(Debug, Clone)]
 pub struct AddLiteral8;
 
-impl Source<u16> for AddLiteral8 {
+impl Read<u16> for AddLiteral8 {
     fn read(&self, context: &mut dyn Context) -> u16 {
         let sp = context.registers().sp;
         let n = context.pop_from_pc() as i8 as u16;

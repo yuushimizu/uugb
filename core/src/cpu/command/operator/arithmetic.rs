@@ -1,11 +1,11 @@
 use crate::cpu::{
-    command::{parameter::SourceRef, Content},
+    command::{parameter::ReadRef, Content},
     registers::Flags,
 };
 
 fn add_generic(
     mnemonic: &'static str,
-    parameter: SourceRef<u8>,
+    parameter: ReadRef<u8>,
     cycles: u64,
     with_carry: bool,
 ) -> Content {
@@ -29,17 +29,17 @@ fn add_generic(
     }
 }
 
-pub fn add(parameter: SourceRef<u8>, cycles: u64) -> Content {
+pub fn add(parameter: ReadRef<u8>, cycles: u64) -> Content {
     add_generic("ADD", parameter, cycles, false)
 }
 
-pub fn adc(parameter: SourceRef<u8>, cycles: u64) -> Content {
+pub fn adc(parameter: ReadRef<u8>, cycles: u64) -> Content {
     add_generic("ADC", parameter, cycles, true)
 }
 
 fn sub_generic(
     mnemonic: &'static str,
-    parameter: SourceRef<u8>,
+    parameter: ReadRef<u8>,
     cycles: u64,
     with_carry: bool,
     with_result: bool,
@@ -67,14 +67,14 @@ fn sub_generic(
     }
 }
 
-pub fn sub(parameter: SourceRef<u8>, cycles: u64) -> Content {
+pub fn sub(parameter: ReadRef<u8>, cycles: u64) -> Content {
     sub_generic("SUB", parameter, cycles, false, true)
 }
 
-pub fn sbc(parameter: SourceRef<u8>, cycles: u64) -> Content {
+pub fn sbc(parameter: ReadRef<u8>, cycles: u64) -> Content {
     sub_generic("SBC", parameter, cycles, true, true)
 }
 
-pub fn cp(parameter: SourceRef<u8>, cycles: u64) -> Content {
+pub fn cp(parameter: ReadRef<u8>, cycles: u64) -> Content {
     sub_generic("CP", parameter, cycles, false, false)
 }

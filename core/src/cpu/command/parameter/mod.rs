@@ -1,13 +1,28 @@
-pub mod destination;
 pub mod indirection;
 pub mod literal;
 pub mod register;
-pub mod source;
 pub mod stack_pointer;
 
-pub use destination::{Destination, Writer};
 pub use literal::LITERAL;
-pub use source::Source;
 
-pub type SourceRef<T> = &'static dyn Source<T>;
-pub type DestinationRef<T> = &'static dyn Destination<T>;
+use crate::cpu::Context;
+
+pub trait Read<T: Copy>
+where
+    Self: 'static,
+{
+    fn read(&self, context: &mut dyn Context) -> T;
+}
+
+pub type ReadRef<T> = &'static dyn Read<T>;
+
+pub type Writer<T> = Box<dyn Fn(&mut dyn Context, T)>;
+
+pub trait Write<T: Copy>
+where
+    Self: 'static,
+{
+    fn writer(&self, context: &mut dyn Context) -> Writer<T>;
+}
+
+pub type WriteRef<T> = &'static dyn Write<T>;

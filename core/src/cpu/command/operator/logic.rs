@@ -1,9 +1,9 @@
 use crate::cpu::{
-    command::{parameter::SourceRef, Content},
+    command::{parameter::ReadRef, Content},
     registers::Flags,
 };
 
-pub fn and(parameter: SourceRef<u8>, cycles: u64) -> Content {
+pub fn and(parameter: ReadRef<u8>, cycles: u64) -> Content {
     Content {
         mnemonic: "AND",
         execute: Box::new(|context| {
@@ -20,7 +20,7 @@ pub fn and(parameter: SourceRef<u8>, cycles: u64) -> Content {
     }
 }
 
-pub fn or(parameter: SourceRef<u8>, cycles: u64) -> Content {
+pub fn or(parameter: ReadRef<u8>, cycles: u64) -> Content {
     Content {
         mnemonic: "OR",
         execute: Box::new(|context| {
@@ -37,7 +37,7 @@ pub fn or(parameter: SourceRef<u8>, cycles: u64) -> Content {
     }
 }
 
-pub fn xor(parameter: SourceRef<u8>, cycles: u64) -> Content {
+pub fn xor(parameter: ReadRef<u8>, cycles: u64) -> Content {
     Content {
         mnemonic: "XOR",
         execute: Box::new(|context| {
