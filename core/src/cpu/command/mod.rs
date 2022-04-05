@@ -185,6 +185,16 @@ impl Command {
                 0x85 => add(L, 4),
                 0x86 => add(indirection::HL, 8),
                 0xC6 => add(LITERAL, 8),
+                // ADC A, n
+                0x8F => adc(A, 4),
+                0x88 => adc(B, 4),
+                0x89 => adc(C, 4),
+                0x8A => adc(D, 4),
+                0x8B => adc(E, 4),
+                0x8C => adc(H, 4),
+                0x8D => adc(L, 4),
+                0x8E => adc(indirection::HL, 8),
+                0xCE => adc(LITERAL, 8),
                 // Miscellaneous
                 0x00 => command("NOP", |_| {}, 4),
                 // Jumps

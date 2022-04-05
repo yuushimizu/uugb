@@ -19,20 +19,17 @@ impl Default for Flags {
 
 impl From<Flags> for u8 {
     fn from(flags: Flags) -> Self {
-        (if flags.z { 0b1000_0000 } else { 0 })
-            | (if flags.n { 0b0100_0000 } else { 0 })
-            | (if flags.h { 0b0010_0000 } else { 0 })
-            | (if flags.c { 0b0001_0000 } else { 0 })
+        (flags.z as u8) << 7 | (flags.n as u8) << 6 | (flags.h as u8) << 5 | (flags.c as u8) << 4
     }
 }
 
 impl From<u8> for Flags {
     fn from(byte: u8) -> Self {
         Self {
-            z: byte & 0b1000_0000 != 0,
-            n: byte & 0b0100_0000 != 0,
-            h: byte & 0b0010_0000 != 0,
-            c: byte & 0b0001_0000 != 0,
+            z: byte & 0b1 << 7 != 0,
+            n: byte & 0b1 << 6 != 0,
+            h: byte & 0b1 << 5 != 0,
+            c: byte & 0b1 << 4 != 0,
         }
     }
 }
