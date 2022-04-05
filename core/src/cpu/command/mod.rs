@@ -225,6 +225,16 @@ impl Command {
                 0xA5 => and(L, 4),
                 0xA6 => and(indirection::HL, 8),
                 0xE6 => and(LITERAL, 8),
+                // OR n
+                0xB7 => or(A, 4),
+                0xB0 => or(B, 4),
+                0xB1 => or(C, 4),
+                0xB2 => or(D, 4),
+                0xB3 => or(E, 4),
+                0xB4 => or(H, 4),
+                0xB5 => or(L, 4),
+                0xB6 => or(indirection::HL, 8),
+                0xF6 => or(LITERAL, 8),
                 // Miscellaneous
                 0x00 => command("NOP", |_| {}, 4),
                 // Jumps
