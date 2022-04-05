@@ -59,3 +59,18 @@ pub fn ccf() -> Operator {
         });
     })
 }
+
+pub fn scf() -> Operator {
+    Operator::new("SCF", |context| {
+        context.set_flags(Flags {
+            n: false,
+            h: false,
+            c: true,
+            ..context.flags()
+        });
+    })
+}
+
+pub fn nop() -> Operator {
+    Operator::new("NOP", |_context| {})
+}

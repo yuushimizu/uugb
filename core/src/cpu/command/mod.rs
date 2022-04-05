@@ -310,8 +310,10 @@ impl Command {
             0x2F => (cpl(), 4),
             // CCF
             0x3F => (ccf(), 4),
+            // SCF
+            0x37 => (scf(), 4),
             // NOP
-            0x00 => (Operator::new("NOP", |_| {}), 4),
+            0x00 => (nop(), 4),
             // Jumps
             0xC3 => (
                 Operator::new("JP", |context| {
