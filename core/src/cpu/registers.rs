@@ -17,6 +17,26 @@ impl Default for Flags {
     }
 }
 
+impl From<Flags> for u8 {
+    fn from(flags: Flags) -> Self {
+        (if flags.z { 0b1000_0000 } else { 0 })
+            | (if flags.n { 0b0100_0000 } else { 0 })
+            | (if flags.h { 0b0010_0000 } else { 0 })
+            | (if flags.c { 0b0001_0000 } else { 0 })
+    }
+}
+
+impl From<u8> for Flags {
+    fn from(byte: u8) -> Self {
+        Self {
+            z: byte & 0b1000_0000 != 0,
+            n: byte & 0b0100_0000 != 0,
+            h: byte & 0b0010_0000 != 0,
+            c: byte & 0b0001_0000 != 0,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Registers {
     pub a: u8,
@@ -57,6 +77,16 @@ fn to_u8s(n: u16) -> (u8, u8) {
 }
 
 impl Registers {
+    pub fn af(&self) -> u16 {
+        to_u16(self.a, self.f.clone().into())
+    }
+
+    pub fn set_af(&mut self, value: u16) {
+        let (a, f) = to_u8s(value);
+        self.a = a;
+        self.f = f.into();
+    }
+
     pub fn bc(&self) -> u16 {
         to_u16(self.b, self.c)
     }

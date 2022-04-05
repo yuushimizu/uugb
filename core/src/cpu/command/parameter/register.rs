@@ -59,6 +59,7 @@ macro_rules! register_pair {
     };
 }
 
+register_pair!(AF, af, set_af);
 register_pair!(BC, bc, set_bc);
 register_pair!(DE, de, set_de);
 register_pair!(HL, hl, set_hl);

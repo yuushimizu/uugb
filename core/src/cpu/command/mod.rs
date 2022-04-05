@@ -36,6 +36,35 @@ fn ld_constructor<T: Copy>(
     })
 }
 
+fn push_constructor(opcode: u8) -> Box<dyn Fn(&'static dyn Source<u16>, u64) -> Command> {
+    Box::new(move |source, cycles| Command {
+        opcode,
+        mnemonic: "PUSH",
+        execute: Box::new(|context| {
+            let value = source.read(context);
+            let address = context.registers().sp;
+            context.write16(address, value);
+            context.registers_mut().sp = address.wrapping_sub(2);
+        }),
+        cycles,
+    })
+}
+
+fn pop_constructor(opcode: u8) -> Box<dyn Fn(&'static dyn Destination<u16>, u64) -> Command> {
+    Box::new(move |destination, cycles| Command {
+        opcode,
+        mnemonic: "POP",
+        execute: Box::new(|context| {
+            let writer = destination.writer(context);
+            let address = context.registers().sp;
+            let value = context.read16(address);
+            writer(context, value);
+            context.registers_mut().sp = address.wrapping_add(2);
+        }),
+        cycles,
+    })
+}
+
 impl Command {
     pub fn execute(&self, context: &mut dyn Context) {
         (self.execute)(context)
@@ -52,6 +81,8 @@ impl Command {
         };
         let ld = ld_constructor::<u8>(opcode);
         let ld16 = ld_constructor::<u16>(opcode);
+        let push = push_constructor(opcode);
+        let pop = pop_constructor(opcode);
         match opcode {
             // 8-Bit Loads
             // LD r, n
@@ -163,6 +194,16 @@ impl Command {
             0xF8 => ld16(HL, stack_pointer::ADD_LITERAL_8, 12),
             // LD (nn), SP
             0x08 => ld16(indirection::LITERAL, SP, 20),
+            // PUSH nn
+            0xF5 => push(AF, 16),
+            0xC5 => push(BC, 16),
+            0xD5 => push(DE, 16),
+            0xE5 => push(HL, 16),
+            // POP nn
+            0xF1 => pop(AF, 12),
+            0xC1 => pop(BC, 12),
+            0xD1 => pop(DE, 12),
+            0xE1 => pop(HL, 12),
             // Miscellaneous
             0x00 => command("NOP", |_| {}, 4),
             // Jumps
