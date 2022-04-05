@@ -41,5 +41,10 @@ pub fn daa() -> Operator {
 pub fn cpl() -> Operator {
     Operator::new("CPL", |context| {
         context.registers_mut().a = !context.registers().a;
+        context.registers_mut().f = Flags {
+            n: true,
+            h: true,
+            ..context.registers().f
+        };
     })
 }
