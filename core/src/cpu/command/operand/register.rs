@@ -77,7 +77,7 @@ register_pair!(DE, de, set_de);
 register_pair!(HL, hl, set_hl);
 
 mod sp {
-    use super::{Context, Read, Write, Writer};
+    use super::{Context, Read, ReadWrite, Write, Writer};
 
     #[derive(Debug, Clone)]
     pub struct SP;
@@ -91,6 +91,12 @@ mod sp {
     impl Write<u16> for SP {
         fn writer(&self, _context: &mut dyn Context) -> Writer<u16> {
             Box::new(|context, value| context.registers_mut().sp = value)
+        }
+    }
+
+    impl ReadWrite<u16> for SP {
+        fn read_and_writer(&self, context: &mut dyn Context) -> (u16, Writer<u16>) {
+            (self.read(context), self.writer(context))
         }
     }
 }

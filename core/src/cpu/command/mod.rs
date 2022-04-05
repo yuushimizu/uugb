@@ -258,6 +258,16 @@ impl Command {
             0x39 => (add16(HL, SP), 8),
             // ADD SP, n
             0xE8 => (add_sp(LITERAL), 16),
+            // INC nn
+            0x03 => (inc16(BC), 8),
+            0x13 => (inc16(DE), 8),
+            0x23 => (inc16(HL), 8),
+            0x33 => (inc16(SP), 8),
+            // DEC nn
+            0x0B => (dec16(BC), 8),
+            0x1B => (dec16(DE), 8),
+            0x2B => (dec16(HL), 8),
+            0x3B => (dec16(SP), 8),
             // Miscellaneous
             0x00 => (Operator::new("NOP", |_| {}), 4),
             // Jumps

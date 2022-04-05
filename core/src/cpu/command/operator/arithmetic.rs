@@ -118,3 +118,17 @@ fn add_u16(mnemonic: &'static str, lhs: ReadWriteRef<u16>, rhs: ReadRef<u16>) ->
 pub fn add16(lhs: ReadWriteRef<u16>, rhs: ReadRef<u16>) -> Operator {
     add_u16("ADD", lhs, rhs)
 }
+
+pub fn inc16(operand: ReadWriteRef<u16>) -> Operator {
+    Operator::new("INC", |context| {
+        let (current, writer) = operand.read_and_writer(context);
+        writer(context, current.wrapping_add(1))
+    })
+}
+
+pub fn dec16(operand: ReadWriteRef<u16>) -> Operator {
+    Operator::new("DEC", |context| {
+        let (current, writer) = operand.read_and_writer(context);
+        writer(context, current.wrapping_sub(1))
+    })
+}
