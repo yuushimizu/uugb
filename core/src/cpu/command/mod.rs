@@ -40,8 +40,20 @@ impl Command {
                 "LD",
                 8,
                 Box::new(move |context| {
+                    let writer = destination.writer(context);
                     let value = context.pop_from_pc();
-                    destination.write(context, value);
+                    writer(context, value);
+                }),
+            )
+        };
+        let ld = |destination: U8Destination, source: U8Source, cycles: u64| {
+            command(
+                "LD",
+                cycles,
+                Box::new(move |context| {
+                    let writer = destination.writer(context);
+                    let value = source.read(context);
+                    writer(context, value);
                 }),
             )
         };
@@ -53,6 +65,7 @@ impl Command {
             0x1E => ld_n(u8_destination::E),
             0x26 => ld_n(u8_destination::H),
             0x2E => ld_n(u8_destination::L),
+            0x7F => ld(u8_destination::A, u8_source::A, 4),
             // Miscellaneous
             0x00 => command("NOP", 4, Box::new(|_| {})),
             // Jumps

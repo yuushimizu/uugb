@@ -1,27 +1,25 @@
 use super::super::Context;
 use std::fmt;
 
-pub type Writer = fn(context: &mut dyn Context, value: u8);
-
 #[derive(Clone, Copy)]
-pub struct U8Destination {
+pub struct U8Source {
     name: &'static str,
-    writer: fn(context: &mut dyn Context) -> Writer,
+    read: fn(&mut dyn Context) -> u8,
 }
 
-impl U8Destination {
+impl U8Source {
     pub fn name(&self) -> &str {
         self.name
     }
 
-    pub fn writer(&self, context: &mut dyn Context) -> Writer {
-        (self.writer)(context)
+    pub fn read(&self, context: &mut dyn Context) -> u8 {
+        (self.read)(context)
     }
 }
 
-impl fmt::Debug for U8Destination {
+impl fmt::Debug for U8Source {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("U8Destination")
+        f.debug_struct("U8Source")
             .field("name", &self.name)
             .finish()
     }
@@ -29,9 +27,9 @@ impl fmt::Debug for U8Destination {
 
 macro_rules! register {
     ($name: ident, $field: ident) => {
-        pub const $name: U8Destination = U8Destination {
+        pub const $name: U8Source = U8Source {
             name: stringify!($name),
-            writer: |_context| |context, value| context.registers_mut().$field = value,
+            read: |context| context.registers().$field,
         };
     };
 }
