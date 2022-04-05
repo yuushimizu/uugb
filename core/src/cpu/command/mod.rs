@@ -159,8 +159,10 @@ impl Command {
             0x31 => ld16(SP, LITERAL, 12),
             // LD SP, HL
             0xF9 => ld16(SP, HL, 8),
-            // LD HL SP+n
+            // LD HL, SP+n
             0xF8 => ld16(HL, stack_pointer::ADD_LITERAL_8, 12),
+            // LD (nn), SP
+            0x08 => ld16(indirection::LITERAL, SP, 20),
             // Miscellaneous
             0x00 => command("NOP", |_| {}, 4),
             // Jumps

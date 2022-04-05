@@ -30,6 +30,20 @@ impl Destination<u8> for Indirection {
     }
 }
 
+impl Source<u16> for Indirection {
+    fn read(&self, context: &mut dyn Context) -> u16 {
+        let address = (self.address)(context);
+        context.read16(address)
+    }
+}
+
+impl Destination<u16> for Indirection {
+    fn writer(&self, context: &mut dyn Context) -> Writer<u16> {
+        let address = (self.address)(context);
+        Box::new(move |context, value| context.write16(address, value))
+    }
+}
+
 macro_rules! register {
     ($name: ident, $field: ident) => {
         pub const $name: &Indirection = &Indirection {

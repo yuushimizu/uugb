@@ -19,4 +19,13 @@ pub trait Context {
     fn pop16_from_pc(&mut self) -> u16 {
         self.pop_from_pc() as u16 | (self.pop_from_pc() as u16) << 8
     }
+
+    fn read16(&mut self, address: u16) -> u16 {
+        self.memory().read(address) as u16 | (self.memory().read(address + 1) as u16) << 8
+    }
+
+    fn write16(&mut self, address: u16, value: u16) {
+        self.memory_mut().write(address, (value & 0xFF) as u8);
+        self.memory_mut().write(address + 1, (value >> 8) as u8);
+    }
 }
