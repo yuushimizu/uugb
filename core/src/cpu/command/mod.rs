@@ -251,10 +251,13 @@ impl Command {
             0x2D => (dec(L), 4),
             0x35 => (dec(indirection::HL), 12),
             // 16-Bit Arithmetic
+            // ADD HL, n
             0x09 => (add16(HL, BC), 8),
             0x19 => (add16(HL, DE), 8),
             0x29 => (add16(HL, HL), 8),
             0x39 => (add16(HL, SP), 8),
+            // ADD SP, n
+            0xE8 => (add_sp(LITERAL), 16),
             // Miscellaneous
             0x00 => (Operator::new("NOP", Box::new(|_| {})), 4),
             // Jumps

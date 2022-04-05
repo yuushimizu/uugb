@@ -5,9 +5,9 @@ use crate::cpu::{
 };
 
 fn and_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
-    Operator {
-        mnemonic: "AND",
-        execute: Box::new(|context| {
+    Operator::new(
+        "AND",
+        Box::new(|context| {
             let (current, writer) = lhs.read_and_writer(context);
             let result = current & rhs.read(context);
             writer(context, result);
@@ -18,7 +18,7 @@ fn and_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
                 c: false,
             }
         }),
-    }
+    )
 }
 
 pub fn and(rhs: ReadRef<u8>) -> Operator {
@@ -26,9 +26,9 @@ pub fn and(rhs: ReadRef<u8>) -> Operator {
 }
 
 fn or_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
-    Operator {
-        mnemonic: "OR",
-        execute: Box::new(|context| {
+    Operator::new(
+        "OR",
+        Box::new(|context| {
             let (current, writer) = lhs.read_and_writer(context);
             let result = current | rhs.read(context);
             writer(context, result);
@@ -39,7 +39,7 @@ fn or_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
                 c: false,
             }
         }),
-    }
+    )
 }
 
 pub fn or(rhs: ReadRef<u8>) -> Operator {
@@ -47,9 +47,9 @@ pub fn or(rhs: ReadRef<u8>) -> Operator {
 }
 
 fn xor_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
-    Operator {
-        mnemonic: "XOR",
-        execute: Box::new(|context| {
+    Operator::new(
+        "XOR",
+        Box::new(|context| {
             let (current, writer) = lhs.read_and_writer(context);
             let result = current ^ rhs.read(context);
             writer(context, result);
@@ -60,7 +60,7 @@ fn xor_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
                 c: false,
             }
         }),
-    }
+    )
 }
 
 pub fn xor(rhs: ReadRef<u8>) -> Operator {
