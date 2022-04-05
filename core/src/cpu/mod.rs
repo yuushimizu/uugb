@@ -36,6 +36,14 @@ impl<'a> Context for CpuContext<'a> {
     fn memory_mut(&mut self) -> &mut Memory {
         &mut self.memory
     }
+
+    fn halt(&mut self) {
+        todo!("HALT");
+    }
+
+    fn stop(&mut self) {
+        todo!("STOP");
+    }
 }
 
 impl Cpu {

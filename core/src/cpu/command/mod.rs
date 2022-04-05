@@ -314,6 +314,10 @@ impl Command {
             0x37 => (scf(), 4),
             // NOP
             0x00 => (nop(), 4),
+            // HALT
+            0x76 => (halt(), 4),
+            // STOP
+            0x10 => (stop(), 4),
             // Jumps
             0xC3 => (
                 Operator::new("JP", |context| {

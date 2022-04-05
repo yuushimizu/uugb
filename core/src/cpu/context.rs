@@ -10,6 +10,10 @@ pub trait Context {
 
     fn memory_mut(&mut self) -> &mut Memory;
 
+    fn halt(&mut self);
+
+    fn stop(&mut self);
+
     fn flags(&self) -> Flags {
         self.registers().f.clone()
     }

@@ -74,3 +74,11 @@ pub fn scf() -> Operator {
 pub fn nop() -> Operator {
     Operator::new("NOP", |_context| {})
 }
+
+pub fn halt() -> Operator {
+    Operator::new("HALT", |context| context.halt())
+}
+
+pub fn stop() -> Operator {
+    Operator::new("STOP", |context| context.stop())
+}
