@@ -1,5 +1,5 @@
-use super::super::super::Registers;
-use super::{Context, U8Destination, U8Source, U8Writer};
+use super::{U8Destination, U8Source, U8Writer};
+use crate::cpu::{Context, Registers};
 use std::fmt;
 
 #[derive(Clone)]

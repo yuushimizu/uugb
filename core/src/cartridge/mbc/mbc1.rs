@@ -1,4 +1,5 @@
-use super::{Context, Mbc};
+use super::Mbc;
+use crate::cartridge::Context;
 use log;
 use std::cmp::max;
 use std::ops::Range;

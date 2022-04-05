@@ -1,4 +1,5 @@
-use super::{Context, U8Source};
+use super::U8Source;
+use crate::cpu::Context;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct U8Literal;

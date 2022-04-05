@@ -51,14 +51,20 @@ impl Command {
         };
         match opcode {
             // 8-Bit Loads
+            // LD r, n
             0x06 => ld(B, U8_LITERAL, 4),
             0x0E => ld(C, U8_LITERAL, 4),
             0x16 => ld(D, U8_LITERAL, 4),
             0x1E => ld(E, U8_LITERAL, 4),
             0x26 => ld(H, U8_LITERAL, 4),
             0x2E => ld(L, U8_LITERAL, 4),
+            // LD r1, r2
             0x7F => ld(A, A, 4),
             0x78 => ld(A, B, 4),
+            0x79 => ld(A, C, 4),
+            0x7A => ld(A, D, 4),
+            0x7B => ld(A, E, 4),
+            0x7C => ld(A, H, 4),
             // Miscellaneous
             0x00 => command("NOP", 4, Box::new(|_| {})),
             // Jumps

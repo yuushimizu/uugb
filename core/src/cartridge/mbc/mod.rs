@@ -2,12 +2,12 @@ mod mbc1;
 
 pub use mbc1::Mbc1;
 
-use super::context::Context;
-use std::fmt::Debug;
+use super::Context;
+use std::fmt;
 
 pub trait Mbc
 where
-    Self: Debug,
+    Self: fmt::Debug,
 {
     fn read(&self, context: &Context, address: u16) -> u8;
 
