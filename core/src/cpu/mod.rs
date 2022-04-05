@@ -1,6 +1,7 @@
+pub mod registers;
+
 mod command;
 mod context;
-mod registers;
 
 pub use command::Command;
 pub use registers::Registers;

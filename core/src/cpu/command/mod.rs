@@ -174,6 +174,17 @@ impl Command {
                 0xC1 => pop(BC, 12),
                 0xD1 => pop(DE, 12),
                 0xE1 => pop(HL, 12),
+                // 8-Bit ALU
+                // ADD A, n
+                0x87 => add(A, 4),
+                0x80 => add(B, 4),
+                0x81 => add(C, 4),
+                0x82 => add(D, 4),
+                0x83 => add(E, 4),
+                0x84 => add(H, 4),
+                0x85 => add(L, 4),
+                0x86 => add(indirection::HL, 8),
+                0xC6 => add(LITERAL, 8),
                 // Miscellaneous
                 0x00 => command("NOP", |_| {}, 4),
                 // Jumps
