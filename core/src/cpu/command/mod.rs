@@ -325,6 +325,8 @@ impl Command {
             // Rotates & Shifts
             // RLCA
             0x07 => (rlca(), 4),
+            // RLA
+            0x17 => (rla(), 4),
             // Jumps
             0xC3 => (
                 Operator::new("JP", |context| {

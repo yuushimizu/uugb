@@ -47,3 +47,21 @@ fn rlc_u8(mnemonic: &'static str, operand: ReadWriteRef<u8>) -> Operator {
 pub fn rlca() -> Operator {
     rlc_u8("RLCA", register::A)
 }
+
+fn rl_u8(mnemonic: &'static str, operand: ReadWriteRef<u8>) -> Operator {
+    Operator::new(mnemonic, |context| {
+        let (current, writer) = operand.read_and_writer(context);
+        let result = current << 1 | (context.flags().c as u8);
+        writer(context, result);
+        context.set_flags(Flags {
+            z: result == 0,
+            n: false,
+            h: false,
+            c: current.bit(7),
+        })
+    })
+}
+
+pub fn rla() -> Operator {
+    rl_u8("RLA", register::A)
+}
