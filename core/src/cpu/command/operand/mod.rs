@@ -3,9 +3,9 @@ pub mod literal;
 pub mod register;
 pub mod stack_pointer;
 
-pub use indirection::{Indirection, IndirectionRef};
+pub use indirection::Indirection;
 pub use literal::LITERAL;
-pub use register::{Register, RegisterRef};
+pub use register::Register;
 
 use crate::cpu::Context;
 

@@ -48,8 +48,6 @@ impl<T: Value> ReadWrite<T> for Register<T> {
     }
 }
 
-pub type RegisterRef<T> = &'static Register<T>;
-
 macro_rules! register {
     ($name: ident, $field: ident) => {
         pub const $name: &Register<u8> = &Register {

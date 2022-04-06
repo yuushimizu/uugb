@@ -74,8 +74,6 @@ impl Write<u16> for Indirection {
     }
 }
 
-pub type IndirectionRef = &'static Indirection;
-
 macro_rules! register {
     ($name: ident, $field: ident) => {
         pub const $name: &Indirection = &Indirection {
