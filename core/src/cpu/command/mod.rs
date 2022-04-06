@@ -65,14 +65,12 @@ impl Command {
         let opcode = context.fetch_pc();
         let (operator, cycles) = match opcode {
             // 8-Bit Loads
-            // LD r, n
             0x06 => (ld(B, LITERAL), 8),
             0x0E => (ld(C, LITERAL), 8),
             0x16 => (ld(D, LITERAL), 8),
             0x1E => (ld(E, LITERAL), 8),
             0x26 => (ld(H, LITERAL), 8),
             0x2E => (ld(L, LITERAL), 8),
-            // LD r1, r2
             0x7F => (ld(A, A), 4),
             0x78 => (ld(A, B), 4),
             0x79 => (ld(A, C), 4),
@@ -130,12 +128,10 @@ impl Command {
             0x74 => (ld(indirection::HL, H), 8),
             0x75 => (ld(indirection::HL, L), 8),
             0x36 => (ld(indirection::HL, LITERAL), 12),
-            // LD A, n
             0x0A => (ld(A, indirection::BC), 8),
             0x1A => (ld(A, indirection::DE), 8),
             0xFA => (ld(A, indirection::LITERAL), 16),
             0x3E => (ld(A, LITERAL), 8),
-            // LD n, A
             0x47 => (ld(B, A), 4),
             0x4F => (ld(C, A), 4),
             0x57 => (ld(D, A), 4),
@@ -146,46 +142,31 @@ impl Command {
             0x12 => (ld(indirection::DE, A), 8),
             0x77 => (ld(indirection::HL, A), 8),
             0xEA => (ld(indirection::LITERAL, A), 16),
-            // LD A, (C)
             0xF2 => (ld(A, indirection::C), 8),
-            // LD (C), A
             0xE2 => (ld(indirection::C, A), 8),
-            // LD A, (HLD)
             0x3A => (ld(A, indirection::HLD), 8),
-            // LD (HLD), A
             0x32 => (ld(indirection::HLD, A), 8),
-            // LD A, (HLI)
             0x2A => (ld(A, indirection::HLI), 8),
-            // LD (HLI), A
             0x22 => (ld(indirection::HLI, A), 8),
-            // LDH (n), A
             0xE0 => (ld(indirection::LITERAL_8, A), 12),
-            // LDH A, (n)
             0xF0 => (ld(A, indirection::LITERAL_8), 12),
             // 16-Bit Loads
-            // LD n, nn
             0x01 => (ld16(BC, LITERAL), 12),
             0x11 => (ld16(DE, LITERAL), 12),
             0x21 => (ld16(HL, LITERAL), 12),
             0x31 => (ld16(SP, LITERAL), 12),
-            // LD SP, HL
             0xF9 => (ld16(SP, HL), 8),
-            // LD HL, SP+n
             0xF8 => (ld16(HL, stack_pointer::ADD_LITERAL_8), 12),
-            // LD (nn), SP
             0x08 => (ld16(indirection::LITERAL, SP), 20),
-            // PUSH nn
             0xF5 => (push(AF), 16),
             0xC5 => (push(BC), 16),
             0xD5 => (push(DE), 16),
             0xE5 => (push(HL), 16),
-            // POP nn
             0xF1 => (pop(AF), 12),
             0xC1 => (pop(BC), 12),
             0xD1 => (pop(DE), 12),
             0xE1 => (pop(HL), 12),
             // 8-Bit ALU
-            // ADD A, n
             0x87 => (add(A, A), 4),
             0x80 => (add(A, B), 4),
             0x81 => (add(A, C), 4),
@@ -195,7 +176,6 @@ impl Command {
             0x85 => (add(A, L), 4),
             0x86 => (add(A, indirection::HL), 8),
             0xC6 => (add(A, LITERAL), 8),
-            // ADC A, n
             0x8F => (adc(A, A), 4),
             0x88 => (adc(A, B), 4),
             0x89 => (adc(A, C), 4),
@@ -205,7 +185,6 @@ impl Command {
             0x8D => (adc(A, L), 4),
             0x8E => (adc(A, indirection::HL), 8),
             0xCE => (adc(A, LITERAL), 8),
-            // SUB n
             0x97 => (sub(A), 4),
             0x90 => (sub(B), 4),
             0x91 => (sub(C), 4),
@@ -215,7 +194,6 @@ impl Command {
             0x95 => (sub(L), 4),
             0x96 => (sub(indirection::HL), 8),
             0xD6 => (sub(LITERAL), 8),
-            // SBC A, n
             0x9F => (sbc(A, A), 4),
             0x98 => (sbc(A, B), 4),
             0x99 => (sbc(A, C), 4),
@@ -225,7 +203,6 @@ impl Command {
             0x9D => (sbc(A, L), 4),
             0x9E => (sbc(A, indirection::HL), 8),
             0xDE => (sbc(A, LITERAL), 8),
-            // AND n
             0xA7 => (and(A), 4),
             0xA0 => (and(B), 4),
             0xA1 => (and(C), 4),
@@ -235,7 +212,6 @@ impl Command {
             0xA5 => (and(L), 4),
             0xA6 => (and(indirection::HL), 8),
             0xE6 => (and(LITERAL), 8),
-            // OR n
             0xB7 => (or(A), 4),
             0xB0 => (or(B), 4),
             0xB1 => (or(C), 4),
@@ -245,7 +221,6 @@ impl Command {
             0xB5 => (or(L), 4),
             0xB6 => (or(indirection::HL), 8),
             0xF6 => (or(LITERAL), 8),
-            // XOR n
             0xAF => (xor(A), 4),
             0xA8 => (xor(B), 4),
             0xA9 => (xor(C), 4),
@@ -255,7 +230,6 @@ impl Command {
             0xAD => (xor(L), 4),
             0xAE => (xor(indirection::HL), 8),
             0xEE => (xor(LITERAL), 8),
-            // CP n
             0xBF => (cp(A), 4),
             0xB8 => (cp(B), 4),
             0xB9 => (cp(C), 4),
@@ -265,7 +239,6 @@ impl Command {
             0xBD => (cp(L), 4),
             0xBE => (cp(indirection::HL), 8),
             0xFE => (cp(LITERAL), 8),
-            // INC n
             0x3C => (inc(A), 4),
             0x04 => (inc(B), 4),
             0x0C => (inc(C), 4),
@@ -274,7 +247,6 @@ impl Command {
             0x24 => (inc(H), 4),
             0x2C => (inc(L), 4),
             0x34 => (inc(indirection::HL), 12),
-            // DEC n
             0x3D => (dec(A), 4),
             0x05 => (dec(B), 4),
             0x0D => (dec(C), 4),
@@ -284,49 +256,35 @@ impl Command {
             0x2D => (dec(L), 4),
             0x35 => (dec(indirection::HL), 12),
             // 16-Bit Arithmetic
-            // ADD HL, n
             0x09 => (add16(HL, BC), 8),
             0x19 => (add16(HL, DE), 8),
             0x29 => (add16(HL, HL), 8),
             0x39 => (add16(HL, SP), 8),
-            // ADD SP, n
             0xE8 => (add_sp(LITERAL), 16),
-            // INC nn
             0x03 => (inc16(BC), 8),
             0x13 => (inc16(DE), 8),
             0x23 => (inc16(HL), 8),
             0x33 => (inc16(SP), 8),
-            // DEC nn
             0x0B => (dec16(BC), 8),
             0x1B => (dec16(DE), 8),
             0x2B => (dec16(HL), 8),
             0x3B => (dec16(SP), 8),
             // Miscellaneous
-            // CB instructions
             0xCB => return Self::next_cb(context, opcode),
-            // DDA
             0x27 => (daa(), 4),
-            // CPL
             0x2F => (cpl(), 4),
-            // CCF
             0x3F => (ccf(), 4),
-            // SCF
             0x37 => (scf(), 4),
-            // NOP
             0x00 => (nop(), 4),
-            // HALT
             0x76 => (halt(), 4),
-            // STOP
             0x10 => (stop(), 4),
-            // DI
             0xF3 => (di(), 4),
-            // EI
             0xFB => (ei(), 4),
             // Rotates & Shifts
-            // RLCA
             0x07 => (rlca(), 4),
-            // RLA
             0x17 => (rla(), 4),
+            0x0F => (rrca(), 4),
+            0x1F => (rra(), 4),
             // Jumps
             0xC3 => (
                 Operator::new("JP", |context| {

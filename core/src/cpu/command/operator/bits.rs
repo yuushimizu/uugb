@@ -30,10 +30,14 @@ pub fn cpl() -> Operator {
     })
 }
 
-fn rlc_u8(mnemonic: &'static str, operand: ReadWriteRef<u8>) -> Operator {
-    Operator::new(mnemonic, |context| {
+fn rl_u8(mnemonic: &'static str, operand: ReadWriteRef<u8>, with_carry: bool) -> Operator {
+    Operator::new(mnemonic, move |context| {
         let (current, writer) = operand.read_and_writer(context);
-        let result = current.rotate_left(1);
+        let result = if with_carry {
+            current << 1 | context.flags().c as u8
+        } else {
+            current.rotate_left(1)
+        };
         writer(context, result);
         context.set_flags(Flags {
             z: result == 0,
@@ -45,23 +49,35 @@ fn rlc_u8(mnemonic: &'static str, operand: ReadWriteRef<u8>) -> Operator {
 }
 
 pub fn rlca() -> Operator {
-    rlc_u8("RLCA", register::A)
+    rl_u8("RLCA", register::A, false)
 }
 
-fn rl_u8(mnemonic: &'static str, operand: ReadWriteRef<u8>) -> Operator {
-    Operator::new(mnemonic, |context| {
+pub fn rla() -> Operator {
+    rl_u8("RLA", register::A, true)
+}
+
+fn rr_u8(mnemonic: &'static str, operand: ReadWriteRef<u8>, with_carry: bool) -> Operator {
+    Operator::new(mnemonic, move |context| {
         let (current, writer) = operand.read_and_writer(context);
-        let result = current << 1 | (context.flags().c as u8);
+        let result = if with_carry {
+            current >> 1 | (context.flags().c as u8) << 7
+        } else {
+            current.rotate_right(1)
+        };
         writer(context, result);
         context.set_flags(Flags {
             z: result == 0,
             n: false,
             h: false,
-            c: current.bit(7),
+            c: current.bit(0),
         })
     })
 }
 
-pub fn rla() -> Operator {
-    rl_u8("RLA", register::A)
+pub fn rrca() -> Operator {
+    rr_u8("RRCA", register::A, false)
+}
+
+pub fn rra() -> Operator {
+    rr_u8("RLA", register::A, true)
 }
