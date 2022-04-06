@@ -7,7 +7,7 @@ use crate::util::bits::Bits;
 
 pub fn swap(operand: ReadWriteRef<u8>) -> Operator {
     Operator::new("SWAP", |context| {
-        let (current, writer) = operand.read_and_writer(context);
+        let (current, writer) = operand.read_write(context);
         let result = current.rotate_left(4);
         writer(context, result);
         context.set_flags(Flags {
@@ -32,7 +32,7 @@ pub fn cpl() -> Operator {
 
 fn rl_u8(mnemonic: &'static str, operand: ReadWriteRef<u8>, with_carry: bool) -> Operator {
     Operator::new(mnemonic, move |context| {
-        let (current, writer) = operand.read_and_writer(context);
+        let (current, writer) = operand.read_write(context);
         let result = if with_carry {
             current << 1 | context.flags().c as u8
         } else {
@@ -66,7 +66,7 @@ pub fn rl(operand: ReadWriteRef<u8>) -> Operator {
 
 fn rr_u8(mnemonic: &'static str, operand: ReadWriteRef<u8>, with_carry: bool) -> Operator {
     Operator::new(mnemonic, move |context| {
-        let (current, writer) = operand.read_and_writer(context);
+        let (current, writer) = operand.read_write(context);
         let result = if with_carry {
             current >> 1 | (context.flags().c as u8) << 7
         } else {
@@ -96,4 +96,18 @@ pub fn rrc(operand: ReadWriteRef<u8>) -> Operator {
 
 pub fn rr(operand: ReadWriteRef<u8>) -> Operator {
     rr_u8("RR", operand, true)
+}
+
+pub fn sla(operand: ReadWriteRef<u8>) -> Operator {
+    Operator::new("SLA", |context| {
+        let (current, writer) = operand.read_write(context);
+        let result = current << 1;
+        writer(context, result);
+        context.set_flags(Flags {
+            z: result == 0,
+            n: false,
+            h: false,
+            c: current.bit(7),
+        });
+    })
 }

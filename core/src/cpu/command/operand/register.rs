@@ -22,7 +22,7 @@ macro_rules! register {
             }
 
             impl ReadWrite<u8> for $name {
-                fn read_and_writer(&self, context: &mut dyn Context) -> (u8, Writer<u8>) {
+                fn read_write(&self, context: &mut dyn Context) -> (u8, Writer<u8>) {
                     (self.read(context), self.writer(context))
                 }
             }
@@ -61,7 +61,7 @@ macro_rules! register_pair {
             }
 
             impl ReadWrite<u16> for $name {
-                fn read_and_writer(&self, context: &mut dyn Context) -> (u16, Writer<u16>) {
+                fn read_write(&self, context: &mut dyn Context) -> (u16, Writer<u16>) {
                     (self.read(context), self.writer(context))
                 }
             }
@@ -95,7 +95,7 @@ mod sp {
     }
 
     impl ReadWrite<u16> for SP {
-        fn read_and_writer(&self, context: &mut dyn Context) -> (u16, Writer<u16>) {
+        fn read_write(&self, context: &mut dyn Context) -> (u16, Writer<u16>) {
             (self.read(context), self.writer(context))
         }
     }

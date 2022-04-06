@@ -6,7 +6,7 @@ use crate::cpu::{
 
 fn and_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
     Operator::new("AND", |context| {
-        let (current, writer) = lhs.read_and_writer(context);
+        let (current, writer) = lhs.read_write(context);
         let result = current & rhs.read(context);
         writer(context, result);
         context.set_flags(Flags {
@@ -24,7 +24,7 @@ pub fn and(rhs: ReadRef<u8>) -> Operator {
 
 fn or_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
     Operator::new("OR", |context| {
-        let (current, writer) = lhs.read_and_writer(context);
+        let (current, writer) = lhs.read_write(context);
         let result = current | rhs.read(context);
         writer(context, result);
         context.set_flags(Flags {
@@ -42,7 +42,7 @@ pub fn or(rhs: ReadRef<u8>) -> Operator {
 
 fn xor_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
     Operator::new("XOR", |context| {
-        let (current, writer) = lhs.read_and_writer(context);
+        let (current, writer) = lhs.read_write(context);
         let result = current ^ rhs.read(context);
         writer(context, result);
         context.set_flags(Flags {

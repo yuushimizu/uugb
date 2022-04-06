@@ -31,7 +31,7 @@ pub trait ReadWrite<T: Copy>
 where
     Self: 'static + Read<T> + Write<T>,
 {
-    fn read_and_writer(&self, context: &mut dyn Context) -> (T, Writer<T>);
+    fn read_write(&self, context: &mut dyn Context) -> (T, Writer<T>);
 }
 
 pub type ReadWriteRef<T> = &'static dyn ReadWrite<T>;

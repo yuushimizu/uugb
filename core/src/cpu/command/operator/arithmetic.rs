@@ -11,7 +11,7 @@ fn add_u8(
     with_carry: bool,
 ) -> Operator {
     Operator::new(mnemonic, move |context| {
-        let (current, writer) = lhs.read_and_writer(context);
+        let (current, writer) = lhs.read_write(context);
         let n = rhs.read(context);
         let carry = (with_carry && context.flags().c) as u8;
         let (result, overflow) = current.overflowing_add(n);
@@ -42,7 +42,7 @@ fn sub_u8(
     with_result: bool,
 ) -> Operator {
     Operator::new(mnemonic, move |context| {
-        let (current, writer) = lhs.read_and_writer(context);
+        let (current, writer) = lhs.read_write(context);
         let n = rhs.read(context);
         let carry = (with_carry && context.flags().c) as u8;
         let (result, overflow) = current.overflowing_sub(n);
@@ -74,7 +74,7 @@ pub fn cp(rhs: ReadRef<u8>) -> Operator {
 
 pub fn inc(operand: ReadWriteRef<u8>) -> Operator {
     Operator::new("INC", |context| {
-        let (current, writer) = operand.read_and_writer(context);
+        let (current, writer) = operand.read_write(context);
         let result = current.wrapping_add(1);
         writer(context, result);
         context.set_flags(Flags {
@@ -88,7 +88,7 @@ pub fn inc(operand: ReadWriteRef<u8>) -> Operator {
 
 pub fn dec(operand: ReadWriteRef<u8>) -> Operator {
     Operator::new("DEC", |context| {
-        let (current, writer) = operand.read_and_writer(context);
+        let (current, writer) = operand.read_write(context);
         let result = current.wrapping_sub(1);
         writer(context, result);
         context.set_flags(Flags {
@@ -102,7 +102,7 @@ pub fn dec(operand: ReadWriteRef<u8>) -> Operator {
 
 fn add_u16(mnemonic: &'static str, lhs: ReadWriteRef<u16>, rhs: ReadRef<u16>) -> Operator {
     Operator::new(mnemonic, |context| {
-        let (current, writer) = lhs.read_and_writer(context);
+        let (current, writer) = lhs.read_write(context);
         let n = rhs.read(context);
         let (result, overflow) = current.overflowing_add(n);
         writer(context, result);
@@ -121,14 +121,14 @@ pub fn add16(lhs: ReadWriteRef<u16>, rhs: ReadRef<u16>) -> Operator {
 
 pub fn inc16(operand: ReadWriteRef<u16>) -> Operator {
     Operator::new("INC", |context| {
-        let (current, writer) = operand.read_and_writer(context);
+        let (current, writer) = operand.read_write(context);
         writer(context, current.wrapping_add(1))
     })
 }
 
 pub fn dec16(operand: ReadWriteRef<u16>) -> Operator {
     Operator::new("DEC", |context| {
-        let (current, writer) = operand.read_and_writer(context);
+        let (current, writer) = operand.read_write(context);
         writer(context, current.wrapping_sub(1))
     })
 }
