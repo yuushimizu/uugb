@@ -14,13 +14,13 @@ impl fmt::Display for Literal {
 impl Operand for Literal {}
 
 impl Read<u8> for Literal {
-    fn read(&self, context: &mut dyn Context) -> u8 {
+    fn read(self, context: &mut dyn Context) -> u8 {
         context.fetch_pc()
     }
 }
 
 impl Read<u16> for Literal {
-    fn read(&self, context: &mut dyn Context) -> u16 {
+    fn read(self, context: &mut dyn Context) -> u16 {
         context.fetch16_pc()
     }
 }

@@ -25,21 +25,21 @@ impl fmt::Display for Indirection {
 impl Operand for Indirection {}
 
 impl Read<u8> for Indirection {
-    fn read(&self, context: &mut dyn Context) -> u8 {
+    fn read(self, context: &mut dyn Context) -> u8 {
         let address = (self.address)(context);
         context.memory().read(address)
     }
 }
 
 impl Write<u8> for Indirection {
-    fn writer(&self, context: &mut dyn Context) -> Writer<u8> {
+    fn writer(self, context: &mut dyn Context) -> Writer<u8> {
         let address = (self.address)(context);
         Box::new(move |context, value| context.memory_mut().write(address, value))
     }
 }
 
 impl ReadWrite<u8> for Indirection {
-    fn read_write(&self, context: &mut dyn Context) -> (u8, Writer<u8>) {
+    fn read_write(self, context: &mut dyn Context) -> (u8, Writer<u8>) {
         let address = (self.address)(context);
         (
             context.memory().read(address),
@@ -49,14 +49,14 @@ impl ReadWrite<u8> for Indirection {
 }
 
 impl Read<u16> for Indirection {
-    fn read(&self, context: &mut dyn Context) -> u16 {
+    fn read(self, context: &mut dyn Context) -> u16 {
         let address = (self.address)(context);
         context.read16(address)
     }
 }
 
 impl Write<u16> for Indirection {
-    fn writer(&self, context: &mut dyn Context) -> Writer<u16> {
+    fn writer(self, context: &mut dyn Context) -> Writer<u16> {
         let address = (self.address)(context);
         Box::new(move |context, value| context.write16(address, value))
     }

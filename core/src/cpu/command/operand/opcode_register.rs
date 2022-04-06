@@ -55,7 +55,7 @@ impl fmt::Display for OpcodeRegister {
 impl Operand for OpcodeRegister {}
 
 impl Read<u8> for OpcodeRegister {
-    fn read(&self, context: &mut dyn Context) -> u8 {
+    fn read(self, context: &mut dyn Context) -> u8 {
         match self {
             Self::Register(register) => register.read(context),
             Self::Indirection(indirection) => indirection.read(context),
@@ -64,7 +64,7 @@ impl Read<u8> for OpcodeRegister {
 }
 
 impl Write<u8> for OpcodeRegister {
-    fn writer(&self, context: &mut dyn Context) -> Writer<u8> {
+    fn writer(self, context: &mut dyn Context) -> Writer<u8> {
         match self {
             Self::Register(register) => register.writer(context),
             Self::Indirection(indirection) => indirection.writer(context),
@@ -73,7 +73,7 @@ impl Write<u8> for OpcodeRegister {
 }
 
 impl ReadWrite<u8> for OpcodeRegister {
-    fn read_write(&self, context: &mut dyn Context) -> (u8, Writer<u8>) {
+    fn read_write(self, context: &mut dyn Context) -> (u8, Writer<u8>) {
         match self {
             Self::Register(register) => register.read_write(context),
             Self::Indirection(indirection) => indirection.read_write(context),
