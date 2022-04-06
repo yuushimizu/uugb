@@ -1,5 +1,5 @@
 use super::Operator;
-use crate::cpu::command::operand::{Read, Write};
+use crate::cpu::instruction::operand::{Read, Write};
 
 pub fn push<S: Read<u16>>(source: S) -> Operator {
     Operator::new("PUSH", move |context| {

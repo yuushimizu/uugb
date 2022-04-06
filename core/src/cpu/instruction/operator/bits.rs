@@ -1,6 +1,6 @@
 use super::Operator;
 use crate::cpu::{
-    command::operand::{register, Read, ReadWrite},
+    instruction::operand::{register, Read, ReadWrite},
     registers::Flags,
 };
 use crate::util::bits::Bits;

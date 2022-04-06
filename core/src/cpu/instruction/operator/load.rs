@@ -1,5 +1,5 @@
 use super::Operator;
-use crate::cpu::command::operand::{Read, Value, Write};
+use crate::cpu::instruction::operand::{Read, Value, Write};
 
 fn ld_generic<T: Value, D: Write<T>, S: Read<T>>(destination: D, source: S) -> Operator {
     Operator::new("LD", move |context| {

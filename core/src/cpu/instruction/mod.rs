@@ -3,24 +3,13 @@ mod operator;
 
 use super::Context;
 use operator::Operator;
-use std::fmt;
 
-pub struct Command {
+#[derive(Debug)]
+pub struct Instruction {
     opcode: u8,
     sub_opcode: Option<u8>,
     operator: Operator,
     cycles: u64,
-}
-
-impl fmt::Debug for Command {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Command")
-            .field("opcode", &self.opcode)
-            .field("sub_opcode", &self.sub_opcode)
-            .field("operator", &self.operator)
-            .field("cycles", &self.cycles)
-            .finish()
-    }
 }
 
 trait OpcodeRegisterCycles {
@@ -37,7 +26,7 @@ impl OpcodeRegisterCycles for operand::OpcodeRegister {
     }
 }
 
-impl Command {
+impl Instruction {
     pub fn execute(&self, context: &mut dyn Context) {
         self.operator.execute(context)
     }

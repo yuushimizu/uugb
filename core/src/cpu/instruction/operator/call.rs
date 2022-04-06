@@ -1,5 +1,5 @@
 use super::{jump::condition::Condition, Operator};
-use crate::cpu::command::operand::Read;
+use crate::cpu::instruction::operand::Read;
 
 pub fn call_cc<L: Read<u16>>(condition: Condition, location: L) -> Operator {
     Operator::new("CALL", move |context| {

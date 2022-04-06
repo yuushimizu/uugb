@@ -1,4 +1,4 @@
-use crate::cpu::command::operand::Operand;
+use crate::cpu::instruction::operand::Operand;
 use std::fmt;
 
 /*

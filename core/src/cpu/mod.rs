@@ -1,9 +1,9 @@
 pub mod registers;
 
-mod command;
 mod context;
+mod instruction;
 
-pub use command::Command;
+pub use instruction::Instruction;
 pub use registers::Registers;
 
 use context::Context;
@@ -55,10 +55,10 @@ impl<'a> Context for CpuContext<'a> {
 }
 
 impl Cpu {
-    pub fn step(&mut self, memory: &mut Memory) -> Command {
+    pub fn step(&mut self, memory: &mut Memory) -> Instruction {
         let mut context = CpuContext { cpu: self, memory };
-        let command = Command::next(&mut context);
-        command.execute(&mut context);
-        command
+        let instruction = Instruction::next(&mut context);
+        instruction.execute(&mut context);
+        instruction
     }
 }

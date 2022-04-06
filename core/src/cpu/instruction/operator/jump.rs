@@ -1,5 +1,5 @@
 use super::Operator;
-use crate::cpu::command::operand::Read;
+use crate::cpu::instruction::operand::Read;
 
 pub mod condition {
     use crate::cpu::registers::Flags;
