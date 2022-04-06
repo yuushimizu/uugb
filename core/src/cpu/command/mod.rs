@@ -244,12 +244,7 @@ impl Command {
             0x0F => (rrca(), 4),
             0x1F => (rra(), 4),
             // Jumps
-            0xC3 => (
-                Operator::new("JP", |context| {
-                    context.registers_mut().pc = context.fetch16_pc();
-                }),
-                12,
-            ),
+            0xC3 => (jp(LITERAL), 12),
             // Not Implemented
             _ => panic!("This opcode is not implemented!: {:02X}", opcode),
         };
