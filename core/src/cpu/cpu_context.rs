@@ -6,9 +6,9 @@ pub trait CpuContext {
 
     fn registers_mut(&mut self) -> &mut Registers;
 
-    fn memory(&self) -> &Memory;
+    fn memory(&self) -> &dyn Memory;
 
-    fn memory_mut(&mut self) -> &mut Memory;
+    fn memory_mut(&mut self) -> &mut dyn Memory;
 
     fn halt(&mut self);
 

@@ -1,4 +1,4 @@
-use core::{cartridge, Cartridge, Cpu, Memory};
+use core::{cartridge, cartridge::Cartridge, GameBoy};
 
 use clap::Parser;
 use std::fs::File;
@@ -45,10 +45,9 @@ fn print_cartridge_info(header: &cartridge::Header) {
 }
 
 fn boot(cartridge: Cartridge) {
-    let mut memory = Memory::new(cartridge);
-    let mut cpu = Cpu::default();
+    let mut game_boy = GameBoy::boot(cartridge);
     for _ in 0..10 {
-        let instruction = cpu.step(&mut memory);
+        let instruction = game_boy.step();
         println!("{}", instruction);
     }
 }

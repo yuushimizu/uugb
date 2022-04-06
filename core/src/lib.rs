@@ -1,9 +1,8 @@
 pub mod cartridge;
 pub mod cpu;
+pub mod game_boy;
 pub mod memory;
 
 mod util;
 
-pub use cartridge::Cartridge;
-pub use cpu::Cpu;
-pub use memory::Memory;
+pub use game_boy::GameBoy;

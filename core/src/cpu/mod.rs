@@ -19,7 +19,7 @@ pub struct Cpu {
 
 struct Context<'a> {
     cpu: &'a mut Cpu,
-    memory: &'a mut Memory,
+    memory: &'a mut dyn Memory,
 }
 
 impl<'a> CpuContext for Context<'a> {
@@ -31,12 +31,12 @@ impl<'a> CpuContext for Context<'a> {
         &mut self.cpu.registers
     }
 
-    fn memory(&self) -> &Memory {
-        &self.memory
+    fn memory(&self) -> &dyn Memory {
+        self.memory
     }
 
-    fn memory_mut(&mut self) -> &mut Memory {
-        &mut self.memory
+    fn memory_mut(&mut self) -> &mut dyn Memory {
+        self.memory
     }
 
     fn halt(&mut self) {
@@ -57,7 +57,7 @@ impl<'a> CpuContext for Context<'a> {
 }
 
 impl Cpu {
-    pub fn step(&mut self, memory: &mut Memory) -> Instruction {
+    pub fn step(&mut self, memory: &mut dyn Memory) -> Instruction {
         let mut context = Context { cpu: self, memory };
         let instruction = Instruction::next(&mut context);
         instruction.execute(&mut context);
