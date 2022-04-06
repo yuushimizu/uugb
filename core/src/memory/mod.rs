@@ -48,7 +48,7 @@ impl Memory {
             0xC000..=0xDFFF => self.wram_segment(0xC000),
             0xE000..=0xFDFF => self.wram_segment(0xE000), // mirror
             0xFEA0..=0xFEFF => Segment {
-                read: Box::new(|_, _| 0),
+                read: Box::new(|_, _| 0xFF),
                 write: Box::new(|_, _, _| {}),
             }, // unusable
             0xFF80..=0xFFFE => Segment {
