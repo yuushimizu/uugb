@@ -1,4 +1,4 @@
-use super::{Read, ReadWrite, Write, Writer};
+use super::{ReadWritable, Readable, Writable, Writer};
 use crate::cpu::Context;
 use std::fmt;
 
@@ -16,29 +16,29 @@ impl fmt::Debug for Indirection {
     }
 }
 
-impl Read<u8> for Indirection {
+impl Readable<u8> for Indirection {
     fn read(&self, context: &mut dyn Context) -> u8 {
         let address = (self.address)(context);
         context.memory().read(address)
     }
 
-    fn as_read(&self) -> &dyn Read<u8> {
+    fn as_read(&self) -> &dyn Readable<u8> {
         self
     }
 }
 
-impl Write<u8> for Indirection {
+impl Writable<u8> for Indirection {
     fn writer(&self, context: &mut dyn Context) -> Writer<u8> {
         let address = (self.address)(context);
         Box::new(move |context, value| context.memory_mut().write(address, value))
     }
 
-    fn as_write(&self) -> &dyn Write<u8> {
+    fn as_write(&self) -> &dyn Writable<u8> {
         self
     }
 }
 
-impl ReadWrite<u8> for Indirection {
+impl ReadWritable<u8> for Indirection {
     fn read_write(&self, context: &mut dyn Context) -> (u8, Writer<u8>) {
         let address = (self.address)(context);
         (
@@ -47,29 +47,29 @@ impl ReadWrite<u8> for Indirection {
         )
     }
 
-    fn as_read_write(&self) -> &dyn ReadWrite<u8> {
+    fn as_read_write(&self) -> &dyn ReadWritable<u8> {
         self
     }
 }
 
-impl Read<u16> for Indirection {
+impl Readable<u16> for Indirection {
     fn read(&self, context: &mut dyn Context) -> u16 {
         let address = (self.address)(context);
         context.read16(address)
     }
 
-    fn as_read(&self) -> &dyn Read<u16> {
+    fn as_read(&self) -> &dyn Readable<u16> {
         self
     }
 }
 
-impl Write<u16> for Indirection {
+impl Writable<u16> for Indirection {
     fn writer(&self, context: &mut dyn Context) -> Writer<u16> {
         let address = (self.address)(context);
         Box::new(move |context, value| context.write16(address, value))
     }
 
-    fn as_write(&self) -> &dyn Write<u16> {
+    fn as_write(&self) -> &dyn Writable<u16> {
         self
     }
 }

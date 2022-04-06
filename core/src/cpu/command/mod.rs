@@ -2,7 +2,7 @@ mod operand;
 mod operator;
 
 use super::Context;
-use operand::ReadWriteRef;
+use operand::ReadWrite;
 use operator::Operator;
 use std::fmt;
 
@@ -30,7 +30,7 @@ enum RegisterOperandType {
 }
 
 struct RegisterOperand {
-    operand: ReadWriteRef<u8>,
+    operand: ReadWrite<u8>,
     operand_type: RegisterOperandType,
 }
 

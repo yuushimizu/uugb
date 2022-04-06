@@ -1,11 +1,11 @@
 use super::Operator;
 use crate::cpu::{
-    command::operand::{register, ReadRef, ReadWriteRef},
+    command::operand::{register, Read, ReadWrite},
     registers::Flags,
 };
 use crate::util::bits::Bits;
 
-pub fn swap(operand: ReadWriteRef<u8>) -> Operator {
+pub fn swap(operand: ReadWrite<u8>) -> Operator {
     Operator::new("SWAP", |context| {
         let (current, writer) = operand.read_write(context);
         let result = current.rotate_left(4);
@@ -30,7 +30,7 @@ pub fn cpl() -> Operator {
     })
 }
 
-fn rl_u8(mnemonic: &'static str, operand: ReadWriteRef<u8>, with_carry: bool) -> Operator {
+fn rl_u8(mnemonic: &'static str, operand: ReadWrite<u8>, with_carry: bool) -> Operator {
     Operator::new(mnemonic, move |context| {
         let (current, writer) = operand.read_write(context);
         let result = if with_carry {
@@ -56,15 +56,15 @@ pub fn rla() -> Operator {
     rl_u8("RLA", register::A, true)
 }
 
-pub fn rlc(operand: ReadWriteRef<u8>) -> Operator {
+pub fn rlc(operand: ReadWrite<u8>) -> Operator {
     rl_u8("RLC", operand, false)
 }
 
-pub fn rl(operand: ReadWriteRef<u8>) -> Operator {
+pub fn rl(operand: ReadWrite<u8>) -> Operator {
     rl_u8("RL", operand, true)
 }
 
-fn rr_u8(mnemonic: &'static str, operand: ReadWriteRef<u8>, with_carry: bool) -> Operator {
+fn rr_u8(mnemonic: &'static str, operand: ReadWrite<u8>, with_carry: bool) -> Operator {
     Operator::new(mnemonic, move |context| {
         let (current, writer) = operand.read_write(context);
         let result = if with_carry {
@@ -90,15 +90,15 @@ pub fn rra() -> Operator {
     rr_u8("RRA", register::A, true)
 }
 
-pub fn rrc(operand: ReadWriteRef<u8>) -> Operator {
+pub fn rrc(operand: ReadWrite<u8>) -> Operator {
     rr_u8("RRC", operand, false)
 }
 
-pub fn rr(operand: ReadWriteRef<u8>) -> Operator {
+pub fn rr(operand: ReadWrite<u8>) -> Operator {
     rr_u8("RR", operand, true)
 }
 
-pub fn sla(operand: ReadWriteRef<u8>) -> Operator {
+pub fn sla(operand: ReadWrite<u8>) -> Operator {
     Operator::new("SLA", |context| {
         let (current, writer) = operand.read_write(context);
         let result = current << 1;
@@ -112,7 +112,7 @@ pub fn sla(operand: ReadWriteRef<u8>) -> Operator {
     })
 }
 
-pub fn sr_u8(mnemonic: &'static str, operand: ReadWriteRef<u8>, arithmetic: bool) -> Operator {
+pub fn sr_u8(mnemonic: &'static str, operand: ReadWrite<u8>, arithmetic: bool) -> Operator {
     Operator::new(mnemonic, move |context| {
         let (current, writer) = operand.read_write(context);
         let result = current >> 1 | ((arithmetic && current.bit(7)) as u8) << 7;
@@ -126,15 +126,15 @@ pub fn sr_u8(mnemonic: &'static str, operand: ReadWriteRef<u8>, arithmetic: bool
     })
 }
 
-pub fn sra(operand: ReadWriteRef<u8>) -> Operator {
+pub fn sra(operand: ReadWrite<u8>) -> Operator {
     sr_u8("SRA", operand, true)
 }
 
-pub fn srl(operand: ReadWriteRef<u8>) -> Operator {
+pub fn srl(operand: ReadWrite<u8>) -> Operator {
     sr_u8("SRL", operand, false)
 }
 
-pub fn bit(bit: u8, rhs: ReadRef<u8>) -> Operator {
+pub fn bit(bit: u8, rhs: Read<u8>) -> Operator {
     Operator::new("BIT", move |context| {
         let value = rhs.read(context);
         context.set_flags(Flags {
@@ -146,14 +146,14 @@ pub fn bit(bit: u8, rhs: ReadRef<u8>) -> Operator {
     })
 }
 
-pub fn set(bit: u8, rhs: ReadWriteRef<u8>) -> Operator {
+pub fn set(bit: u8, rhs: ReadWrite<u8>) -> Operator {
     Operator::new("SET", move |context| {
         let (current, writer) = rhs.read_write(context);
         writer(context, current.set_bit(bit as u32))
     })
 }
 
-pub fn res(bit: u8, rhs: ReadWriteRef<u8>) -> Operator {
+pub fn res(bit: u8, rhs: ReadWrite<u8>) -> Operator {
     Operator::new("RES", move |context| {
         let (current, writer) = rhs.read_write(context);
         writer(context, current.reset_bit(bit as u32))

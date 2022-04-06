@@ -1,16 +1,16 @@
-use super::Read;
+use super::Readable;
 use crate::cpu::Context;
 
 #[derive(Debug, Clone)]
 pub struct AddLiteral8;
 
-impl Read<u16> for AddLiteral8 {
+impl Readable<u16> for AddLiteral8 {
     fn read(&self, context: &mut dyn Context) -> u16 {
         let value = context.fetch_pc();
         context.add_sp(value)
     }
 
-    fn as_read(&self) -> &dyn Read<u16> {
+    fn as_read(&self) -> &dyn Readable<u16> {
         self
     }
 }

@@ -1,5 +1,5 @@
 use super::Operator;
-use crate::cpu::command::operand::ReadRef;
+use crate::cpu::command::operand::Read;
 
 pub mod condition {
     use crate::cpu::registers::Flags;
@@ -17,7 +17,7 @@ pub mod condition {
 
 pub use condition::Condition;
 
-pub fn jp_cc(condition: Condition, location: ReadRef<u16>) -> Operator {
+pub fn jp_cc(condition: Condition, location: Read<u16>) -> Operator {
     Operator::new("JP", move |context| {
         let address = location.read(context);
         if condition(context.flags()) {
@@ -26,11 +26,11 @@ pub fn jp_cc(condition: Condition, location: ReadRef<u16>) -> Operator {
     })
 }
 
-pub fn jp(location: ReadRef<u16>) -> Operator {
+pub fn jp(location: Read<u16>) -> Operator {
     jp_cc(|_| true, location)
 }
 
-pub fn jr_cc(condition: Condition, operand: ReadRef<u8>) -> Operator {
+pub fn jr_cc(condition: Condition, operand: Read<u8>) -> Operator {
     Operator::new("JR", move |context| {
         let offset = operand.read(context);
         if condition(context.flags()) {
@@ -39,6 +39,6 @@ pub fn jr_cc(condition: Condition, operand: ReadRef<u8>) -> Operator {
     })
 }
 
-pub fn jr(operand: ReadRef<u8>) -> Operator {
+pub fn jr(operand: Read<u8>) -> Operator {
     jr_cc(|_| true, operand)
 }

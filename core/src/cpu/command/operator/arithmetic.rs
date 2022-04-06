@@ -1,15 +1,10 @@
 use super::Operator;
 use crate::cpu::{
-    command::operand::{register, ReadRef, ReadWriteRef},
+    command::operand::{register, Read, ReadWrite},
     registers::Flags,
 };
 
-fn add_u8(
-    mnemonic: &'static str,
-    lhs: ReadWriteRef<u8>,
-    rhs: ReadRef<u8>,
-    with_carry: bool,
-) -> Operator {
+fn add_u8(mnemonic: &'static str, lhs: ReadWrite<u8>, rhs: Read<u8>, with_carry: bool) -> Operator {
     Operator::new(mnemonic, move |context| {
         let (current, writer) = lhs.read_write(context);
         let n = rhs.read(context);
@@ -26,18 +21,18 @@ fn add_u8(
     })
 }
 
-pub fn add(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
+pub fn add(lhs: ReadWrite<u8>, rhs: Read<u8>) -> Operator {
     add_u8("ADD", lhs, rhs, false)
 }
 
-pub fn adc(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
+pub fn adc(lhs: ReadWrite<u8>, rhs: Read<u8>) -> Operator {
     add_u8("ADC", lhs, rhs, true)
 }
 
 fn sub_u8(
     mnemonic: &'static str,
-    lhs: ReadWriteRef<u8>,
-    rhs: ReadRef<u8>,
+    lhs: ReadWrite<u8>,
+    rhs: Read<u8>,
     with_carry: bool,
     with_result: bool,
 ) -> Operator {
@@ -60,19 +55,19 @@ fn sub_u8(
     })
 }
 
-pub fn sub(rhs: ReadRef<u8>) -> Operator {
+pub fn sub(rhs: Read<u8>) -> Operator {
     sub_u8("SUB", register::A, rhs, false, true)
 }
 
-pub fn sbc(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
+pub fn sbc(lhs: ReadWrite<u8>, rhs: Read<u8>) -> Operator {
     sub_u8("SBC", lhs, rhs, true, true)
 }
 
-pub fn cp(rhs: ReadRef<u8>) -> Operator {
+pub fn cp(rhs: Read<u8>) -> Operator {
     sub_u8("CP", register::A, rhs, false, false)
 }
 
-pub fn inc(operand: ReadWriteRef<u8>) -> Operator {
+pub fn inc(operand: ReadWrite<u8>) -> Operator {
     Operator::new("INC", |context| {
         let (current, writer) = operand.read_write(context);
         let result = current.wrapping_add(1);
@@ -86,7 +81,7 @@ pub fn inc(operand: ReadWriteRef<u8>) -> Operator {
     })
 }
 
-pub fn dec(operand: ReadWriteRef<u8>) -> Operator {
+pub fn dec(operand: ReadWrite<u8>) -> Operator {
     Operator::new("DEC", |context| {
         let (current, writer) = operand.read_write(context);
         let result = current.wrapping_sub(1);
@@ -100,7 +95,7 @@ pub fn dec(operand: ReadWriteRef<u8>) -> Operator {
     })
 }
 
-fn add_u16(mnemonic: &'static str, lhs: ReadWriteRef<u16>, rhs: ReadRef<u16>) -> Operator {
+fn add_u16(mnemonic: &'static str, lhs: ReadWrite<u16>, rhs: Read<u16>) -> Operator {
     Operator::new(mnemonic, |context| {
         let (current, writer) = lhs.read_write(context);
         let n = rhs.read(context);
@@ -115,18 +110,18 @@ fn add_u16(mnemonic: &'static str, lhs: ReadWriteRef<u16>, rhs: ReadRef<u16>) ->
     })
 }
 
-pub fn add16(lhs: ReadWriteRef<u16>, rhs: ReadRef<u16>) -> Operator {
+pub fn add16(lhs: ReadWrite<u16>, rhs: Read<u16>) -> Operator {
     add_u16("ADD", lhs, rhs)
 }
 
-pub fn inc16(operand: ReadWriteRef<u16>) -> Operator {
+pub fn inc16(operand: ReadWrite<u16>) -> Operator {
     Operator::new("INC", |context| {
         let (current, writer) = operand.read_write(context);
         writer(context, current.wrapping_add(1))
     })
 }
 
-pub fn dec16(operand: ReadWriteRef<u16>) -> Operator {
+pub fn dec16(operand: ReadWrite<u16>) -> Operator {
     Operator::new("DEC", |context| {
         let (current, writer) = operand.read_write(context);
         writer(context, current.wrapping_sub(1))

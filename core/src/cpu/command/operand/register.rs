@@ -1,4 +1,4 @@
-use super::{Read, ReadWrite, Value, Write, Writer};
+use super::{ReadWritable, Readable, Value, Writable, Writer};
 use crate::cpu::{Context, Registers};
 use std::fmt;
 
@@ -17,33 +17,33 @@ impl<T: Value> fmt::Debug for Register<T> {
     }
 }
 
-impl<T: Value> Read<T> for Register<T> {
+impl<T: Value> Readable<T> for Register<T> {
     fn read(&self, context: &mut dyn Context) -> T {
         (self.read)(context.registers())
     }
 
-    fn as_read(&self) -> &dyn Read<T> {
+    fn as_read(&self) -> &dyn Readable<T> {
         self
     }
 }
 
-impl<T: Value> Write<T> for Register<T> {
+impl<T: Value> Writable<T> for Register<T> {
     fn writer(&self, _context: &mut dyn Context) -> Writer<T> {
         let write = self.write;
         Box::new(move |context, value| write(context.registers_mut(), value))
     }
 
-    fn as_write(&self) -> &dyn Write<T> {
+    fn as_write(&self) -> &dyn Writable<T> {
         self
     }
 }
 
-impl<T: Value> ReadWrite<T> for Register<T> {
+impl<T: Value> ReadWritable<T> for Register<T> {
     fn read_write(&self, context: &mut dyn Context) -> (T, Writer<T>) {
         (self.read(context), self.writer(context))
     }
 
-    fn as_read_write(&self) -> &dyn ReadWrite<T> {
+    fn as_read_write(&self) -> &dyn ReadWritable<T> {
         self
     }
 }

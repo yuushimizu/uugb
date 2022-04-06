@@ -1,10 +1,10 @@
 use super::Operator;
 use crate::cpu::{
-    command::operand::{register, ReadRef, ReadWriteRef},
+    command::operand::{register, Read, ReadWrite},
     registers::Flags,
 };
 
-fn and_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
+fn and_u8(lhs: ReadWrite<u8>, rhs: Read<u8>) -> Operator {
     Operator::new("AND", |context| {
         let (current, writer) = lhs.read_write(context);
         let result = current & rhs.read(context);
@@ -18,11 +18,11 @@ fn and_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
     })
 }
 
-pub fn and(rhs: ReadRef<u8>) -> Operator {
+pub fn and(rhs: Read<u8>) -> Operator {
     and_u8(register::A, rhs)
 }
 
-fn or_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
+fn or_u8(lhs: ReadWrite<u8>, rhs: Read<u8>) -> Operator {
     Operator::new("OR", |context| {
         let (current, writer) = lhs.read_write(context);
         let result = current | rhs.read(context);
@@ -36,11 +36,11 @@ fn or_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
     })
 }
 
-pub fn or(rhs: ReadRef<u8>) -> Operator {
+pub fn or(rhs: Read<u8>) -> Operator {
     or_u8(register::A, rhs)
 }
 
-fn xor_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
+fn xor_u8(lhs: ReadWrite<u8>, rhs: Read<u8>) -> Operator {
     Operator::new("XOR", |context| {
         let (current, writer) = lhs.read_write(context);
         let result = current ^ rhs.read(context);
@@ -54,6 +54,6 @@ fn xor_u8(lhs: ReadWriteRef<u8>, rhs: ReadRef<u8>) -> Operator {
     })
 }
 
-pub fn xor(rhs: ReadRef<u8>) -> Operator {
+pub fn xor(rhs: Read<u8>) -> Operator {
     xor_u8(register::A, rhs)
 }

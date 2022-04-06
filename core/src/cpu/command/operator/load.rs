@@ -1,7 +1,7 @@
 use super::Operator;
-use crate::cpu::command::operand::{ReadRef, WriteRef};
+use crate::cpu::command::operand::{Read, Write};
 
-fn ld_generic<T: Copy>(destination: WriteRef<T>, source: ReadRef<T>) -> Operator {
+fn ld_generic<T: Copy>(destination: Write<T>, source: Read<T>) -> Operator {
     Operator::new("LD", |context| {
         let writer = destination.writer(context);
         let value = source.read(context);
@@ -9,10 +9,10 @@ fn ld_generic<T: Copy>(destination: WriteRef<T>, source: ReadRef<T>) -> Operator
     })
 }
 
-pub fn ld(destination: WriteRef<u8>, source: ReadRef<u8>) -> Operator {
+pub fn ld(destination: Write<u8>, source: Read<u8>) -> Operator {
     ld_generic(destination, source)
 }
 
-pub fn ld16(destination: WriteRef<u16>, source: ReadRef<u16>) -> Operator {
+pub fn ld16(destination: Write<u16>, source: Read<u16>) -> Operator {
     ld_generic(destination, source)
 }
