@@ -9,10 +9,30 @@ use std::rc::Rc;
 use std::result;
 
 #[derive(Debug)]
+struct State {
+    rom: Rc<Vec<u8>>,
+    ram: Vec<u8>,
+}
+
+impl MbcContext for State {
+    fn rom(&self) -> &[u8] {
+        &self.rom
+    }
+
+    fn ram(&self) -> &[u8] {
+        &self.ram
+    }
+
+    fn ram_mut(&mut self) -> &mut [u8] {
+        &mut self.ram
+    }
+}
+
+#[derive(Debug)]
 pub struct Cartridge {
     header: Header,
+    state: State,
     mbc: Box<dyn Mbc>,
-    mbc_context: MbcContext,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -35,16 +55,12 @@ pub fn create_mbc(header: &Header) -> Result<Box<dyn Mbc>> {
 impl Cartridge {
     pub fn new(rom: Rc<Vec<u8>>) -> Result<Self> {
         let header = Header::load(&rom).map_err(|err| Error::HeaderError(err))?;
-        let mbc = create_mbc(&header)?;
-        let mbc_context = MbcContext {
+        let state = State {
             rom,
             ram: vec![0x00u8; header.ram_size.amount()],
         };
-        Ok(Self {
-            header,
-            mbc,
-            mbc_context,
-        })
+        let mbc = create_mbc(&header)?;
+        Ok(Self { header, state, mbc })
     }
 
     pub fn header(&self) -> &Header {
@@ -52,10 +68,10 @@ impl Cartridge {
     }
 
     pub fn read(&self, address: u16) -> u8 {
-        self.mbc.read(&self.mbc_context, address)
+        self.mbc.read(&self.state, address)
     }
 
     pub fn write(&mut self, address: u16, value: u8) {
-        self.mbc.write(&mut self.mbc_context, address, value)
+        self.mbc.write(&mut self.state, address, value)
     }
 }

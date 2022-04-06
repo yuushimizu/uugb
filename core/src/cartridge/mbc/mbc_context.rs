@@ -1,17 +1,7 @@
-use std::rc::Rc;
+pub trait MbcContext {
+    fn rom(&self) -> &[u8];
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct MbcContext {
-    pub rom: Rc<Vec<u8>>,
-    pub ram: Vec<u8>,
-}
+    fn ram(&self) -> &[u8];
 
-impl MbcContext {
-    pub fn rom_size(&self) -> usize {
-        self.rom.len()
-    }
-
-    pub fn ram_size(&self) -> usize {
-        self.ram.len()
-    }
+    fn ram_mut(&mut self) -> &mut [u8];
 }

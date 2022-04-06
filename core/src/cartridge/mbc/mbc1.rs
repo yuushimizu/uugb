@@ -92,21 +92,21 @@ fn bit_mask(n: u8) -> u8 {
     0b1 << bin_digits(n) - 0b1
 }
 
-impl MbcContext {
+trait MbcContextHelpers: MbcContext {
     fn rom_bank_mask(&self) -> u8 {
         bit_mask(max(
             1,
-            ((self.rom_size() as f64 / ROM_BANK_SIZE as f64).ceil() as u8).saturating_sub(1),
+            ((self.rom().len() as f64 / ROM_BANK_SIZE as f64).ceil() as u8).saturating_sub(1),
         ))
     }
 
     fn rom_bank(&self, number: u8) -> &[u8] {
         let start = (number & self.rom_bank_mask()) as usize * ROM_BANK_SIZE;
-        &self.rom[start..start + ROM_BANK_SIZE]
+        &self.rom()[start..start + ROM_BANK_SIZE]
     }
 
     fn ram_bank_mask(&self) -> u8 {
-        bit_mask(((self.ram_size() as f64 / RAM_BANK_SIZE as f64).ceil() as u8).saturating_sub(1))
+        bit_mask(((self.ram().len() as f64 / RAM_BANK_SIZE as f64).ceil() as u8).saturating_sub(1))
     }
 
     fn ram_bank_range(&self, number: u8) -> Range<usize> {
@@ -115,17 +115,19 @@ impl MbcContext {
     }
 
     fn ram_bank(&self, number: u8) -> &[u8] {
-        &self.ram[self.ram_bank_range(number)]
+        &self.ram()[self.ram_bank_range(number)]
     }
 
     fn ram_bank_mut(&mut self, number: u8) -> &mut [u8] {
         let range = self.ram_bank_range(number);
-        &mut self.ram[range]
+        &mut self.ram_mut()[range]
     }
 }
 
+impl<T: MbcContext + ?Sized> MbcContextHelpers for T {}
+
 impl Mbc for Mbc1 {
-    fn read(self: &Self, context: &MbcContext, address: u16) -> u8 {
+    fn read(self: &Self, context: &dyn MbcContext, address: u16) -> u8 {
         match address {
             0x0000..=0x3FFF => context.rom_bank(self.first_rom_bank_number())[address as usize],
             0x4000..=0x7FFF => context.rom_bank(self.rom_bank_number())[address as usize - 0x4000],
@@ -137,7 +139,7 @@ impl Mbc for Mbc1 {
         }
     }
 
-    fn write(self: &mut Self, context: &mut MbcContext, address: u16, value: u8) {
+    fn write(self: &mut Self, context: &mut dyn MbcContext, address: u16, value: u8) {
         match address {
             0x0000..=0x1FFF => self.set_ram_enabled(value),
             0x2000..=0x3FFF => self.set_rom_bank_number_lower(value),
