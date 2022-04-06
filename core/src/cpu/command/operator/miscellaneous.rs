@@ -1,5 +1,6 @@
 use super::Operator;
 use crate::cpu::registers::Flags;
+use log;
 
 pub fn daa() -> Operator {
     Operator::new("DAA", |context| {
@@ -48,4 +49,10 @@ pub fn scf() -> Operator {
 
 pub fn nop() -> Operator {
     Operator::new("NOP", |_context| {})
+}
+
+pub fn unused(opcode: u8) -> Operator {
+    Operator::new("UNUSED", move |_context| {
+        log::warn!("The unused opcode has called: {:02X}", opcode);
+    })
 }
