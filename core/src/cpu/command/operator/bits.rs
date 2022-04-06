@@ -112,10 +112,10 @@ pub fn sla(operand: ReadWriteRef<u8>) -> Operator {
     })
 }
 
-pub fn sra(operand: ReadWriteRef<u8>) -> Operator {
-    Operator::new("SRA", |context| {
+pub fn sr_u8(mnemonic: &'static str, operand: ReadWriteRef<u8>, arithmetic: bool) -> Operator {
+    Operator::new(mnemonic, move |context| {
         let (current, writer) = operand.read_write(context);
-        let result = current >> 1 | current & (0b1 << 7);
+        let result = current >> 1 | ((arithmetic && current.bit(7)) as u8) << 7;
         writer(context, result);
         context.set_flags(Flags {
             z: result == 0,
@@ -124,4 +124,12 @@ pub fn sra(operand: ReadWriteRef<u8>) -> Operator {
             c: current.bit(0),
         });
     })
+}
+
+pub fn sra(operand: ReadWriteRef<u8>) -> Operator {
+    sr_u8("SRA", operand, true)
+}
+
+pub fn srl(operand: ReadWriteRef<u8>) -> Operator {
+    sr_u8("SRL", operand, false)
 }
