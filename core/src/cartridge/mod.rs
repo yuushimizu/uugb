@@ -7,6 +7,7 @@ pub use header::*;
 pub use mbc::Mbc;
 
 use context::Context;
+use std::rc::Rc;
 use std::result;
 
 #[derive(Debug)]
@@ -34,7 +35,7 @@ pub fn create_mbc(header: &Header) -> Result<Box<dyn Mbc>> {
 }
 
 impl Cartridge {
-    pub fn new(rom: Vec<u8>) -> Result<Self> {
+    pub fn new(rom: Rc<Vec<u8>>) -> Result<Self> {
         let header = Header::load(&rom).map_err(|err| Error::HeaderError(err))?;
         let context = Context {
             rom,

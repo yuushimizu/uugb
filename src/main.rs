@@ -23,7 +23,7 @@ fn load_header(rom: &[u8]) -> cartridge::Header {
 }
 
 fn create_cartridge(rom: Vec<u8>) -> Cartridge {
-    Cartridge::new(rom).unwrap_or_else(|err| {
+    Cartridge::new(rom.into()).unwrap_or_else(|err| {
         eprintln!("Could not load cartridge: {:?}", err);
         std::process::exit(1);
     })
