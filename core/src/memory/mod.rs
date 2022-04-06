@@ -40,6 +40,22 @@ impl Memory {
         }
     }
 
+    fn unusable_segment(&self) -> Segment {
+        Segment {
+            read: Box::new(|_, _| 0xFF),
+            write: Box::new(|_, _, _| {}),
+        }
+    }
+
+    fn hram_segment(&self) -> Segment {
+        Segment {
+            read: Box::new(|memory, address| memory.hram[(address - 0xFF80) as usize]),
+            write: Box::new(|memory, address, value| {
+                memory.hram[(address - 0xFF80) as usize] = value
+            }),
+        }
+    }
+
     fn segment(&self, address: u16) -> Segment {
         match address {
             0x0000..=0x7FFF => self.cartridge_segment(),
@@ -47,16 +63,8 @@ impl Memory {
             0xA000..=0xBFFF => self.cartridge_segment(),
             0xC000..=0xDFFF => self.wram_segment(0xC000),
             0xE000..=0xFDFF => self.wram_segment(0xE000), // mirror
-            0xFEA0..=0xFEFF => Segment {
-                read: Box::new(|_, _| 0xFF),
-                write: Box::new(|_, _, _| {}),
-            }, // unusable
-            0xFF80..=0xFFFE => Segment {
-                read: Box::new(|memory, address| memory.hram[(address - 0xFF80) as usize]),
-                write: Box::new(|memory, address, value| {
-                    memory.hram[(address - 0xFF80) as usize] = value
-                }),
-            },
+            0xFEA0..=0xFEFF => self.unusable_segment(),
+            0xFF80..=0xFFFE => self.hram_segment(),
             _ => panic!("Read from the address: {:04X}", address),
         }
     }
