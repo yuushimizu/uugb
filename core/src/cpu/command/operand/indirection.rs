@@ -21,12 +21,20 @@ impl Read<u8> for Indirection {
         let address = (self.address)(context);
         context.memory().read(address)
     }
+
+    fn as_read(&self) -> &dyn Read<u8> {
+        self
+    }
 }
 
 impl Write<u8> for Indirection {
     fn writer(&self, context: &mut dyn Context) -> Writer<u8> {
         let address = (self.address)(context);
         Box::new(move |context, value| context.memory_mut().write(address, value))
+    }
+
+    fn as_write(&self) -> &dyn Write<u8> {
+        self
     }
 }
 
@@ -38,12 +46,20 @@ impl ReadWrite<u8> for Indirection {
             Box::new(move |context, value| context.memory_mut().write(address, value)),
         )
     }
+
+    fn as_read_write(&self) -> &dyn ReadWrite<u8> {
+        self
+    }
 }
 
 impl Read<u16> for Indirection {
     fn read(&self, context: &mut dyn Context) -> u16 {
         let address = (self.address)(context);
         context.read16(address)
+    }
+
+    fn as_read(&self) -> &dyn Read<u16> {
+        self
     }
 }
 
@@ -52,7 +68,13 @@ impl Write<u16> for Indirection {
         let address = (self.address)(context);
         Box::new(move |context, value| context.write16(address, value))
     }
+
+    fn as_write(&self) -> &dyn Write<u16> {
+        self
+    }
 }
+
+pub type IndirectionRef = &'static Indirection;
 
 macro_rules! register {
     ($name: ident, $field: ident) => {

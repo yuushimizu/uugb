@@ -2,6 +2,7 @@ mod operand;
 mod operator;
 
 use super::Context;
+use operand::{IndirectionRef, RegisterRef};
 use operator::Operator;
 use std::fmt;
 
@@ -20,6 +21,27 @@ impl fmt::Debug for Command {
             .field("operator", &self.operator)
             .field("cycles", &self.cycles)
             .finish()
+    }
+}
+
+enum RegisterOperand {
+    Register(RegisterRef<u8>),
+    Indirection(IndirectionRef),
+}
+
+fn register_operand(opcode: u8) -> RegisterOperand {
+    use operand::register::*;
+    use RegisterOperand::*;
+    match opcode & 0b111 {
+        0b111 => Register(A),
+        0b000 => Register(B),
+        0b001 => Register(C),
+        0b010 => Register(D),
+        0b011 => Register(E),
+        0b100 => Register(H),
+        0b101 => Register(L),
+        0b111 => Indirection(operand::indirection::HL),
+        _ => unreachable!(),
     }
 }
 
@@ -100,6 +122,14 @@ impl Command {
             0x3C => (srl(H), 8),
             0x3D => (srl(L), 8),
             0x3E => (srl(indirection::HL), 16),
+            0x40..=0x7F => {
+                use RegisterOperand::*;
+                let lhs = sub_opcode >> 3 & 0b111;
+                match register_operand(sub_opcode) {
+                    Register(register) => (bit(lhs, register.as_read()), 8),
+                    Indirection(operand) => (bit(lhs, operand), 16),
+                }
+            }
             // Not Implemented
             _ => panic!(
                 "This opcode is not implemented!: {:02X} {:02X}",

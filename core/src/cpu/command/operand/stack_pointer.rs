@@ -9,6 +9,10 @@ impl Read<u16> for AddLiteral8 {
         let value = context.fetch_pc();
         context.add_sp(value)
     }
+
+    fn as_read(&self) -> &dyn Read<u16> {
+        self
+    }
 }
 
 pub const ADD_LITERAL_8: &AddLiteral8 = &AddLiteral8;

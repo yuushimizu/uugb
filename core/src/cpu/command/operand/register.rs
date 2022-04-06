@@ -1,34 +1,62 @@
-use super::{Read, ReadWrite, Write, Writer};
-use crate::cpu::Context;
+use super::{Read, ReadWrite, Value, Write, Writer};
+use crate::cpu::{Context, Registers};
+use std::fmt;
+
+#[derive(Clone)]
+pub struct Register<T: Value> {
+    name: &'static str,
+    read: fn(&Registers) -> T,
+    write: fn(&mut Registers, T),
+}
+
+impl<T: Value> fmt::Debug for Register<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Register")
+            .field("name", &self.name)
+            .finish()
+    }
+}
+
+impl<T: Value> Read<T> for Register<T> {
+    fn read(&self, context: &mut dyn Context) -> T {
+        (self.read)(context.registers())
+    }
+
+    fn as_read(&self) -> &dyn Read<T> {
+        self
+    }
+}
+
+impl<T: Value> Write<T> for Register<T> {
+    fn writer(&self, _context: &mut dyn Context) -> Writer<T> {
+        let write = self.write;
+        Box::new(move |context, value| write(context.registers_mut(), value))
+    }
+
+    fn as_write(&self) -> &dyn Write<T> {
+        self
+    }
+}
+
+impl<T: Value> ReadWrite<T> for Register<T> {
+    fn read_write(&self, context: &mut dyn Context) -> (T, Writer<T>) {
+        (self.read(context), self.writer(context))
+    }
+
+    fn as_read_write(&self) -> &dyn ReadWrite<T> {
+        self
+    }
+}
+
+pub type RegisterRef<T> = &'static Register<T>;
 
 macro_rules! register {
     ($name: ident, $field: ident) => {
-        mod $field {
-            use super::{Context, Read, ReadWrite, Write, Writer};
-
-            #[derive(Debug, Clone)]
-            pub struct $name;
-
-            impl Read<u8> for $name {
-                fn read(&self, context: &mut dyn Context) -> u8 {
-                    context.registers().$field
-                }
-            }
-
-            impl Write<u8> for $name {
-                fn writer(&self, _context: &mut dyn Context) -> Writer<u8> {
-                    Box::new(|context, value| context.registers_mut().$field = value)
-                }
-            }
-
-            impl ReadWrite<u8> for $name {
-                fn read_write(&self, context: &mut dyn Context) -> (u8, Writer<u8>) {
-                    (self.read(context), self.writer(context))
-                }
-            }
-        }
-
-        pub const $name: &$field::$name = &$field::$name;
+        pub const $name: &Register<u8> = &Register {
+            name: stringify!($name),
+            read: |registers| registers.$field,
+            write: |registers, value| registers.$field = value,
+        };
     };
 }
 
@@ -42,32 +70,11 @@ register!(L, l);
 
 macro_rules! register_pair {
     ($name: ident, $field: ident, $setter: ident) => {
-        mod $field {
-            use super::{Context, Read, ReadWrite, Write, Writer};
-
-            #[derive(Debug, Clone)]
-            pub struct $name;
-
-            impl Read<u16> for $name {
-                fn read(&self, context: &mut dyn Context) -> u16 {
-                    context.registers().$field()
-                }
-            }
-
-            impl Write<u16> for $name {
-                fn writer(&self, _context: &mut dyn Context) -> Writer<u16> {
-                    Box::new(|context, value| context.registers_mut().$setter(value))
-                }
-            }
-
-            impl ReadWrite<u16> for $name {
-                fn read_write(&self, context: &mut dyn Context) -> (u16, Writer<u16>) {
-                    (self.read(context), self.writer(context))
-                }
-            }
-        }
-
-        pub const $name: &$field::$name = &$field::$name;
+        pub const $name: &Register<u16> = &Register {
+            name: stringify!($name),
+            read: |registers| registers.$field(),
+            write: |registers, value| registers.$setter(value),
+        };
     };
 }
 
@@ -76,29 +83,8 @@ register_pair!(BC, bc, set_bc);
 register_pair!(DE, de, set_de);
 register_pair!(HL, hl, set_hl);
 
-mod sp {
-    use super::{Context, Read, ReadWrite, Write, Writer};
-
-    #[derive(Debug, Clone)]
-    pub struct SP;
-
-    impl Read<u16> for SP {
-        fn read(&self, context: &mut dyn Context) -> u16 {
-            context.registers().sp
-        }
-    }
-
-    impl Write<u16> for SP {
-        fn writer(&self, _context: &mut dyn Context) -> Writer<u16> {
-            Box::new(|context, value| context.registers_mut().sp = value)
-        }
-    }
-
-    impl ReadWrite<u16> for SP {
-        fn read_write(&self, context: &mut dyn Context) -> (u16, Writer<u16>) {
-            (self.read(context), self.writer(context))
-        }
-    }
-}
-
-pub const SP: &sp::SP = &sp::SP;
+pub const SP: &Register<u16> = &Register {
+    name: "SP",
+    read: |registers| registers.sp,
+    write: |registers, value| registers.sp = value,
+};

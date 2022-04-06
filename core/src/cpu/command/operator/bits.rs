@@ -1,6 +1,6 @@
 use super::Operator;
 use crate::cpu::{
-    command::operand::{register, ReadWriteRef},
+    command::operand::{register, ReadRef, ReadWriteRef},
     registers::Flags,
 };
 use crate::util::bits::Bits;
@@ -132,4 +132,16 @@ pub fn sra(operand: ReadWriteRef<u8>) -> Operator {
 
 pub fn srl(operand: ReadWriteRef<u8>) -> Operator {
     sr_u8("SRL", operand, false)
+}
+
+pub fn bit(bit: u8, rhs: ReadRef<u8>) -> Operator {
+    Operator::new("BIT", move |context| {
+        let value = rhs.read(context);
+        context.set_flags(Flags {
+            z: !value.bit((bit & 0b111) as u32),
+            n: false,
+            h: true,
+            ..context.flags()
+        });
+    })
 }
