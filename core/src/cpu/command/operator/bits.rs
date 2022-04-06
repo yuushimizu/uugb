@@ -87,7 +87,7 @@ pub fn rrca() -> Operator {
 }
 
 pub fn rra() -> Operator {
-    rr_u8("RLA", register::A, true)
+    rr_u8("RRA", register::A, true)
 }
 
 pub fn rrc(operand: ReadWriteRef<u8>) -> Operator {
@@ -108,6 +108,20 @@ pub fn sla(operand: ReadWriteRef<u8>) -> Operator {
             n: false,
             h: false,
             c: current.bit(7),
+        });
+    })
+}
+
+pub fn sra(operand: ReadWriteRef<u8>) -> Operator {
+    Operator::new("SRA", |context| {
+        let (current, writer) = operand.read_write(context);
+        let result = current >> 1 | current & (0b1 << 7);
+        writer(context, result);
+        context.set_flags(Flags {
+            z: result == 0,
+            n: false,
+            h: false,
+            c: current.bit(0),
         });
     })
 }

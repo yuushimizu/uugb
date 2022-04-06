@@ -84,6 +84,14 @@ impl Command {
             0x24 => (sla(H), 8),
             0x25 => (sla(L), 8),
             0x26 => (sla(indirection::HL), 16),
+            0x2F => (sla(A), 8),
+            0x28 => (sla(B), 8),
+            0x29 => (sla(C), 8),
+            0x2A => (sla(D), 8),
+            0x2B => (sla(E), 8),
+            0x2C => (sla(H), 8),
+            0x2D => (sla(L), 8),
+            0x2E => (sla(indirection::HL), 16),
             // Not Implemented
             _ => panic!(
                 "This opcode is not implemented!: {:02X} {:02X}",
