@@ -270,6 +270,12 @@ impl Command {
             0xEF => (rst(0x28), 32),
             0xF7 => (rst(0x30), 32),
             0xFF => (rst(0x38), 32),
+            // Returns
+            0xC9 => (ret(), 8),
+            0xC0 => (ret_cc(jump::condition::NZ), 8),
+            0xC8 => (ret_cc(jump::condition::Z), 8),
+            0xD0 => (ret_cc(jump::condition::NC), 8),
+            0xD8 => (ret_cc(jump::condition::C), 8),
             // Not Implemented
             _ => panic!("This opcode is not implemented!: {:02X}", opcode),
         };

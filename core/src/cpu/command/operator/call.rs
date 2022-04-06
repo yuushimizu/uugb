@@ -17,3 +17,16 @@ pub fn call(location: Read<u16>) -> Operator {
 pub fn rst(address: u8) -> Operator {
     Operator::new("RST", move |context| context.call(address as u16))
 }
+
+pub fn ret_cc(condition: Condition) -> Operator {
+    Operator::new("RET", move |context| {
+        if condition(context.flags()) {
+            let address = context.pop16_sp();
+            context.jump(address);
+        }
+    })
+}
+
+pub fn ret() -> Operator {
+    ret_cc(|_| true)
+}
