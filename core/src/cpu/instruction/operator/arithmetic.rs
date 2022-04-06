@@ -112,7 +112,7 @@ pub fn dec<O: ReadWrite<u8>>(operand: O) -> Operator {
     })
 }
 
-fn add_u16<L: ReadWrite<u16>, R: Read<u16>>(mnemonic: &'static str, lhs: L, rhs: R) -> Operator {
+fn add_u16<L: ReadWrite<u16>, R: Read<u16>>(lhs: L, rhs: R) -> Operator {
     Operator::new(format!("ADD {}, {}", lhs, rhs), move |context| {
         let (current, writer) = lhs.read_write(context);
         let n = rhs.read(context);
@@ -128,7 +128,7 @@ fn add_u16<L: ReadWrite<u16>, R: Read<u16>>(mnemonic: &'static str, lhs: L, rhs:
 }
 
 pub fn add16<L: ReadWrite<u16>, R: Read<u16>>(lhs: L, rhs: R) -> Operator {
-    add_u16("ADD", lhs, rhs)
+    add_u16(lhs, rhs)
 }
 
 pub fn inc16<O: ReadWrite<u16>>(operand: O) -> Operator {

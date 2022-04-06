@@ -18,10 +18,6 @@ pub mod condition {
     }
 
     impl Condition {
-        pub fn name(&self) -> &'static str {
-            return self.name;
-        }
-
         pub fn is_satisfied(&self, context: &dyn Context) -> bool {
             (self.predicate)(context.flags())
         }
