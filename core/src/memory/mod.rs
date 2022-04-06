@@ -24,6 +24,7 @@ impl Memory {
             0xA000..=0xBFFF => self.cartridge.read(address),
             0xC000..=0xDFFF => self.wram.read(address - 0xC000),
             0xE000..=0xFDFF => self.wram.read(address - 0xE000), // mirror
+            0xFEA0..=0xFEFF => 0,                                // unusable
             _ => panic!("Read from the address: {:04X}", address),
         }
     }
@@ -35,6 +36,7 @@ impl Memory {
             0xA000..=0xBFFF => self.cartridge.write(address, value),
             0xC000..=0xDFFF => self.wram.write(address - 0xC000, value),
             0xE000..=0xFDFF => self.wram.write(address - 0xE000, value), // mirror
+            0xFEA0..=0xFEFF => {}                                        // unusable
             _ => panic!("Write {:02X} to the address: {:04X}", value, address),
         }
     }
