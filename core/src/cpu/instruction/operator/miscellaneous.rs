@@ -4,7 +4,7 @@ use log;
 
 pub fn daa() -> Operator {
     Operator::new("DAA".into(), |context| {
-        let flags = context.flags();
+        let flags = context.flags().clone();
         let current = context.registers().a;
         let adjust_higher = flags.c || (!flags.n && current > 0x99);
         let adjust_lower = flags.h || (!flags.n && current & 0xF > 0x9);
@@ -31,7 +31,7 @@ pub fn ccf() -> Operator {
             n: false,
             h: false,
             c: !context.registers().f.c,
-            ..context.flags()
+            ..*context.flags()
         });
     })
 }
@@ -42,7 +42,7 @@ pub fn scf() -> Operator {
             n: false,
             h: false,
             c: true,
-            ..context.flags()
+            ..*context.flags()
         });
     })
 }

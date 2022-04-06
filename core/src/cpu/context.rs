@@ -18,8 +18,8 @@ pub trait Context {
 
     fn enable_interrupts(&mut self);
 
-    fn flags(&self) -> Flags {
-        self.registers().f.clone()
+    fn flags(&self) -> &Flags {
+        &self.registers().f
     }
 
     fn set_flags(&mut self, flags: Flags) {

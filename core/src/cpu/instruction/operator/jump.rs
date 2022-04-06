@@ -5,10 +5,18 @@ pub mod condition {
     use crate::cpu::{registers::Flags, Context};
     use std::fmt;
 
-    #[derive(Debug, Clone)]
+    #[derive(Clone)]
     pub struct Condition {
         name: &'static str,
-        predicate: fn(Flags) -> bool,
+        predicate: fn(&Flags) -> bool,
+    }
+
+    impl fmt::Debug for Condition {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            f.debug_struct("Condition")
+                .field("name", &self.name)
+                .finish()
+        }
     }
 
     impl fmt::Display for Condition {

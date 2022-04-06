@@ -93,7 +93,7 @@ pub fn inc<O: ReadWrite<u8>>(operand: O) -> Operator {
             z: result == 0,
             n: false,
             h: (current & 0xF) + 1 > 0xF,
-            ..context.flags()
+            ..*context.flags()
         });
     })
 }
@@ -107,7 +107,7 @@ pub fn dec<O: ReadWrite<u8>>(operand: O) -> Operator {
             z: result == 0,
             n: true,
             h: (current & 0xF).overflowing_sub(1).1,
-            ..context.flags()
+            ..*context.flags()
         });
     })
 }
@@ -122,7 +122,7 @@ fn add_u16<L: ReadWrite<u16>, R: Read<u16>>(lhs: L, rhs: R) -> Operator {
             n: false,
             h: (current & 0x0FFF) + (n & 0x0FFF) > 0x0FFF,
             c: overflow,
-            ..context.flags()
+            ..*context.flags()
         });
     })
 }

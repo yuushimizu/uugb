@@ -25,7 +25,7 @@ pub fn cpl() -> Operator {
         context.set_flags(Flags {
             n: true,
             h: true,
-            ..context.flags()
+            ..*context.flags()
         });
     })
 }
@@ -141,7 +141,7 @@ pub fn bit<R: Read<u8>>(bit: u8, rhs: R) -> Operator {
             z: !value.bit(bit as u32),
             n: false,
             h: true,
-            ..context.flags()
+            ..*context.flags()
         });
     })
 }
