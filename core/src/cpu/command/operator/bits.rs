@@ -56,6 +56,14 @@ pub fn rla() -> Operator {
     rl_u8("RLA", register::A, true)
 }
 
+pub fn rlc(operand: ReadWriteRef<u8>) -> Operator {
+    rl_u8("RLC", operand, false)
+}
+
+pub fn rl(operand: ReadWriteRef<u8>) -> Operator {
+    rl_u8("RL", operand, true)
+}
+
 fn rr_u8(mnemonic: &'static str, operand: ReadWriteRef<u8>, with_carry: bool) -> Operator {
     Operator::new(mnemonic, move |context| {
         let (current, writer) = operand.read_and_writer(context);

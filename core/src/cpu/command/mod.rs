@@ -35,7 +35,6 @@ impl Command {
         let sub_opcode = context.fetch_pc();
         let (operator, cycles) = match sub_opcode {
             // Miscellaneous
-            // SWAP n
             0x37 => (swap(A), 8),
             0x30 => (swap(B), 8),
             0x31 => (swap(C), 8),
@@ -44,6 +43,23 @@ impl Command {
             0x34 => (swap(H), 8),
             0x35 => (swap(L), 8),
             0x36 => (swap(indirection::HL), 16),
+            // Rotates & Shifts
+            0x07 => (rlc(A), 8),
+            0x00 => (rlc(B), 8),
+            0x01 => (rlc(C), 8),
+            0x02 => (rlc(D), 8),
+            0x03 => (rlc(E), 8),
+            0x04 => (rlc(H), 8),
+            0x05 => (rlc(L), 8),
+            0x06 => (rlc(indirection::HL), 16),
+            0x17 => (rl(A), 8),
+            0x10 => (rl(B), 8),
+            0x11 => (rl(C), 8),
+            0x12 => (rl(D), 8),
+            0x13 => (rl(E), 8),
+            0x14 => (rl(H), 8),
+            0x15 => (rl(L), 8),
+            0x16 => (rl(indirection::HL), 16),
             // Not Implemented
             _ => panic!(
                 "This opcode is not implemented!: {:02X} {:02X}",
