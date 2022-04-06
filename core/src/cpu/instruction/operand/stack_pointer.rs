@@ -1,12 +1,12 @@
 use super::{Operand, Read};
-use crate::cpu::Context;
+use crate::cpu::CpuContext;
 use std::fmt;
 
 #[derive(Debug, Clone, Copy)]
 pub struct AddLiteral8;
 
 impl Read<u16> for AddLiteral8 {
-    fn read(self, context: &mut dyn Context) -> u16 {
+    fn read(self, context: &mut dyn CpuContext) -> u16 {
         let value = context.fetch();
         context.add_sp(value)
     }

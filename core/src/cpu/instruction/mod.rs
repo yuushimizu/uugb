@@ -1,7 +1,7 @@
 mod operand;
 mod operator;
 
-use super::Context;
+use super::CpuContext;
 use operator::Operator;
 use std::fmt;
 
@@ -41,11 +41,11 @@ impl OpcodeRegisterCycles for operand::OpcodeRegister {
 }
 
 impl Instruction {
-    pub fn execute(&self, context: &mut dyn Context) {
+    pub fn execute(&self, context: &mut dyn CpuContext) {
         self.operator.execute(context)
     }
 
-    fn next_cb(context: &mut dyn Context, opcode: u8) -> Self {
+    fn next_cb(context: &mut dyn CpuContext, opcode: u8) -> Self {
         use operand::*;
         use operator::*;
         let sub_opcode = context.fetch();
@@ -73,7 +73,7 @@ impl Instruction {
         }
     }
 
-    pub fn next(context: &mut dyn Context) -> Self {
+    pub fn next(context: &mut dyn CpuContext) -> Self {
         use operand::register::*;
         use operand::*;
         use operator::*;

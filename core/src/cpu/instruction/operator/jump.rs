@@ -2,7 +2,7 @@ use super::Operator;
 use crate::cpu::instruction::operand::Read;
 
 pub mod condition {
-    use crate::cpu::{registers::Flags, Context};
+    use crate::cpu::{registers::Flags, CpuContext};
     use std::fmt;
 
     #[derive(Clone)]
@@ -26,7 +26,7 @@ pub mod condition {
     }
 
     impl Condition {
-        pub fn is_satisfied(&self, context: &dyn Context) -> bool {
+        pub fn is_satisfied(&self, context: &dyn CpuContext) -> bool {
             (self.predicate)(context.flags())
         }
     }

@@ -1,12 +1,12 @@
 pub mod registers;
 
-mod context;
+mod cpu_context;
 mod instruction;
 
 pub use instruction::Instruction;
 pub use registers::Registers;
 
-use context::Context;
+use cpu_context::CpuContext;
 
 use crate::memory::Memory;
 
@@ -15,12 +15,12 @@ pub struct Cpu {
     registers: Registers,
 }
 
-struct CpuContext<'a> {
+struct Context<'a> {
     cpu: &'a mut Cpu,
     memory: &'a mut Memory,
 }
 
-impl<'a> Context for CpuContext<'a> {
+impl<'a> CpuContext for Context<'a> {
     fn registers(&self) -> &Registers {
         &self.cpu.registers
     }
@@ -56,7 +56,7 @@ impl<'a> Context for CpuContext<'a> {
 
 impl Cpu {
     pub fn step(&mut self, memory: &mut Memory) -> Instruction {
-        let mut context = CpuContext { cpu: self, memory };
+        let mut context = Context { cpu: self, memory };
         let instruction = Instruction::next(&mut context);
         instruction.execute(&mut context);
         instruction

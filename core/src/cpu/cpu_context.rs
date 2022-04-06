@@ -1,7 +1,7 @@
 use super::{registers::Flags, Registers};
 use crate::memory::Memory;
 
-pub trait Context {
+pub trait CpuContext {
     fn registers(&self) -> &Registers;
 
     fn registers_mut(&mut self) -> &mut Registers;
