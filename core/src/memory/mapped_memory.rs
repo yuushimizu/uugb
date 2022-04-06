@@ -9,62 +9,60 @@ pub struct Components<'a> {
     pub joypad: &'a mut Joypad,
 }
 
-#[derive(Debug)]
-pub struct MappedMemory<'a>(Components<'a>);
+mod segment {
+    use super::Components;
 
-struct Segment {
-    read: fn(&Components, u16) -> u8,
-    write: fn(&mut Components, u16, u8),
-}
-
-impl Segment {
-    fn cartridge() -> Self {
-        Self {
-            read: |component, address| component.cartridge.read(address),
-            write: |component, address, value| component.cartridge.write(address, value),
-        }
+    pub struct Segment {
+        pub read: fn(&Components, u16) -> u8,
+        pub write: fn(&mut Components, u16, u8),
     }
 
-    fn wram() -> Self {
+    pub const CARTRIDGE: Segment = Segment {
+        read: |component, address| component.cartridge.read(address),
+        write: |component, address, value| component.cartridge.write(address, value),
+    };
+
+    pub const WRAM: Segment = {
         const BASE_ADDRESS: u16 = 0xC000;
-        Self {
+        Segment {
             read: |component, address| component.wram.read(address - BASE_ADDRESS),
             write: |component, address, value| component.wram.write(address - BASE_ADDRESS, value),
         }
-    }
+    };
 
-    fn wram_mirror() -> Self {
+    pub const WRAM_MIRROR: Segment = {
         const BASE_ADDRESS: u16 = 0xE000;
-        Self {
+        Segment {
             read: |component, address| component.wram.read(address - BASE_ADDRESS),
             write: |component, address, value| component.wram.write(address - BASE_ADDRESS, value),
         }
-    }
+    };
 
-    fn unusable() -> Self {
-        Self {
-            read: |_, _| 0xFF,
-            write: |_, _, _| {},
-        }
-    }
+    pub const UNUSABLE: Segment = Segment {
+        read: |_, _| 0xFF,
+        write: |_, _, _| {},
+    };
 
-    fn hram() -> Self {
+    pub const HRAM: Segment = {
         const BASE_ADDRESS: u16 = 0xFF80;
-        Self {
+        Segment {
             read: |component, address| component.hram.read(address - BASE_ADDRESS),
             write: |component, address, value| {
                 component.hram.write(address - BASE_ADDRESS, value);
             },
         }
-    }
+    };
 
-    fn joypad() -> Self {
-        Self {
-            read: |component, _address| component.joypad.bits(),
-            write: |component, _address, value| component.joypad.set_bits(value),
-        }
-    }
+    pub const JOYPAD: Segment = Segment {
+        read: |component, _address| component.joypad.bits(),
+        write: |component, _address, value| component.joypad.set_bits(value),
+    };
 }
+
+use segment::Segment;
+
+#[derive(Debug)]
+pub struct MappedMemory<'a>(Components<'a>);
 
 impl<'a> MappedMemory<'a> {
     pub fn new(components: Components<'a>) -> Self {
@@ -72,15 +70,16 @@ impl<'a> MappedMemory<'a> {
     }
 
     fn segment(&self, address: u16) -> Segment {
+        use segment::*;
         match address {
-            0x0000..=0x7FFF => Segment::cartridge(),
+            0x0000..=0x7FFF => CARTRIDGE,
             0x8000..=0x9FFF => panic!("VRAM"),
-            0xA000..=0xBFFF => Segment::cartridge(),
-            0xC000..=0xDFFF => Segment::wram(),
-            0xE000..=0xFDFF => Segment::wram_mirror(),
-            0xFEA0..=0xFEFF => Segment::unusable(),
-            0xFF00 => Segment::joypad(),
-            0xFF80..=0xFFFE => Segment::hram(),
+            0xA000..=0xBFFF => CARTRIDGE,
+            0xC000..=0xDFFF => WRAM,
+            0xE000..=0xFDFF => WRAM_MIRROR,
+            0xFEA0..=0xFEFF => UNUSABLE,
+            0xFF00 => JOYPAD,
+            0xFF80..=0xFFFE => HRAM,
             _ => panic!("Read from the address: {:04X}", address),
         }
     }
