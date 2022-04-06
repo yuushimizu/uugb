@@ -245,10 +245,10 @@ impl Command {
             0x1F => (rra(), 4),
             // Jumps
             0xC3 => (jp(LITERAL), 12),
-            0xC2 => (jp_nz(LITERAL), 12),
-            0xCA => (jp_z(LITERAL), 12),
-            0xD2 => (jp_nc(LITERAL), 12),
-            0xDA => (jp_c(LITERAL), 12),
+            0xC2 => (jp_cc(jump::condition::NZ, LITERAL), 12),
+            0xCA => (jp_cc(jump::condition::Z, LITERAL), 12),
+            0xD2 => (jp_cc(jump::condition::NC, LITERAL), 12),
+            0xDA => (jp_cc(jump::condition::C, LITERAL), 12),
             0xE9 => (jp(indirection::HL), 4),
             0x18 => (jr(LITERAL), 8),
             // Not Implemented

@@ -1,5 +1,21 @@
 use super::Operator;
-use crate::cpu::{command::operand::ReadRef, registers::Flags};
+use crate::cpu::command::operand::ReadRef;
+
+pub mod condition {
+    use crate::cpu::registers::Flags;
+
+    pub type Condition = fn(Flags) -> bool;
+
+    pub const NZ: Condition = |flags| !flags.z;
+
+    pub const Z: Condition = |flags| flags.z;
+
+    pub const NC: Condition = |flags| !flags.c;
+
+    pub const C: Condition = |flags| flags.c;
+}
+
+pub use condition::Condition;
 
 pub fn jp(operand: ReadRef<u16>) -> Operator {
     Operator::new("JP", |context| {
@@ -7,29 +23,13 @@ pub fn jp(operand: ReadRef<u16>) -> Operator {
     })
 }
 
-fn conditional_jump(operand: ReadRef<u16>, condition: fn(Flags) -> bool) -> Operator {
+pub fn jp_cc(condition: Condition, location: ReadRef<u16>) -> Operator {
     Operator::new("JP", move |context| {
-        let address = operand.read(context);
+        let address = location.read(context);
         if condition(context.flags()) {
             context.registers_mut().pc = address;
         }
     })
-}
-
-pub fn jp_nz(operand: ReadRef<u16>) -> Operator {
-    conditional_jump(operand, |flags| !flags.z)
-}
-
-pub fn jp_z(operand: ReadRef<u16>) -> Operator {
-    conditional_jump(operand, |flags| flags.z)
-}
-
-pub fn jp_nc(operand: ReadRef<u16>) -> Operator {
-    conditional_jump(operand, |flags| !flags.c)
-}
-
-pub fn jp_c(operand: ReadRef<u16>) -> Operator {
-    conditional_jump(operand, |flags| flags.c)
 }
 
 pub fn jr(operand: ReadRef<u8>) -> Operator {
