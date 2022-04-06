@@ -47,7 +47,7 @@ fn print_cartridge_info(header: &cartridge::Header) {
 fn boot(cartridge: Cartridge) {
     let mut memory = Memory::new(cartridge);
     let mut cpu = Cpu::default();
-    for _ in 0..3 {
+    for _ in 0..10 {
         let instruction = cpu.step(&mut memory);
         println!("{}", instruction);
     }

@@ -26,17 +26,25 @@ pub trait Context {
         self.registers_mut().f = flags;
     }
 
-    fn read16(&mut self, address: u16) -> u16 {
-        self.memory().read(address) as u16 | (self.memory().read(address + 1) as u16) << 8
+    fn read(&self, address: u16) -> u8 {
+        self.memory().read(address)
+    }
+
+    fn write(&mut self, address: u16, value: u8) {
+        self.memory_mut().write(address, value);
+    }
+
+    fn read16(&self, address: u16) -> u16 {
+        self.read(address) as u16 | (self.read(address + 1) as u16) << 8
     }
 
     fn write16(&mut self, address: u16, value: u16) {
-        self.memory_mut().write(address, (value & 0xFF) as u8);
-        self.memory_mut().write(address + 1, (value >> 8) as u8);
+        self.write(address, value as u8);
+        self.write(address + 1, (value >> 8) as u8);
     }
 
     fn fetch_pc(&mut self) -> u8 {
-        let value = self.memory().read(self.registers().pc);
+        let value = self.read(self.registers().pc);
         self.registers_mut().pc += 1;
         value
     }
@@ -61,15 +69,26 @@ pub trait Context {
         sp.wrapping_add(n16)
     }
 
+    fn push_sp(&mut self, value: u8) {
+        let address = self.registers().sp.wrapping_sub(1);
+        self.write(address, value);
+        self.registers_mut().sp = address;
+    }
+
+    fn pop_sp(&mut self) -> u8 {
+        let address = self.registers().sp;
+        let value = self.read(address);
+        self.registers_mut().sp = address.wrapping_add(1);
+        value
+    }
+
     fn push16_sp(&mut self, value: u16) {
-        self.write16(self.registers().sp, value);
-        self.registers_mut().sp = self.registers().sp.wrapping_sub(2);
+        self.push_sp((value >> 8) as u8);
+        self.push_sp(value as u8);
     }
 
     fn pop16_sp(&mut self) -> u16 {
-        let value = self.read16(self.registers().sp);
-        self.registers_mut().sp = self.registers().sp.wrapping_add(2);
-        value
+        self.pop_sp() as u16 | (self.pop_sp() as u16) << 8
     }
 
     fn call(&mut self, address: u16) {

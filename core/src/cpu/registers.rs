@@ -72,7 +72,7 @@ fn to_u16(n: u8, m: u8) -> u16 {
 }
 
 fn to_u8s(n: u16) -> (u8, u8) {
-    ((n >> 8) as u8, (n & 0xFF) as u8)
+    ((n >> 8) as u8, n as u8)
 }
 
 impl Registers {

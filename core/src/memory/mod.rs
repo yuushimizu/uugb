@@ -7,6 +7,7 @@ use wram::Wram;
 pub struct Memory {
     cartridge: Cartridge,
     wram: Wram,
+    hram: Vec<u8>,
 }
 
 impl Memory {
@@ -14,6 +15,7 @@ impl Memory {
         Self {
             cartridge,
             wram: Default::default(),
+            hram: vec![0x00u8; 0x7F],
         }
     }
 
@@ -25,6 +27,7 @@ impl Memory {
             0xC000..=0xDFFF => self.wram.read(address - 0xC000),
             0xE000..=0xFDFF => self.wram.read(address - 0xE000), // mirror
             0xFEA0..=0xFEFF => 0,                                // unusable
+            0xFF80..=0xFFFE => self.hram[(address - 0xFF80) as usize],
             _ => panic!("Read from the address: {:04X}", address),
         }
     }
@@ -37,6 +40,7 @@ impl Memory {
             0xC000..=0xDFFF => self.wram.write(address - 0xC000, value),
             0xE000..=0xFDFF => self.wram.write(address - 0xE000, value), // mirror
             0xFEA0..=0xFEFF => {}                                        // unusable
+            0xFF80..=0xFFFE => self.hram[(address - 0xFF80) as usize] = value,
             _ => panic!("Write {:02X} to the address: {:04X}", value, address),
         }
     }

@@ -27,14 +27,14 @@ impl Operand for Indirection {}
 impl Read<u8> for Indirection {
     fn read(self, context: &mut dyn Context) -> u8 {
         let address = (self.address)(context);
-        context.memory().read(address)
+        context.read(address)
     }
 }
 
 impl Write<u8> for Indirection {
     fn writer(self, context: &mut dyn Context) -> Writer<u8> {
         let address = (self.address)(context);
-        Box::new(move |context, value| context.memory_mut().write(address, value))
+        Box::new(move |context, value| context.write(address, value))
     }
 }
 
@@ -42,8 +42,8 @@ impl ReadWrite<u8> for Indirection {
     fn read_write(self, context: &mut dyn Context) -> (u8, Writer<u8>) {
         let address = (self.address)(context);
         (
-            context.memory().read(address),
-            Box::new(move |context, value| context.memory_mut().write(address, value)),
+            context.read(address),
+            Box::new(move |context, value| context.write(address, value)),
         )
     }
 }
