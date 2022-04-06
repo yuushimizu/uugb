@@ -89,3 +89,11 @@ pub fn rrca() -> Operator {
 pub fn rra() -> Operator {
     rr_u8("RLA", register::A, true)
 }
+
+pub fn rrc(operand: ReadWriteRef<u8>) -> Operator {
+    rr_u8("RRC", operand, false)
+}
+
+pub fn rr(operand: ReadWriteRef<u8>) -> Operator {
+    rr_u8("RR", operand, true)
+}
