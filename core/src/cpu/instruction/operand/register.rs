@@ -15,8 +15,6 @@ impl<T: Value> fmt::Display for Register<T> {
     }
 }
 
-impl<T: Value> Operand for Register<T> {}
-
 impl<T: Value> fmt::Debug for Register<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Register")
@@ -24,6 +22,8 @@ impl<T: Value> fmt::Debug for Register<T> {
             .finish()
     }
 }
+
+impl<T: Value> Operand for Register<T> {}
 
 impl<T: Value> Read<T> for Register<T> {
     fn read(self, context: &mut dyn Context) -> T {
