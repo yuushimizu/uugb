@@ -249,6 +249,8 @@ impl Command {
             0xCA => (jp_z(LITERAL), 12),
             0xD2 => (jp_nc(LITERAL), 12),
             0xDA => (jp_c(LITERAL), 12),
+            0xE9 => (jp(indirection::HL), 4),
+            0x18 => (jr(LITERAL), 8),
             // Not Implemented
             _ => panic!("This opcode is not implemented!: {:02X}", opcode),
         };

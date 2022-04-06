@@ -31,3 +31,10 @@ pub fn jp_nc(operand: ReadRef<u16>) -> Operator {
 pub fn jp_c(operand: ReadRef<u16>) -> Operator {
     conditional_jump(operand, |flags| flags.c)
 }
+
+pub fn jr(operand: ReadRef<u8>) -> Operator {
+    Operator::new("JR", |context| {
+        let offset = operand.read(context);
+        context.registers_mut().pc = context.registers().pc.wrapping_add(offset as i8 as u16)
+    })
+}
