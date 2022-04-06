@@ -71,4 +71,9 @@ pub trait Context {
         self.registers_mut().sp = self.registers().sp.wrapping_add(2);
         value
     }
+
+    fn call(&mut self, address: u16) {
+        self.push16_sp(self.registers().pc);
+        self.jump(address);
+    }
 }

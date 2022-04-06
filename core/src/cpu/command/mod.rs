@@ -261,6 +261,15 @@ impl Command {
             0xCC => (call_cc(jump::condition::Z, LITERAL), 12),
             0xD4 => (call_cc(jump::condition::NC, LITERAL), 12),
             0xDC => (call_cc(jump::condition::C, LITERAL), 12),
+            // Restarts
+            0xC7 => (rst(0x00), 32),
+            0xCF => (rst(0x08), 32),
+            0xD7 => (rst(0x10), 32),
+            0xDF => (rst(0x18), 32),
+            0xE7 => (rst(0x20), 32),
+            0xEF => (rst(0x28), 32),
+            0xF7 => (rst(0x30), 32),
+            0xFF => (rst(0x38), 32),
             // Not Implemented
             _ => panic!("This opcode is not implemented!: {:02X}", opcode),
         };
