@@ -2,7 +2,7 @@ use crate::{
     cartridge::Cartridge,
     cpu::Cpu,
     io::Joypad,
-    memory::{Hram, MappedMemory, Wram},
+    memory::{mapped_memory, Hram, MappedMemory, Wram},
 };
 
 pub struct GameBoy {
@@ -25,11 +25,12 @@ impl GameBoy {
     }
 
     pub fn step(&mut self) -> crate::cpu::Instruction {
-        self.cpu.step(&mut MappedMemory {
-            cartridge: &mut self.cartridge,
-            wram: &mut self.wram,
-            hram: &mut self.hram,
-            joypad: &mut self.joypad,
-        })
+        self.cpu
+            .step(&mut MappedMemory::new(mapped_memory::Components {
+                cartridge: &mut self.cartridge,
+                wram: &mut self.wram,
+                hram: &mut self.hram,
+                joypad: &mut self.joypad,
+            }))
     }
 }

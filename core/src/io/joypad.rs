@@ -20,20 +20,12 @@ pub struct Joypad {
 }
 
 impl Joypad {
-    fn state(&self) -> &State {
+    pub fn state(&self) -> &State {
         &self.state
     }
 
-    fn set_state(&mut self, state: State) {
+    pub fn set_state(&mut self, state: State) {
         self.state = state;
-    }
-
-    fn set_actions_selected(&mut self, is_selected: bool) {
-        self.actions_selected = is_selected;
-    }
-
-    fn set_directions_selected(&mut self, is_selected: bool) {
-        self.directions_selected = is_selected;
     }
 
     fn actions_bits(&self) -> u8 {
