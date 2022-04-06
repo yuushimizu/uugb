@@ -251,6 +251,10 @@ impl Command {
             0xDA => (jp_cc(jump::condition::C, LITERAL), 12),
             0xE9 => (jp(indirection::HL), 4),
             0x18 => (jr(LITERAL), 8),
+            0x20 => (jr_cc(jump::condition::NZ, LITERAL), 8),
+            0x28 => (jr_cc(jump::condition::Z, LITERAL), 8),
+            0x30 => (jr_cc(jump::condition::NC, LITERAL), 8),
+            0x38 => (jr_cc(jump::condition::C, LITERAL), 8),
             // Not Implemented
             _ => panic!("This opcode is not implemented!: {:02X}", opcode),
         };

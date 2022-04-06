@@ -17,12 +17,6 @@ pub mod condition {
 
 pub use condition::Condition;
 
-pub fn jp(operand: ReadRef<u16>) -> Operator {
-    Operator::new("JP", |context| {
-        context.registers_mut().pc = operand.read(context);
-    })
-}
-
 pub fn jp_cc(condition: Condition, location: ReadRef<u16>) -> Operator {
     Operator::new("JP", move |context| {
         let address = location.read(context);
@@ -32,9 +26,19 @@ pub fn jp_cc(condition: Condition, location: ReadRef<u16>) -> Operator {
     })
 }
 
-pub fn jr(operand: ReadRef<u8>) -> Operator {
-    Operator::new("JR", |context| {
+pub fn jp(location: ReadRef<u16>) -> Operator {
+    jp_cc(|_| true, location)
+}
+
+pub fn jr_cc(condition: Condition, operand: ReadRef<u8>) -> Operator {
+    Operator::new("JR", move |context| {
         let offset = operand.read(context);
-        context.registers_mut().pc = context.registers().pc.wrapping_add(offset as i8 as u16)
+        if condition(context.flags()) {
+            context.registers_mut().pc = context.registers().pc.wrapping_add(offset as i8 as u16);
+        }
     })
+}
+
+pub fn jr(operand: ReadRef<u8>) -> Operator {
+    jr_cc(|_| true, operand)
 }
