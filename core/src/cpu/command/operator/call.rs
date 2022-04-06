@@ -30,3 +30,11 @@ pub fn ret_cc(condition: Condition) -> Operator {
 pub fn ret() -> Operator {
     ret_cc(|_| true)
 }
+
+pub fn reti() -> Operator {
+    Operator::new("RETI", move |context| {
+        let address = context.pop16_sp();
+        context.jump(address);
+        context.enable_interrupts();
+    })
+}

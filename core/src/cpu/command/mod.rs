@@ -276,6 +276,7 @@ impl Command {
             0xC8 => (ret_cc(jump::condition::Z), 8),
             0xD0 => (ret_cc(jump::condition::NC), 8),
             0xD8 => (ret_cc(jump::condition::C), 8),
+            0xD9 => (reti(), 8),
             // Not Implemented
             _ => panic!("This opcode is not implemented!: {:02X}", opcode),
         };
