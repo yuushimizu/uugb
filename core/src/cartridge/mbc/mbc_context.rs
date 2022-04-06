@@ -1,12 +1,12 @@
 use std::rc::Rc;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Context {
+pub struct MbcContext {
     pub rom: Rc<Vec<u8>>,
     pub ram: Vec<u8>,
 }
 
-impl Context {
+impl MbcContext {
     pub fn rom_size(&self) -> usize {
         self.rom.len()
     }

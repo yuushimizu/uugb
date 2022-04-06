@@ -1,20 +1,18 @@
 pub mod header;
 pub mod mbc;
 
-mod context;
-
 pub use header::*;
 pub use mbc::Mbc;
 
-use context::Context;
+use mbc::MbcContext;
 use std::rc::Rc;
 use std::result;
 
 #[derive(Debug)]
 pub struct Cartridge {
-    context: Context,
     header: Header,
     mbc: Box<dyn Mbc>,
+    mbc_context: MbcContext,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -37,15 +35,15 @@ pub fn create_mbc(header: &Header) -> Result<Box<dyn Mbc>> {
 impl Cartridge {
     pub fn new(rom: Rc<Vec<u8>>) -> Result<Self> {
         let header = Header::load(&rom).map_err(|err| Error::HeaderError(err))?;
-        let context = Context {
+        let mbc = create_mbc(&header)?;
+        let mbc_context = MbcContext {
             rom,
             ram: vec![0x00u8; header.ram_size.amount()],
         };
-        let mbc = create_mbc(&header)?;
         Ok(Self {
-            context,
             header,
             mbc,
+            mbc_context,
         })
     }
 
@@ -54,10 +52,10 @@ impl Cartridge {
     }
 
     pub fn read(&self, address: u16) -> u8 {
-        self.mbc.read(&self.context, address)
+        self.mbc.read(&self.mbc_context, address)
     }
 
     pub fn write(&mut self, address: u16, value: u8) {
-        self.mbc.write(&mut self.context, address, value)
+        self.mbc.write(&mut self.mbc_context, address, value)
     }
 }

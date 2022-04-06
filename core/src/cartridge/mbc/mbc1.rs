@@ -1,5 +1,4 @@
-use super::Mbc;
-use crate::cartridge::Context;
+use super::{Mbc, MbcContext};
 use log;
 use std::cmp::max;
 use std::ops::Range;
@@ -93,7 +92,7 @@ fn bit_mask(n: u8) -> u8 {
     0b1 << bin_digits(n) - 0b1
 }
 
-impl Context {
+impl MbcContext {
     fn rom_bank_mask(&self) -> u8 {
         bit_mask(max(
             1,
@@ -126,7 +125,7 @@ impl Context {
 }
 
 impl Mbc for Mbc1 {
-    fn read(self: &Self, context: &Context, address: u16) -> u8 {
+    fn read(self: &Self, context: &MbcContext, address: u16) -> u8 {
         match address {
             0x0000..=0x3FFF => context.rom_bank(self.first_rom_bank_number())[address as usize],
             0x4000..=0x7FFF => context.rom_bank(self.rom_bank_number())[address as usize - 0x4000],
@@ -138,7 +137,7 @@ impl Mbc for Mbc1 {
         }
     }
 
-    fn write(self: &mut Self, context: &mut Context, address: u16, value: u8) {
+    fn write(self: &mut Self, context: &mut MbcContext, address: u16, value: u8) {
         match address {
             0x0000..=0x1FFF => self.set_ram_enabled(value),
             0x2000..=0x3FFF => self.set_rom_bank_number_lower(value),
