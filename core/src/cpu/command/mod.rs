@@ -59,6 +59,14 @@ impl RegisterOperand {
             },
         }
     }
+
+    fn cycles(&self) -> u64 {
+        use RegisterOperandType::*;
+        match self.operand_type {
+            Register => 0,
+            Indirection => 4,
+        }
+    }
 }
 
 impl Command {
@@ -68,7 +76,6 @@ impl Command {
 
     fn next_cb(context: &mut dyn Context, opcode: u8) -> Self {
         use operator::*;
-        use RegisterOperandType::*;
         let sub_opcode = context.fetch_pc();
         let register_operand = RegisterOperand::from_opcode(sub_opcode);
         let operand = register_operand.operand;
@@ -93,10 +100,7 @@ impl Command {
                     opcode, sub_opcode
                 ),
             },
-            cycles: match register_operand.operand_type {
-                Register => 8,
-                Indirection => 16,
-            },
+            cycles: register_operand.cycles(),
         }
     }
 
@@ -104,7 +108,6 @@ impl Command {
         use operand::register::*;
         use operand::*;
         use operator::*;
-        use RegisterOperandType::*;
         let opcode = context.fetch_pc();
         let register_operand = RegisterOperand::from_opcode(opcode);
         let (operator, cycles) = match opcode {
@@ -120,13 +123,7 @@ impl Command {
                 let lhs = RegisterOperand::from_opcode(opcode >> 3);
                 (
                     ld(lhs.operand.as_write(), register_operand.operand.as_read()),
-                    match lhs.operand_type {
-                        Register => 4,
-                        Indirection => 8,
-                    } + match register_operand.operand_type {
-                        Register => 0,
-                        Indirection => 4,
-                    },
+                    4 + lhs.cycles() + register_operand.cycles(),
                 )
             }
             0x36 => (ld(indirection::HL, LITERAL), 12),
@@ -162,77 +159,45 @@ impl Command {
             0xD1 => (pop(DE), 12),
             0xE1 => (pop(HL), 12),
             // 8-Bit ALU
-            0x87 => (add(A, A), 4),
-            0x80 => (add(A, B), 4),
-            0x81 => (add(A, C), 4),
-            0x82 => (add(A, D), 4),
-            0x83 => (add(A, E), 4),
-            0x84 => (add(A, H), 4),
-            0x85 => (add(A, L), 4),
-            0x86 => (add(A, indirection::HL), 8),
+            0x80..=0x87 => (
+                add(A, register_operand.operand.as_read()),
+                4 + register_operand.cycles(),
+            ),
             0xC6 => (add(A, LITERAL), 8),
-            0x8F => (adc(A, A), 4),
-            0x88 => (adc(A, B), 4),
-            0x89 => (adc(A, C), 4),
-            0x8A => (adc(A, D), 4),
-            0x8B => (adc(A, E), 4),
-            0x8C => (adc(A, H), 4),
-            0x8D => (adc(A, L), 4),
-            0x8E => (adc(A, indirection::HL), 8),
+            0x88..=0x8F => (
+                adc(A, register_operand.operand.as_read()),
+                4 + register_operand.cycles(),
+            ),
             0xCE => (adc(A, LITERAL), 8),
-            0x97 => (sub(A), 4),
-            0x90 => (sub(B), 4),
-            0x91 => (sub(C), 4),
-            0x92 => (sub(D), 4),
-            0x93 => (sub(E), 4),
-            0x94 => (sub(H), 4),
-            0x95 => (sub(L), 4),
-            0x96 => (sub(indirection::HL), 8),
+            0x80..=0x97 => (
+                sub(register_operand.operand.as_read()),
+                4 + register_operand.cycles(),
+            ),
             0xD6 => (sub(LITERAL), 8),
-            0x9F => (sbc(A, A), 4),
-            0x98 => (sbc(A, B), 4),
-            0x99 => (sbc(A, C), 4),
-            0x9A => (sbc(A, D), 4),
-            0x9B => (sbc(A, E), 4),
-            0x9C => (sbc(A, H), 4),
-            0x9D => (sbc(A, L), 4),
-            0x9E => (sbc(A, indirection::HL), 8),
+            0x98..=0x9F => (
+                sbc(A, register_operand.operand.as_read()),
+                4 + register_operand.cycles(),
+            ),
             0xDE => (sbc(A, LITERAL), 8),
-            0xA7 => (and(A), 4),
-            0xA0 => (and(B), 4),
-            0xA1 => (and(C), 4),
-            0xA2 => (and(D), 4),
-            0xA3 => (and(E), 4),
-            0xA4 => (and(H), 4),
-            0xA5 => (and(L), 4),
-            0xA6 => (and(indirection::HL), 8),
+            0xA0..=0xA7 => (
+                and(register_operand.operand.as_read()),
+                4 + register_operand.cycles(),
+            ),
             0xE6 => (and(LITERAL), 8),
-            0xB7 => (or(A), 4),
-            0xB0 => (or(B), 4),
-            0xB1 => (or(C), 4),
-            0xB2 => (or(D), 4),
-            0xB3 => (or(E), 4),
-            0xB4 => (or(H), 4),
-            0xB5 => (or(L), 4),
-            0xB6 => (or(indirection::HL), 8),
+            0xB0..=0xB7 => (
+                or(register_operand.operand.as_read()),
+                4 + register_operand.cycles(),
+            ),
             0xF6 => (or(LITERAL), 8),
-            0xAF => (xor(A), 4),
-            0xA8 => (xor(B), 4),
-            0xA9 => (xor(C), 4),
-            0xAA => (xor(D), 4),
-            0xAB => (xor(E), 4),
-            0xAC => (xor(H), 4),
-            0xAD => (xor(L), 4),
-            0xAE => (xor(indirection::HL), 8),
+            0xA8..=0xAF => (
+                xor(register_operand.operand.as_read()),
+                4 + register_operand.cycles(),
+            ),
             0xEE => (xor(LITERAL), 8),
-            0xBF => (cp(A), 4),
-            0xB8 => (cp(B), 4),
-            0xB9 => (cp(C), 4),
-            0xBA => (cp(D), 4),
-            0xBB => (cp(E), 4),
-            0xBC => (cp(H), 4),
-            0xBD => (cp(L), 4),
-            0xBE => (cp(indirection::HL), 8),
+            0xB8..=0xBF => (
+                cp(register_operand.operand.as_read()),
+                4 + register_operand.cycles(),
+            ),
             0xFE => (cp(LITERAL), 8),
             0x3C => (inc(A), 4),
             0x04 => (inc(B), 4),
