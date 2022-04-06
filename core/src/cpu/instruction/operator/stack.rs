@@ -4,14 +4,14 @@ use crate::cpu::instruction::operand::{Read, Write};
 pub fn push<S: Read<u16>>(source: S) -> Operator {
     Operator::new(format!("PUSH {}", source), move |context| {
         let value = source.read(context);
-        context.push16_sp(value);
+        context.push16(value);
     })
 }
 
 pub fn pop<D: Write<u16>>(destination: D) -> Operator {
     Operator::new(format!("POP {}", destination), move |context| {
         let writer = destination.writer(context);
-        let value = context.pop16_sp();
+        let value = context.pop16();
         writer(context, value);
     })
 }

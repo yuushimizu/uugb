@@ -43,14 +43,14 @@ pub trait Context {
         self.write(address + 1, (value >> 8) as u8);
     }
 
-    fn fetch_pc(&mut self) -> u8 {
+    fn fetch(&mut self) -> u8 {
         let value = self.read(self.registers().pc);
         self.registers_mut().pc += 1;
         value
     }
 
-    fn fetch16_pc(&mut self) -> u16 {
-        self.fetch_pc() as u16 | (self.fetch_pc() as u16) << 8
+    fn fetch16(&mut self) -> u16 {
+        self.fetch() as u16 | (self.fetch() as u16) << 8
     }
 
     fn jump(&mut self, address: u16) {
@@ -69,35 +69,35 @@ pub trait Context {
         sp.wrapping_add(n16)
     }
 
-    fn push_sp(&mut self, value: u8) {
+    fn push(&mut self, value: u8) {
         let address = self.registers().sp.wrapping_sub(1);
         self.write(address, value);
         self.registers_mut().sp = address;
     }
 
-    fn pop_sp(&mut self) -> u8 {
+    fn pop(&mut self) -> u8 {
         let address = self.registers().sp;
         let value = self.read(address);
         self.registers_mut().sp = address.wrapping_add(1);
         value
     }
 
-    fn push16_sp(&mut self, value: u16) {
-        self.push_sp((value >> 8) as u8);
-        self.push_sp(value as u8);
+    fn push16(&mut self, value: u16) {
+        self.push((value >> 8) as u8);
+        self.push(value as u8);
     }
 
-    fn pop16_sp(&mut self) -> u16 {
-        self.pop_sp() as u16 | (self.pop_sp() as u16) << 8
+    fn pop16(&mut self) -> u16 {
+        self.pop() as u16 | (self.pop() as u16) << 8
     }
 
     fn call(&mut self, address: u16) {
-        self.push16_sp(self.registers().pc);
+        self.push16(self.registers().pc);
         self.jump(address);
     }
 
     fn ret(&mut self) {
-        let address = self.pop16_sp();
+        let address = self.pop16();
         self.jump(address);
     }
 }

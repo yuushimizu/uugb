@@ -77,12 +77,12 @@ register!(HL, bc);
 
 pub const LITERAL: Indirection = Indirection {
     name: "nn",
-    address: |context| context.fetch16_pc(),
+    address: |context| context.fetch16(),
 };
 
 pub const LITERAL_8: Indirection = Indirection {
     name: "($FF00+n)",
-    address: |context| 0xFF00 | context.fetch_pc() as u16,
+    address: |context| 0xFF00 | context.fetch() as u16,
 };
 
 pub const C: Indirection = Indirection {

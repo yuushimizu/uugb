@@ -48,7 +48,7 @@ impl Instruction {
     fn next_cb(context: &mut dyn Context, opcode: u8) -> Self {
         use operand::*;
         use operator::*;
-        let sub_opcode = context.fetch_pc();
+        let sub_opcode = context.fetch();
         let opcode_register = OpcodeRegister::from(sub_opcode);
         let bit_operand = sub_opcode >> 3 & 0b111;
         Self {
@@ -77,7 +77,7 @@ impl Instruction {
         use operand::register::*;
         use operand::*;
         use operator::*;
-        let opcode = context.fetch_pc();
+        let opcode = context.fetch();
         let opcode_register = OpcodeRegister::from(opcode);
         let (operator, cycles) = match opcode {
             // Miscellaneous (HALT)
