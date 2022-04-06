@@ -145,3 +145,10 @@ pub fn bit(bit: u8, rhs: ReadRef<u8>) -> Operator {
         });
     })
 }
+
+pub fn set(bit: u8, rhs: ReadWriteRef<u8>) -> Operator {
+    Operator::new("SET", move |context| {
+        let (current, writer) = rhs.read_write(context);
+        writer(context, current | 0b1 << bit)
+    })
+}

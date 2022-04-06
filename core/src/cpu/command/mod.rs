@@ -94,6 +94,7 @@ impl Command {
                 0x28..=0x2F => sra(operand),
                 0x38..=0x3F => srl(operand),
                 0x40..=0x7F => bit(sub_opcode >> 3 & 0b111, operand.as_read()),
+                0xC0..=0xFF => set(sub_opcode >> 3 & 0b111, operand.as_read_write()),
                 // Not Implemented
                 _ => panic!(
                     "This opcode is not implemented!: {:02X} {:02X}",
@@ -111,6 +112,7 @@ impl Command {
         let opcode = context.fetch_pc();
         let register_operand = RegisterOperand::from_opcode(opcode);
         let (operator, cycles) = match opcode {
+            // Miscellaneous (HALT)
             0x76 => (halt(), 4),
             // 8-Bit Loads
             0x06 => (ld(B, LITERAL), 8),
