@@ -17,7 +17,7 @@ pub mod condition {
 
 pub use condition::Condition;
 
-pub fn jp_cc(condition: Condition, location: Read<u16>) -> Operator {
+pub fn jp_cc<L: Read<u16>>(condition: Condition, location: L) -> Operator {
     Operator::new("JP", move |context| {
         let address = location.read(context);
         if condition(context.flags()) {
@@ -26,11 +26,11 @@ pub fn jp_cc(condition: Condition, location: Read<u16>) -> Operator {
     })
 }
 
-pub fn jp(location: Read<u16>) -> Operator {
+pub fn jp<L: Read<u16>>(location: L) -> Operator {
     jp_cc(|_| true, location)
 }
 
-pub fn jr_cc(condition: Condition, operand: Read<u8>) -> Operator {
+pub fn jr_cc<O: Read<u8>>(condition: Condition, operand: O) -> Operator {
     Operator::new("JR", move |context| {
         let offset = operand.read(context);
         if condition(context.flags()) {
@@ -39,6 +39,6 @@ pub fn jr_cc(condition: Condition, operand: Read<u8>) -> Operator {
     })
 }
 
-pub fn jr(operand: Read<u8>) -> Operator {
+pub fn jr<O: Read<u8>>(operand: O) -> Operator {
     jr_cc(|_| true, operand)
 }

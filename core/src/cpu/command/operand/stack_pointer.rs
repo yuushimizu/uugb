@@ -1,18 +1,23 @@
-use super::Readable;
+use super::{Operand, Read};
 use crate::cpu::Context;
+use std::fmt;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct AddLiteral8;
 
-impl Readable<u16> for AddLiteral8 {
+impl Read<u16> for AddLiteral8 {
     fn read(&self, context: &mut dyn Context) -> u16 {
         let value = context.fetch_pc();
         context.add_sp(value)
     }
+}
 
-    fn as_read(&self) -> &dyn Readable<u16> {
-        self
+impl fmt::Display for AddLiteral8 {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", "SP+n")
     }
 }
 
-pub const ADD_LITERAL_8: &AddLiteral8 = &AddLiteral8;
+impl Operand for AddLiteral8 {}
+
+pub const ADD_LITERAL_8: AddLiteral8 = AddLiteral8;

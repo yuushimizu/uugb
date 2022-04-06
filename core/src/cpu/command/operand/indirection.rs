@@ -1,8 +1,8 @@
-use super::{ReadWritable, Readable, Writable, Writer};
+use super::{Operand, Read, ReadWrite, Write, Writer};
 use crate::cpu::Context;
 use std::fmt;
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct Indirection {
     name: &'static str,
     address: fn(&mut dyn Context) -> u16,
@@ -16,29 +16,29 @@ impl fmt::Debug for Indirection {
     }
 }
 
-impl Readable<u8> for Indirection {
+impl fmt::Display for Indirection {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "({})", self.name)
+    }
+}
+
+impl Operand for Indirection {}
+
+impl Read<u8> for Indirection {
     fn read(&self, context: &mut dyn Context) -> u8 {
         let address = (self.address)(context);
         context.memory().read(address)
     }
-
-    fn as_read(&self) -> &dyn Readable<u8> {
-        self
-    }
 }
 
-impl Writable<u8> for Indirection {
+impl Write<u8> for Indirection {
     fn writer(&self, context: &mut dyn Context) -> Writer<u8> {
         let address = (self.address)(context);
         Box::new(move |context, value| context.memory_mut().write(address, value))
     }
-
-    fn as_write(&self) -> &dyn Writable<u8> {
-        self
-    }
 }
 
-impl ReadWritable<u8> for Indirection {
+impl ReadWrite<u8> for Indirection {
     fn read_write(&self, context: &mut dyn Context) -> (u8, Writer<u8>) {
         let address = (self.address)(context);
         (
@@ -46,38 +46,26 @@ impl ReadWritable<u8> for Indirection {
             Box::new(move |context, value| context.memory_mut().write(address, value)),
         )
     }
-
-    fn as_read_write(&self) -> &dyn ReadWritable<u8> {
-        self
-    }
 }
 
-impl Readable<u16> for Indirection {
+impl Read<u16> for Indirection {
     fn read(&self, context: &mut dyn Context) -> u16 {
         let address = (self.address)(context);
         context.read16(address)
     }
-
-    fn as_read(&self) -> &dyn Readable<u16> {
-        self
-    }
 }
 
-impl Writable<u16> for Indirection {
+impl Write<u16> for Indirection {
     fn writer(&self, context: &mut dyn Context) -> Writer<u16> {
         let address = (self.address)(context);
         Box::new(move |context, value| context.write16(address, value))
-    }
-
-    fn as_write(&self) -> &dyn Writable<u16> {
-        self
     }
 }
 
 macro_rules! register {
     ($name: ident, $field: ident) => {
-        pub const $name: &Indirection = &Indirection {
-            name: concat!("(", stringify!($name), ")"),
+        pub const $name: Indirection = Indirection {
+            name: stringify!($name),
             address: |context| context.registers().$field(),
         };
     };
@@ -87,23 +75,23 @@ register!(BC, bc);
 register!(DE, bc);
 register!(HL, bc);
 
-pub const LITERAL: &Indirection = &Indirection {
-    name: "(nn)",
+pub const LITERAL: Indirection = Indirection {
+    name: "nn",
     address: |context| context.fetch16_pc(),
 };
 
-pub const LITERAL_8: &Indirection = &Indirection {
-    name: "(n)",
+pub const LITERAL_8: Indirection = Indirection {
+    name: "($FF00+n)",
     address: |context| 0xFF00 | context.fetch_pc() as u16,
 };
 
-pub const C: &Indirection = &Indirection {
-    name: "(C)",
+pub const C: Indirection = Indirection {
+    name: "C",
     address: |context| 0xFF00 | context.registers().c as u16,
 };
 
-pub const HLD: &Indirection = &Indirection {
-    name: "(HLD)",
+pub const HLD: Indirection = Indirection {
+    name: "HLD",
     address: |context| {
         let address = context.registers().hl();
         context.registers_mut().set_hl(address.wrapping_sub(1));
@@ -111,8 +99,8 @@ pub const HLD: &Indirection = &Indirection {
     },
 };
 
-pub const HLI: &Indirection = &Indirection {
-    name: "(HLI)",
+pub const HLI: Indirection = Indirection {
+    name: "HLI",
     address: |context| {
         let address = context.registers().hl();
         context.registers_mut().set_hl(address.wrapping_add(1));

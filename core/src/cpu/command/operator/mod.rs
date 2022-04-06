@@ -2,6 +2,7 @@ pub mod arithmetic;
 pub mod bits;
 pub mod call;
 pub mod cpu_state;
+pub mod format;
 pub mod jump;
 pub mod load;
 pub mod logic;
@@ -19,6 +20,7 @@ pub use miscellaneous::*;
 pub use stack::*;
 
 use crate::cpu::Context;
+//use format::Format;
 use std::fmt;
 
 pub struct Operator {
@@ -31,6 +33,12 @@ impl fmt::Debug for Operator {
         f.debug_struct("Operator")
             .field("mnemonic", &self.mnemonic)
             .finish()
+    }
+}
+
+impl fmt::Display for Operator {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.mnemonic)
     }
 }
 

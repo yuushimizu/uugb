@@ -1,7 +1,7 @@
 use super::{jump::condition::Condition, Operator};
 use crate::cpu::command::operand::Read;
 
-pub fn call_cc(condition: Condition, location: Read<u16>) -> Operator {
+pub fn call_cc<L: Read<u16>>(condition: Condition, location: L) -> Operator {
     Operator::new("CALL", move |context| {
         let address = location.read(context);
         if condition(context.flags()) {
@@ -10,7 +10,7 @@ pub fn call_cc(condition: Condition, location: Read<u16>) -> Operator {
     })
 }
 
-pub fn call(location: Read<u16>) -> Operator {
+pub fn call<L: Read<u16>>(location: L) -> Operator {
     call_cc(|_| true, location)
 }
 
