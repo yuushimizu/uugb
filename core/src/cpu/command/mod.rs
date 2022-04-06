@@ -67,97 +67,36 @@ impl Command {
     }
 
     fn next_cb(context: &mut dyn Context, opcode: u8) -> Self {
-        use operand::register::*;
-        use operand::*;
         use operator::*;
         use RegisterOperandType::*;
         let sub_opcode = context.fetch_pc();
         let register_operand = RegisterOperand::from_opcode(sub_opcode);
-        let (operator, cycles) = match sub_opcode {
-            // Miscellaneous
-            0x37 => (swap(A), 8),
-            0x30 => (swap(B), 8),
-            0x31 => (swap(C), 8),
-            0x32 => (swap(D), 8),
-            0x33 => (swap(E), 8),
-            0x34 => (swap(H), 8),
-            0x35 => (swap(L), 8),
-            0x36 => (swap(indirection::HL), 16),
-            // Rotates & Shifts
-            0x07 => (rlc(A), 8),
-            0x00 => (rlc(B), 8),
-            0x01 => (rlc(C), 8),
-            0x02 => (rlc(D), 8),
-            0x03 => (rlc(E), 8),
-            0x04 => (rlc(H), 8),
-            0x05 => (rlc(L), 8),
-            0x06 => (rlc(indirection::HL), 16),
-            0x17 => (rl(A), 8),
-            0x10 => (rl(B), 8),
-            0x11 => (rl(C), 8),
-            0x12 => (rl(D), 8),
-            0x13 => (rl(E), 8),
-            0x14 => (rl(H), 8),
-            0x15 => (rl(L), 8),
-            0x16 => (rl(indirection::HL), 16),
-            0x0F => (rrc(A), 8),
-            0x08 => (rrc(B), 8),
-            0x09 => (rrc(C), 8),
-            0x0A => (rrc(D), 8),
-            0x0B => (rrc(E), 8),
-            0x0C => (rrc(H), 8),
-            0x0D => (rrc(L), 8),
-            0x0E => (rrc(indirection::HL), 16),
-            0x1F => (rr(A), 8),
-            0x18 => (rr(B), 8),
-            0x19 => (rr(C), 8),
-            0x1A => (rr(D), 8),
-            0x1B => (rr(E), 8),
-            0x1C => (rr(H), 8),
-            0x1D => (rr(L), 8),
-            0x1E => (rr(indirection::HL), 16),
-            0x27 => (sla(A), 8),
-            0x20 => (sla(B), 8),
-            0x21 => (sla(C), 8),
-            0x22 => (sla(D), 8),
-            0x23 => (sla(E), 8),
-            0x24 => (sla(H), 8),
-            0x25 => (sla(L), 8),
-            0x26 => (sla(indirection::HL), 16),
-            0x2F => (sra(A), 8),
-            0x28 => (sra(B), 8),
-            0x29 => (sra(C), 8),
-            0x2A => (sra(D), 8),
-            0x2B => (sra(E), 8),
-            0x2C => (sra(H), 8),
-            0x2D => (sra(L), 8),
-            0x2E => (sra(indirection::HL), 16),
-            0x3F => (srl(A), 8),
-            0x38 => (srl(B), 8),
-            0x39 => (srl(C), 8),
-            0x3A => (srl(D), 8),
-            0x3B => (srl(E), 8),
-            0x3C => (srl(H), 8),
-            0x3D => (srl(L), 8),
-            0x3E => (srl(indirection::HL), 16),
-            0x40..=0x7F => (
-                bit(sub_opcode >> 3 & 0b111, register_operand.operand.as_read()),
-                match register_operand.operand_type {
-                    Register => 8,
-                    Indirection => 16,
-                },
-            ),
-            // Not Implemented
-            _ => panic!(
-                "This opcode is not implemented!: {:02X} {:02X}",
-                opcode, sub_opcode
-            ),
-        };
+        let operand = register_operand.operand;
         Self {
             opcode,
             sub_opcode: Some(sub_opcode),
-            operator,
-            cycles,
+            operator: match sub_opcode {
+                // Miscellaneous
+                0x30..=0x37 => swap(operand),
+                // Rotates & Shifts
+                0x00..=0x07 => rlc(operand),
+                0x10..=0x17 => rl(operand),
+                0x08..=0x0F => rrc(operand),
+                0x18..=0x1F => rr(operand),
+                0x20..=0x27 => sla(operand),
+                0x28..=0x2F => sra(operand),
+                0x38..=0x3F => srl(operand),
+                0x40..=0x7F => bit(sub_opcode >> 3 & 0b111, operand.as_read()),
+                // Not Implemented
+                _ => panic!(
+                    "This opcode is not implemented!: {:02X} {:02X}",
+                    opcode, sub_opcode
+                ),
+            },
+            cycles: match register_operand.operand_type {
+                Register => 8,
+                Indirection => 16,
+            },
         }
     }
 
