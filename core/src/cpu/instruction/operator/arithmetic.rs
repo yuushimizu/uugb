@@ -10,7 +10,7 @@ fn add_u8<L: ReadWrite<u8>, R: Read<u8>>(
     rhs: R,
     with_carry: bool,
 ) -> Operator {
-    Operator::new(mnemonic, move |context| {
+    Operator::new(format!("{} {}, {}", mnemonic, lhs, rhs), move |context| {
         let (current, writer) = lhs.read_write(context);
         let n = rhs.read(context);
         let carry = (with_carry && context.flags().c) as u8;
@@ -35,13 +35,13 @@ pub fn adc<L: ReadWrite<u8>, R: Read<u8>>(lhs: L, rhs: R) -> Operator {
 }
 
 fn sub_u8<L: ReadWrite<u8>, R: Read<u8>>(
-    mnemonic: &'static str,
+    format: String,
     lhs: L,
     rhs: R,
     with_carry: bool,
     with_result: bool,
 ) -> Operator {
-    Operator::new(mnemonic, move |context| {
+    Operator::new(format, move |context| {
         let (current, writer) = lhs.read_write(context);
         let n = rhs.read(context);
         let carry = (with_carry && context.flags().c) as u8;
@@ -61,19 +61,31 @@ fn sub_u8<L: ReadWrite<u8>, R: Read<u8>>(
 }
 
 pub fn sub<O: Read<u8>>(operand: O) -> Operator {
-    sub_u8("SUB", register::A, operand, false, true)
+    sub_u8(
+        format!("SUB {}", operand),
+        register::A,
+        operand,
+        false,
+        true,
+    )
 }
 
 pub fn sbc<L: ReadWrite<u8>, R: Read<u8>>(lhs: L, rhs: R) -> Operator {
-    sub_u8("SBC", lhs, rhs, true, true)
+    sub_u8(format!("SBC {}, {}", lhs, rhs), lhs, rhs, true, true)
 }
 
 pub fn cp<O: Read<u8>>(operand: O) -> Operator {
-    sub_u8("CP", register::A, operand, false, false)
+    sub_u8(
+        format!("CP {}", operand),
+        register::A,
+        operand,
+        false,
+        false,
+    )
 }
 
 pub fn inc<O: ReadWrite<u8>>(operand: O) -> Operator {
-    Operator::new("INC", move |context| {
+    Operator::new(format!("INC {}", operand), move |context| {
         let (current, writer) = operand.read_write(context);
         let result = current.wrapping_add(1);
         writer(context, result);
@@ -87,7 +99,7 @@ pub fn inc<O: ReadWrite<u8>>(operand: O) -> Operator {
 }
 
 pub fn dec<O: ReadWrite<u8>>(operand: O) -> Operator {
-    Operator::new("DEC", move |context| {
+    Operator::new(format!("DEC {}", operand), move |context| {
         let (current, writer) = operand.read_write(context);
         let result = current.wrapping_sub(1);
         writer(context, result);
@@ -101,7 +113,7 @@ pub fn dec<O: ReadWrite<u8>>(operand: O) -> Operator {
 }
 
 fn add_u16<L: ReadWrite<u16>, R: Read<u16>>(mnemonic: &'static str, lhs: L, rhs: R) -> Operator {
-    Operator::new(mnemonic, move |context| {
+    Operator::new(format!("ADD {}, {}", lhs, rhs), move |context| {
         let (current, writer) = lhs.read_write(context);
         let n = rhs.read(context);
         let (result, overflow) = current.overflowing_add(n);
@@ -120,14 +132,14 @@ pub fn add16<L: ReadWrite<u16>, R: Read<u16>>(lhs: L, rhs: R) -> Operator {
 }
 
 pub fn inc16<O: ReadWrite<u16>>(operand: O) -> Operator {
-    Operator::new("INC", move |context| {
+    Operator::new(format!("INC {}", operand), move |context| {
         let (current, writer) = operand.read_write(context);
         writer(context, current.wrapping_add(1))
     })
 }
 
 pub fn dec16<O: ReadWrite<u16>>(operand: O) -> Operator {
-    Operator::new("DEC", move |context| {
+    Operator::new(format!("DEC {}", operand), move |context| {
         let (current, writer) = operand.read_write(context);
         writer(context, current.wrapping_sub(1))
     })

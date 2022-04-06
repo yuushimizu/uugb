@@ -49,7 +49,7 @@ fn boot(cartridge: Cartridge) {
     let mut cpu = Cpu::default();
     for _ in 0..3 {
         let instruction = cpu.step(&mut memory);
-        println!("{:?}", instruction);
+        println!("{}", instruction);
     }
 }
 

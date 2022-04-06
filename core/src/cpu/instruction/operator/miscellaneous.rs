@@ -3,7 +3,7 @@ use crate::cpu::registers::Flags;
 use log;
 
 pub fn daa() -> Operator {
-    Operator::new("DAA", |context| {
+    Operator::new("DAA".into(), |context| {
         let flags = context.flags();
         let current = context.registers().a;
         let adjust_higher = flags.c || (!flags.n && current > 0x99);
@@ -26,7 +26,7 @@ pub fn daa() -> Operator {
 }
 
 pub fn ccf() -> Operator {
-    Operator::new("CCF", |context| {
+    Operator::new("CCF".into(), |context| {
         context.set_flags(Flags {
             n: false,
             h: false,
@@ -37,7 +37,7 @@ pub fn ccf() -> Operator {
 }
 
 pub fn scf() -> Operator {
-    Operator::new("SCF", |context| {
+    Operator::new("SCF".into(), |context| {
         context.set_flags(Flags {
             n: false,
             h: false,
@@ -48,11 +48,11 @@ pub fn scf() -> Operator {
 }
 
 pub fn nop() -> Operator {
-    Operator::new("NOP", |_context| {})
+    Operator::new("NOP".into(), |_context| {})
 }
 
 pub fn unused(opcode: u8) -> Operator {
-    Operator::new("UNUSED", move |_context| {
+    Operator::new("*UNUSED*".into(), move |_context| {
         log::warn!("The unused opcode has called: {:02X}", opcode);
     })
 }

@@ -1,17 +1,17 @@
 use super::Operator;
 
 pub fn halt() -> Operator {
-    Operator::new("HALT", |context| context.halt())
+    Operator::new("HALT".into(), |context| context.halt())
 }
 
 pub fn stop() -> Operator {
-    Operator::new("STOP", |context| context.stop())
+    Operator::new("STOP".into(), |context| context.stop())
 }
 
 pub fn di() -> Operator {
-    Operator::new("DI", |context| context.disable_interrupts())
+    Operator::new("DI".into(), |context| context.disable_interrupts())
 }
 
 pub fn ei() -> Operator {
-    Operator::new("EI", |context| context.enable_interrupts())
+    Operator::new("EI".into(), |context| context.enable_interrupts())
 }

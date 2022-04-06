@@ -3,6 +3,7 @@ mod operator;
 
 use super::Context;
 use operator::Operator;
+use std::fmt;
 
 #[derive(Debug)]
 pub struct Instruction {
@@ -10,6 +11,19 @@ pub struct Instruction {
     sub_opcode: Option<u8>,
     operator: Operator,
     cycles: u64,
+}
+
+impl fmt::Display for Instruction {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "({:02X}{}) {}",
+            self.opcode,
+            self.sub_opcode
+                .map_or("".into(), |sub_opcode| format!(" {:02X}", sub_opcode)),
+            self.operator
+        )
+    }
 }
 
 trait OpcodeRegisterCycles {

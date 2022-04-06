@@ -2,43 +2,82 @@ use super::Operator;
 use crate::cpu::instruction::operand::Read;
 
 pub mod condition {
-    use crate::cpu::registers::Flags;
+    use crate::cpu::{registers::Flags, Context};
+    use std::fmt;
 
-    pub type Condition = fn(Flags) -> bool;
+    #[derive(Debug, Clone)]
+    pub struct Condition {
+        name: &'static str,
+        predicate: fn(Flags) -> bool,
+    }
 
-    pub const NZ: Condition = |flags| !flags.z;
+    impl fmt::Display for Condition {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "{}", self.name)
+        }
+    }
 
-    pub const Z: Condition = |flags| flags.z;
+    impl Condition {
+        pub fn name(&self) -> &'static str {
+            return self.name;
+        }
 
-    pub const NC: Condition = |flags| !flags.c;
+        pub fn is_satisfied(&self, context: &dyn Context) -> bool {
+            (self.predicate)(context.flags())
+        }
+    }
 
-    pub const C: Condition = |flags| flags.c;
+    pub const NZ: Condition = Condition {
+        name: "NZ",
+        predicate: |flags| !flags.z,
+    };
+
+    pub const Z: Condition = Condition {
+        name: "Z",
+        predicate: |flags| flags.z,
+    };
+
+    pub const NC: Condition = Condition {
+        name: "NC",
+        predicate: |flags| !flags.c,
+    };
+
+    pub const C: Condition = Condition {
+        name: "C",
+        predicate: |flags| flags.c,
+    };
 }
 
 pub use condition::Condition;
 
 pub fn jp_cc<L: Read<u16>>(condition: Condition, location: L) -> Operator {
-    Operator::new("JP", move |context| {
+    Operator::new(format!("JP {}, {}", condition, location), move |context| {
         let address = location.read(context);
-        if condition(context.flags()) {
+        if condition.is_satisfied(context) {
             context.jump(address);
         }
     })
 }
 
 pub fn jp<L: Read<u16>>(location: L) -> Operator {
-    jp_cc(|_| true, location)
+    Operator::new(format!("JP {}", location), move |context| {
+        let address = location.read(context);
+        context.jump(address);
+    })
 }
 
 pub fn jr_cc<O: Read<u8>>(condition: Condition, operand: O) -> Operator {
-    Operator::new("JR", move |context| {
+    Operator::new(format!("JR {}, {}", condition, operand), move |context| {
         let offset = operand.read(context);
-        if condition(context.flags()) {
+        if condition.is_satisfied(context) {
             context.jump(context.registers().pc.wrapping_add(offset as i8 as u16));
         }
     })
 }
 
 pub fn jr<O: Read<u8>>(operand: O) -> Operator {
-    jr_cc(|_| true, operand)
+    Operator::new(format!("JR {}", operand), move |context| {
+        let offset = operand.read(context);
+        context.jump(context.registers().pc.wrapping_add(offset as i8 as u16));
+    })
 }

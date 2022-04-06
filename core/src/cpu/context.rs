@@ -76,4 +76,9 @@ pub trait Context {
         self.push16_sp(self.registers().pc);
         self.jump(address);
     }
+
+    fn ret(&mut self) {
+        let address = self.pop16_sp();
+        self.jump(address);
+    }
 }
