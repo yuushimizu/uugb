@@ -2,7 +2,7 @@ mod operand;
 mod operator;
 
 use super::Context;
-use operand::{IndirectionRef, RegisterRef};
+use operand::ReadWriteRef;
 use operator::Operator;
 use std::fmt;
 
@@ -24,24 +24,40 @@ impl fmt::Debug for Command {
     }
 }
 
-enum RegisterOperand {
-    Register(RegisterRef<u8>),
-    Indirection(IndirectionRef),
+enum RegisterOperandType {
+    Register,
+    Indirection,
 }
 
-fn register_operand(opcode: u8) -> RegisterOperand {
-    use operand::register::*;
-    use RegisterOperand::*;
-    match opcode & 0b111 {
-        0b111 => Register(A),
-        0b000 => Register(B),
-        0b001 => Register(C),
-        0b010 => Register(D),
-        0b011 => Register(E),
-        0b100 => Register(H),
-        0b101 => Register(L),
-        0b111 => Indirection(operand::indirection::HL),
-        _ => unreachable!(),
+struct RegisterOperand {
+    operand: ReadWriteRef<u8>,
+    operand_type: RegisterOperandType,
+}
+
+impl RegisterOperand {
+    fn from_opcode(opcode: u8) -> RegisterOperand {
+        use operand::register::*;
+        use RegisterOperandType::*;
+        let bits = opcode & 0b111;
+        match bits {
+            0b110 => RegisterOperand {
+                operand: operand::indirection::HL,
+                operand_type: Indirection,
+            },
+            _ => RegisterOperand {
+                operand: match bits {
+                    0b111 => A,
+                    0b000 => B,
+                    0b001 => C,
+                    0b010 => D,
+                    0b011 => E,
+                    0b100 => H,
+                    0b101 => L,
+                    _ => unreachable!(),
+                },
+                operand_type: Register,
+            },
+        }
     }
 }
 
@@ -54,7 +70,9 @@ impl Command {
         use operand::register::*;
         use operand::*;
         use operator::*;
+        use RegisterOperandType::*;
         let sub_opcode = context.fetch_pc();
+        let register_operand = RegisterOperand::from_opcode(sub_opcode);
         let (operator, cycles) = match sub_opcode {
             // Miscellaneous
             0x37 => (swap(A), 8),
@@ -122,14 +140,13 @@ impl Command {
             0x3C => (srl(H), 8),
             0x3D => (srl(L), 8),
             0x3E => (srl(indirection::HL), 16),
-            0x40..=0x7F => {
-                use RegisterOperand::*;
-                let lhs = sub_opcode >> 3 & 0b111;
-                match register_operand(sub_opcode) {
-                    Register(register) => (bit(lhs, register.as_read()), 8),
-                    Indirection(operand) => (bit(lhs, operand), 16),
-                }
-            }
+            0x40..=0x7F => (
+                bit(sub_opcode >> 3 & 0b111, register_operand.operand.as_read()),
+                match register_operand.operand_type {
+                    Register => 8,
+                    Indirection => 16,
+                },
+            ),
             // Not Implemented
             _ => panic!(
                 "This opcode is not implemented!: {:02X} {:02X}",
