@@ -1,6 +1,7 @@
 use crate::{
     cartridge::Cartridge,
     cpu::Cpu,
+    io::Joypad,
     memory::{Hram, MappedMemory, Wram},
 };
 
@@ -9,6 +10,7 @@ pub struct GameBoy {
     cpu: Cpu,
     wram: Wram,
     hram: Hram,
+    joypad: Joypad,
 }
 
 impl GameBoy {
@@ -16,8 +18,9 @@ impl GameBoy {
         Self {
             cartridge,
             cpu: Default::default(),
-            wram: Wram::default(),
-            hram: Hram::default(),
+            wram: Default::default(),
+            hram: Default::default(),
+            joypad: Default::default(),
         }
     }
 
@@ -26,6 +29,7 @@ impl GameBoy {
             cartridge: &mut self.cartridge,
             wram: &mut self.wram,
             hram: &mut self.hram,
+            joypad: &mut self.joypad,
         })
     }
 }
