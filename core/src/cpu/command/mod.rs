@@ -79,6 +79,7 @@ impl Command {
         let sub_opcode = context.fetch_pc();
         let register_operand = RegisterOperand::from_opcode(sub_opcode);
         let operand = register_operand.operand;
+        let bit_operand = sub_opcode >> 3 & 0b111;
         Self {
             opcode,
             sub_opcode: Some(sub_opcode),
@@ -93,13 +94,9 @@ impl Command {
                 0x20..=0x27 => sla(operand),
                 0x28..=0x2F => sra(operand),
                 0x38..=0x3F => srl(operand),
-                0x40..=0x7F => bit(sub_opcode >> 3 & 0b111, operand.as_read()),
-                0xC0..=0xFF => set(sub_opcode >> 3 & 0b111, operand.as_read_write()),
-                // Not Implemented
-                _ => panic!(
-                    "This opcode is not implemented!: {:02X} {:02X}",
-                    opcode, sub_opcode
-                ),
+                0x40..=0x7F => bit(bit_operand, operand.as_read()),
+                0xC0..=0xFF => set(bit_operand, operand.as_read_write()),
+                0x80..=0xBF => res(bit_operand, operand.as_read_write()),
             },
             cycles: register_operand.cycles(),
         }

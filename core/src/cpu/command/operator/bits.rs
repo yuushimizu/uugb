@@ -138,7 +138,7 @@ pub fn bit(bit: u8, rhs: ReadRef<u8>) -> Operator {
     Operator::new("BIT", move |context| {
         let value = rhs.read(context);
         context.set_flags(Flags {
-            z: !value.bit((bit & 0b111) as u32),
+            z: !value.bit(bit as u32),
             n: false,
             h: true,
             ..context.flags()
@@ -149,6 +149,13 @@ pub fn bit(bit: u8, rhs: ReadRef<u8>) -> Operator {
 pub fn set(bit: u8, rhs: ReadWriteRef<u8>) -> Operator {
     Operator::new("SET", move |context| {
         let (current, writer) = rhs.read_write(context);
-        writer(context, current | 0b1 << bit)
+        writer(context, current.set_bit(bit as u32))
+    })
+}
+
+pub fn res(bit: u8, rhs: ReadWriteRef<u8>) -> Operator {
+    Operator::new("RES", move |context| {
+        let (current, writer) = rhs.read_write(context);
+        writer(context, current.reset_bit(bit as u32))
     })
 }
