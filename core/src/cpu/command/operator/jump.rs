@@ -21,7 +21,7 @@ pub fn jp_cc(condition: Condition, location: Read<u16>) -> Operator {
     Operator::new("JP", move |context| {
         let address = location.read(context);
         if condition(context.flags()) {
-            context.registers_mut().pc = address;
+            context.jump(address);
         }
     })
 }
@@ -34,7 +34,7 @@ pub fn jr_cc(condition: Condition, operand: Read<u8>) -> Operator {
     Operator::new("JR", move |context| {
         let offset = operand.read(context);
         if condition(context.flags()) {
-            context.registers_mut().pc = context.registers().pc.wrapping_add(offset as i8 as u16);
+            context.jump(context.registers().pc.wrapping_add(offset as i8 as u16));
         }
     })
 }

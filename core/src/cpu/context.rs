@@ -26,6 +26,15 @@ pub trait Context {
         self.registers_mut().f = flags;
     }
 
+    fn read16(&mut self, address: u16) -> u16 {
+        self.memory().read(address) as u16 | (self.memory().read(address + 1) as u16) << 8
+    }
+
+    fn write16(&mut self, address: u16, value: u16) {
+        self.memory_mut().write(address, (value & 0xFF) as u8);
+        self.memory_mut().write(address + 1, (value >> 8) as u8);
+    }
+
     fn fetch_pc(&mut self) -> u8 {
         let value = self.memory().read(self.registers().pc);
         self.registers_mut().pc += 1;
@@ -36,13 +45,8 @@ pub trait Context {
         self.fetch_pc() as u16 | (self.fetch_pc() as u16) << 8
     }
 
-    fn read16(&mut self, address: u16) -> u16 {
-        self.memory().read(address) as u16 | (self.memory().read(address + 1) as u16) << 8
-    }
-
-    fn write16(&mut self, address: u16, value: u16) {
-        self.memory_mut().write(address, (value & 0xFF) as u8);
-        self.memory_mut().write(address + 1, (value >> 8) as u8);
+    fn jump(&mut self, address: u16) {
+        self.registers_mut().pc = address;
     }
 
     fn add_sp(&mut self, n: u8) -> u16 {
@@ -55,5 +59,16 @@ pub trait Context {
             c: ((sp & 0xFF) + (n16 & 0xFF)) > 0xFF,
         });
         sp.wrapping_add(n16)
+    }
+
+    fn push16_sp(&mut self, value: u16) {
+        self.write16(self.registers().sp, value);
+        self.registers_mut().sp = self.registers().sp.wrapping_sub(2);
+    }
+
+    fn pop16_sp(&mut self) -> u16 {
+        let value = self.read16(self.registers().sp);
+        self.registers_mut().sp = self.registers().sp.wrapping_add(2);
+        value
     }
 }

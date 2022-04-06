@@ -255,6 +255,12 @@ impl Command {
             0x28 => (jr_cc(jump::condition::Z, LITERAL), 8),
             0x30 => (jr_cc(jump::condition::NC, LITERAL), 8),
             0x38 => (jr_cc(jump::condition::C, LITERAL), 8),
+            // Calls
+            0xCD => (call(LITERAL), 12),
+            0xC4 => (call_cc(jump::condition::NZ, LITERAL), 12),
+            0xCC => (call_cc(jump::condition::Z, LITERAL), 12),
+            0xD4 => (call_cc(jump::condition::NC, LITERAL), 12),
+            0xDC => (call_cc(jump::condition::C, LITERAL), 12),
             // Not Implemented
             _ => panic!("This opcode is not implemented!: {:02X}", opcode),
         };

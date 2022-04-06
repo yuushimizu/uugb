@@ -1,5 +1,6 @@
 pub mod arithmetic;
 pub mod bits;
+pub mod call;
 pub mod cpu_state;
 pub mod jump;
 pub mod load;
@@ -9,6 +10,7 @@ pub mod stack;
 
 pub use arithmetic::*;
 pub use bits::*;
+pub use call::*;
 pub use cpu_state::*;
 pub use jump::*;
 pub use load::*;
