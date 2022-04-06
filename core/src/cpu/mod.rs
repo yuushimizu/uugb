@@ -13,6 +13,8 @@ use crate::memory::Memory;
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct Cpu {
     registers: Registers,
+    interrupts_enabled: bool,
+    interrupts_enabling: bool,
 }
 
 struct Context<'a> {
@@ -46,11 +48,11 @@ impl<'a> CpuContext for Context<'a> {
     }
 
     fn disable_interrupts(&mut self) {
-        todo!("DI");
+        self.cpu.interrupts_enabled = false;
     }
 
     fn enable_interrupts(&mut self) {
-        todo!("EI");
+        self.cpu.interrupts_enabling = true;
     }
 }
 
