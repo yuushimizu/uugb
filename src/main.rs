@@ -46,7 +46,7 @@ fn print_cartridge_info(header: &cartridge::Header) {
 
 fn boot(cartridge: Cartridge) {
     let mut game_boy = GameBoy::boot(cartridge);
-    for _ in 0..10 {
+    for _ in 0..20 {
         let instruction = game_boy.step();
         println!("{}", instruction);
     }
