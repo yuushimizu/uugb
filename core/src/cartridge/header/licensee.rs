@@ -8,7 +8,7 @@ pub struct Licensee {
     new_code: Option<Vec<u8>>,
 }
 
-const OLD_POSITION: usize = 0x014B;
+const OLD_ADDRESS: usize = 0x014B;
 
 const NEW_RANGE: RangeInclusive<usize> = 0x0144..=0x0145;
 
@@ -192,7 +192,7 @@ fn name_from_new_code(code: &[u8]) -> &'static str {
 
 impl Licensee {
     pub fn load(rom: &[u8]) -> Self {
-        let old_code = rom[OLD_POSITION];
+        let old_code = rom[OLD_ADDRESS];
         Self {
             old_code,
             new_code: match old_code {

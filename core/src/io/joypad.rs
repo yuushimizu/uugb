@@ -101,8 +101,8 @@ impl Joypad {
                 .buttons()
                 .iter()
                 .enumerate()
-                .fold(0b1 << category.bit(), |acc, (bit, button)| {
-                    acc | (self.state.is_pressing(*button) as u8) << bit
+                .fold(0b1 << category.bit(), |acc, (bit, &button)| {
+                    acc | (self.state.is_pressing(button) as u8) << bit
                 })
         } else {
             0x00

@@ -40,11 +40,11 @@ impl From<u8> for SgbFlag {
     }
 }
 
-const POSITION: usize = 0x0146;
+const ADDRESS: usize = 0x0146;
 
 impl SgbFlag {
     pub fn load(rom: &[u8]) -> Self {
-        rom[POSITION].into()
+        rom[ADDRESS].into()
     }
 
     pub fn code(&self) -> u8 {

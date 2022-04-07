@@ -53,11 +53,11 @@ fn decode(code: u8) -> (MbcType, Vec<CartridgeOption>) {
     }
 }
 
-const POSITION: usize = 0x0147;
+const ADDRESS: usize = 0x0147;
 
 impl CartridgeType {
     pub fn load(rom: &[u8]) -> Self {
-        rom[POSITION].into()
+        rom[ADDRESS].into()
     }
 
     pub fn code(&self) -> u8 {

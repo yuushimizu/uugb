@@ -11,11 +11,11 @@ impl From<u8> for RomSize {
     }
 }
 
-const POSITION: usize = 0x0148;
+const ADDRESS: usize = 0x0148;
 
 impl RomSize {
     pub fn load(rom: &[u8]) -> Self {
-        rom[POSITION].into()
+        rom[ADDRESS].into()
     }
 
     pub fn code(&self) -> u8 {

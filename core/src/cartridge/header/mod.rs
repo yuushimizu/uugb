@@ -17,6 +17,7 @@ pub use cgb_flag::CgbFlag;
 pub use destination::Destination;
 pub use entry_point::EntryPoint;
 pub use global_checksum::GlobalChecksum;
+pub use header_checksum::HeaderChecksum;
 pub use licensee::Licensee;
 pub use logo::Logo;
 pub use ram_size::RamSize;
@@ -39,7 +40,7 @@ pub struct Header {
     pub ram_size: RamSize,
     pub destination: Destination,
     pub version: u8,
-    pub header_checksum: u8,
+    pub header_checksum: HeaderChecksum,
     pub global_checksum: GlobalChecksum,
 }
 
@@ -50,7 +51,7 @@ pub enum Error {
 
 pub type Result<T> = result::Result<T, Error>;
 
-const MIN_HEADER_LENGTH: usize = 0x14F + 1;
+const MIN_HEADER_LENGTH: usize = 0x014F + 1;
 
 impl Header {
     pub fn load(rom: &[u8]) -> Result<Self> {
@@ -69,7 +70,7 @@ impl Header {
             ram_size: RamSize::load(rom),
             destination: Destination::load(rom),
             version: version::load(rom),
-            header_checksum: header_checksum::load(rom),
+            header_checksum: HeaderChecksum::load(rom),
             global_checksum: GlobalChecksum::load(rom),
         })
     }

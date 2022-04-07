@@ -40,11 +40,11 @@ impl From<u8> for Destination {
     }
 }
 
-const POSITION: usize = 0x014A;
+const ADDRESS: usize = 0x014A;
 
 impl Destination {
     pub fn load(rom: &[u8]) -> Self {
-        rom[POSITION].into()
+        rom[ADDRESS].into()
     }
 
     pub fn code(&self) -> u8 {
