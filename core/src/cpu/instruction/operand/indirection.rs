@@ -81,7 +81,7 @@ pub const LITERAL: Indirection = Indirection {
 };
 
 pub const LITERAL_8: Indirection = Indirection {
-    name: "($FF00+n)",
+    name: "$FF00+n",
     address: |context| 0xFF00 | context.fetch() as u16,
 };
 
