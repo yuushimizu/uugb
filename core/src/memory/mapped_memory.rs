@@ -19,24 +19,38 @@ mod segment {
         pub write: fn(&mut Components, u16, u8),
     }
 
+    impl Segment {
+        pub fn read(&self, components: &Components, address: u16) -> u8 {
+            (self.read)(components, address)
+        }
+
+        pub fn write(&self, components: &mut Components, address: u16, value: u8) {
+            (self.write)(components, address, value);
+        }
+    }
+
     pub const CARTRIDGE: Segment = Segment {
-        read: |component, address| component.cartridge.read(address),
-        write: |component, address, value| component.cartridge.write(address, value),
+        read: |components, address| components.cartridge.read(address),
+        write: |components, address, value| components.cartridge.write(address, value),
     };
 
     pub const WRAM: Segment = {
         const BASE_ADDRESS: u16 = 0xC000;
         Segment {
-            read: |component, address| component.wram.read(address - BASE_ADDRESS),
-            write: |component, address, value| component.wram.write(address - BASE_ADDRESS, value),
+            read: |components, address| components.wram.read(address - BASE_ADDRESS),
+            write: |components, address, value| {
+                components.wram.write(address - BASE_ADDRESS, value)
+            },
         }
     };
 
     pub const WRAM_MIRROR: Segment = {
         const BASE_ADDRESS: u16 = 0xE000;
         Segment {
-            read: |component, address| component.wram.read(address - BASE_ADDRESS),
-            write: |component, address, value| component.wram.write(address - BASE_ADDRESS, value),
+            read: |components, address| components.wram.read(address - BASE_ADDRESS),
+            write: |components, address, value| {
+                components.wram.write(address - BASE_ADDRESS, value)
+            },
         }
     };
 
@@ -48,49 +62,64 @@ mod segment {
     pub const HRAM: Segment = {
         const BASE_ADDRESS: u16 = 0xFF80;
         Segment {
-            read: |component, address| component.hram.read(address - BASE_ADDRESS),
-            write: |component, address, value| {
-                component.hram.write(address - BASE_ADDRESS, value);
+            read: |components, address| components.hram.read(address - BASE_ADDRESS),
+            write: |components, address, value| {
+                components.hram.write(address - BASE_ADDRESS, value);
             },
         }
     };
 
     pub const JOYPAD: Segment = Segment {
-        read: |component, _address| component.joypad.bits(),
-        write: |component, _address, value| {
-            component
+        read: |components, _| components.joypad.bits(),
+        write: |components, _, value| {
+            components
                 .joypad
-                .set_bits(value, component.interrupt_controller)
+                .set_bits(value, components.interrupt_controller)
         },
     };
 
-    pub const TIMER: Segment = Segment {
-        read: |component, address| match address {
-            0xFF04 => component.timer.divider_register(),
-            0xFF05 => component.timer.counter(),
-            0xFF06 => component.timer.modulo(),
-            0xFF07 => component.timer.control_bits(),
-            _ => unreachable!(),
-        },
-        write: |component, address, value| match address {
-            0xFF04 => component.timer.reset_divider(),
-            0xFF05 => component.timer.set_counter(value),
-            0xFF06 => component.timer.set_modulo(value),
-            0xFF07 => component.timer.set_control_bits(value),
-            _ => unreachable!(),
-        },
+    pub const TIMER: Segment = {
+        fn inner_segment(address: u16) -> Segment {
+            match address {
+                0xFF04 => Segment {
+                    read: |components, _| components.timer.divider_register(),
+                    write: |components, _, _| components.timer.reset_divider(),
+                },
+                0xFF05 => Segment {
+                    read: |components, _| components.timer.counter(),
+                    write: |components, _, value| components.timer.set_counter(value),
+                },
+                0xFF06 => Segment {
+                    read: |components, _| components.timer.modulo(),
+                    write: |components, _, value| components.timer.set_modulo(value),
+                },
+                0xFF07 => Segment {
+                    read: |components, _| components.timer.control_bits(),
+                    write: |components, _, value| components.timer.set_control_bits(value),
+                },
+                _ => unreachable!(),
+            }
+        }
+        Segment {
+            read: |components, address| inner_segment(address).read(components, address),
+            write: |components, address, value| {
+                inner_segment(address).write(components, address, value)
+            },
+        }
     };
 
     pub const INTERRUPT_REQUESTED: Segment = Segment {
-        read: |component, _address| component.interrupt_controller.requested_bits(),
-        write: |component, _address, value| {
-            component.interrupt_controller.set_requested_bits(value)
+        read: |components, _address| components.interrupt_controller.requested_bits(),
+        write: |components, _address, value| {
+            components.interrupt_controller.set_requested_bits(value)
         },
     };
 
     pub const INTERRUPT_ENABLED: Segment = Segment {
-        read: |component, _address| component.interrupt_controller.enabled_bits(),
-        write: |component, _address, value| component.interrupt_controller.set_enabled_bits(value),
+        read: |components, _address| components.interrupt_controller.enabled_bits(),
+        write: |components, _address, value| {
+            components.interrupt_controller.set_enabled_bits(value)
+        },
     };
 }
 
@@ -126,10 +155,10 @@ impl<'a> MappedMemory<'a> {
 
 impl<'a> Memory for MappedMemory<'a> {
     fn read(&self, address: u16) -> u8 {
-        (self.segment(address).read)(&self.0, address)
+        self.segment(address).read(&self.0, address)
     }
 
     fn write(&mut self, address: u16, value: u8) {
-        (self.segment(address).write)(&mut self.0, address, value)
+        self.segment(address).write(&mut self.0, address, value)
     }
 }
