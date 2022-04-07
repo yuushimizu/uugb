@@ -1,5 +1,5 @@
 use super::{Hram, Memory, Wram};
-use crate::{cartridge::Cartridge, io::Joypad};
+use crate::{cartridge::Cartridge, interrupt::InterruptController, io::Joypad};
 
 #[derive(Debug)]
 pub struct Components<'a> {
@@ -7,6 +7,7 @@ pub struct Components<'a> {
     pub wram: &'a mut Wram,
     pub hram: &'a mut Hram,
     pub joypad: &'a mut Joypad,
+    pub interrupt_controller: &'a mut InterruptController,
 }
 
 mod segment {
@@ -57,6 +58,18 @@ mod segment {
         read: |component, _address| component.joypad.bits(),
         write: |component, _address, value| component.joypad.set_bits(value),
     };
+
+    pub const INTERRUPT_REQUESTED: Segment = Segment {
+        read: |component, _address| component.interrupt_controller.requested_bits(),
+        write: |component, _address, value| {
+            component.interrupt_controller.set_requested_bits(value)
+        },
+    };
+
+    pub const INTERRUPT_ENABLED: Segment = Segment {
+        read: |component, _address| component.interrupt_controller.enabled_bits(),
+        write: |component, _address, value| component.interrupt_controller.set_enabled_bits(value),
+    };
 }
 
 use segment::Segment;
@@ -77,9 +90,12 @@ impl<'a> MappedMemory<'a> {
             0xA000..=0xBFFF => CARTRIDGE,
             0xC000..=0xDFFF => WRAM,
             0xE000..=0xFDFF => WRAM_MIRROR,
+            0xFE00..=0xFE9F => panic!("OAM"),
             0xFEA0..=0xFEFF => UNUSABLE,
             0xFF00 => JOYPAD,
+            0xFF0F => INTERRUPT_REQUESTED,
             0xFF80..=0xFFFE => HRAM,
+            0xFFFF => INTERRUPT_ENABLED,
             _ => panic!("Read from the address: {:04X}", address),
         }
     }
