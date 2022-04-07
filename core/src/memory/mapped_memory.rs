@@ -56,7 +56,11 @@ mod segment {
 
     pub const JOYPAD: Segment = Segment {
         read: |component, _address| component.joypad.bits(),
-        write: |component, _address, value| component.joypad.set_bits(value),
+        write: |component, _address, value| {
+            component
+                .joypad
+                .set_bits(value, component.interrupt_controller)
+        },
     };
 
     pub const INTERRUPT_REQUESTED: Segment = Segment {

@@ -1,3 +1,4 @@
+use crate::interrupt::{Interrupt, InterruptController};
 use crate::util::bits::Bits;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, Default)]
@@ -20,12 +21,25 @@ pub struct Joypad {
 }
 
 impl Joypad {
+    fn change_state<F: FnOnce(&mut Self)>(
+        &mut self,
+        interrupt_controller: &mut InterruptController,
+        f: F,
+    ) {
+        let previous_bits = self.bits() & 0xF;
+        f(self);
+        let current_bits = self.bits() & 0xF;
+        if (previous_bits ^ current_bits) & previous_bits != 0x00 {
+            interrupt_controller.request(Interrupt::Joypad);
+        }
+    }
+
     pub fn state(&self) -> &State {
         &self.state
     }
 
-    pub fn set_state(&mut self, state: State) {
-        self.state = state;
+    pub fn set_state(&mut self, state: State, interrupt_controller: &mut InterruptController) {
+        self.change_state(interrupt_controller, |joypad| joypad.state = state);
     }
 
     fn actions_bits(&self) -> u8 {
@@ -56,8 +70,10 @@ impl Joypad {
         self.actions_bits() & self.directions_bits()
     }
 
-    pub fn set_bits(&mut self, value: u8) {
-        self.actions_selected = value.bit(5);
-        self.directions_selected = value.bit(4);
+    pub fn set_bits(&mut self, value: u8, interrupt_controller: &mut InterruptController) {
+        self.change_state(interrupt_controller, |joypad| {
+            joypad.actions_selected = value.bit(5);
+            joypad.directions_selected = value.bit(4);
+        });
     }
 }
