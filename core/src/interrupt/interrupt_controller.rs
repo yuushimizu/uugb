@@ -23,6 +23,6 @@ impl InterruptController {
     }
 
     pub fn request(&mut self, interrupt: Interrupt) {
-        self.states.state_mut(interrupt).requested = true;
+        self.states.state_mut(interrupt).is_requested = true;
     }
 }
