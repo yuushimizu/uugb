@@ -117,7 +117,7 @@ impl Joypad {
             })
     }
 
-    fn change_state<F: FnOnce(&mut Self)>(
+    fn with_interrupt<F: FnOnce(&mut Self)>(
         &mut self,
         interrupt_controller: &mut InterruptController,
         f: F,
@@ -135,11 +135,11 @@ impl Joypad {
     }
 
     pub fn set_state(&mut self, state: State, interrupt_controller: &mut InterruptController) {
-        self.change_state(interrupt_controller, |joypad| joypad.state = state);
+        self.with_interrupt(interrupt_controller, |joypad| joypad.state = state);
     }
 
     pub fn set_bits(&mut self, value: u8, interrupt_controller: &mut InterruptController) {
-        self.change_state(interrupt_controller, |joypad| {
+        self.with_interrupt(interrupt_controller, |joypad| {
             for category_state in joypad.category_states.iter_mut() {
                 category_state.is_selected = value.bit(category_state.category.bit() as u32);
             }
