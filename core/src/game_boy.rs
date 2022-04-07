@@ -4,6 +4,7 @@ use crate::{
     interrupt::InterruptController,
     io::Joypad,
     memory::{mapped_memory, Hram, MappedMemory, Wram},
+    timer::Timer,
 };
 
 pub struct GameBoy {
@@ -12,6 +13,7 @@ pub struct GameBoy {
     wram: Wram,
     hram: Hram,
     joypad: Joypad,
+    timer: Timer,
     interrupt_controller: InterruptController,
 }
 
@@ -23,6 +25,7 @@ impl GameBoy {
             wram: Default::default(),
             hram: Default::default(),
             joypad: Default::default(),
+            timer: Default::default(),
             interrupt_controller: Default::default(),
         }
     }
@@ -34,6 +37,7 @@ impl GameBoy {
                 wram: &mut self.wram,
                 hram: &mut self.hram,
                 joypad: &mut self.joypad,
+                timer: &mut self.timer,
                 interrupt_controller: &mut self.interrupt_controller,
             }))
     }
