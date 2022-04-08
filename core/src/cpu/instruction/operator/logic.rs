@@ -1,8 +1,5 @@
 use super::Operator;
-use crate::cpu::{
-    instruction::operand::{register, Read, Write},
-    registers::Flags,
-};
+use crate::cpu::{instruction::operand::Read, registers::Flags};
 
 pub fn and(operand: impl Read<u8>) -> Operator {
     Operator::new(format!("AND {}", operand), move |context| {
