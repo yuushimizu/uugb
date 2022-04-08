@@ -4,27 +4,23 @@ use crate::cpu::{
     CpuContext,
 };
 
-fn load<T: Value, D: Write<T>, S: Read<T>>(
-    context: &mut dyn CpuContext,
-    destination: D,
-    source: S,
-) {
+fn load<T: Value>(context: &mut CpuContext, destination: impl Write<T>, source: impl Read<T>) {
     let writer = destination.prepare(context);
     let value = source.read(context);
     writer.write(context, value);
 }
 
-fn ld_generic<T: Value, D: Write<T>, S: Read<T>>(destination: D, source: S) -> Operator {
+fn ld_generic<T: Value>(destination: impl Write<T>, source: impl Read<T>) -> Operator {
     Operator::new(format!("LD {}, {}", destination, source), move |context| {
         load(context, destination, source);
     })
 }
 
-pub fn ld<D: Write<u8>, S: Read<u8>>(destination: D, source: S) -> Operator {
+pub fn ld(destination: impl Write<u8>, source: impl Read<u8>) -> Operator {
     ld_generic(destination, source)
 }
 
-pub fn ld16<D: Write<u16>, S: Read<u16>>(destination: D, source: S) -> Operator {
+pub fn ld16(destination: impl Write<u16>, source: impl Read<u16>) -> Operator {
     ld_generic(destination, source)
 }
 

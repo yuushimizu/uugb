@@ -1,14 +1,14 @@
 use super::{jump::condition::Condition, Operator};
 use crate::cpu::instruction::operand::Read;
 
-pub fn call<A: Read<u16>>(address: A) -> Operator {
+pub fn call(address: impl Read<u16>) -> Operator {
     Operator::new(format!("CALL {}", address), move |context| {
         let address = address.read(context);
         context.call(address);
     })
 }
 
-pub fn call_cc<A: Read<u16>>(condition: Condition, address: A) -> Operator {
+pub fn call_cc(condition: Condition, address: impl Read<u16>) -> Operator {
     Operator::new(format!("CALL {}, {}", condition, address), move |context| {
         let address = address.read(context);
         if condition.is_satisfied(context) {

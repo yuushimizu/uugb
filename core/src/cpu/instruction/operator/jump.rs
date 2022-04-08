@@ -26,7 +26,7 @@ pub mod condition {
     }
 
     impl Condition {
-        pub fn is_satisfied(&self, context: &dyn CpuContext) -> bool {
+        pub fn is_satisfied(&self, context: &CpuContext) -> bool {
             (self.predicate)(context.flags())
         }
     }
@@ -68,7 +68,7 @@ pub fn jp_hl() -> Operator {
     })
 }
 
-pub fn jp_cc<A: Read<u16>>(condition: Condition, address: A) -> Operator {
+pub fn jp_cc(condition: Condition, address: impl Read<u16>) -> Operator {
     Operator::new(format!("JP {}, {}", condition, address), move |context| {
         let address = address.read(context);
         if condition.is_satisfied(context) {
@@ -78,11 +78,11 @@ pub fn jp_cc<A: Read<u16>>(condition: Condition, address: A) -> Operator {
     })
 }
 
-fn relative_jump(context: &mut dyn CpuContext, offset: u8) {
+fn relative_jump(context: &mut CpuContext, offset: u8) {
     context.jump(context.registers().pc.wrapping_add(offset as i8 as u16));
 }
 
-pub fn jr<O: Read<u8>>(operand: O) -> Operator {
+pub fn jr(operand: impl Read<u8>) -> Operator {
     Operator::new(format!("JR {}", operand), move |context| {
         let offset = operand.read(context);
         relative_jump(context, offset);
@@ -90,7 +90,7 @@ pub fn jr<O: Read<u8>>(operand: O) -> Operator {
     })
 }
 
-pub fn jr_cc<O: Read<u8>>(condition: Condition, operand: O) -> Operator {
+pub fn jr_cc(condition: Condition, operand: impl Read<u8>) -> Operator {
     Operator::new(format!("JR {}, {}", condition, operand), move |context| {
         let offset = operand.read(context);
         if condition.is_satisfied(context) {

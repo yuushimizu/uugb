@@ -5,7 +5,7 @@ use std::fmt;
 #[derive(Clone, Copy)]
 pub struct Indirection {
     name: &'static str,
-    address: fn(&mut dyn CpuContext) -> u16,
+    address: fn(&mut CpuContext) -> u16,
 }
 
 impl fmt::Debug for Indirection {
@@ -25,21 +25,21 @@ impl fmt::Display for Indirection {
 impl Operand for Indirection {}
 
 impl Read<u8> for Indirection {
-    fn read(&self, context: &mut dyn CpuContext) -> u8 {
+    fn read(&self, context: &mut CpuContext) -> u8 {
         let address = (self.address)(context);
         context.read(address)
     }
 }
 
 impl Write<u8> for Indirection {
-    fn prepare(&self, context: &mut dyn CpuContext) -> Writer<u8> {
+    fn prepare(&self, context: &mut CpuContext) -> Writer<u8> {
         let address = (self.address)(context);
         Writer::new(move |context, value| context.write(address, value))
     }
 }
 
 impl ReadWrite<u8> for Indirection {
-    fn prepare_and_read(&self, context: &mut dyn CpuContext) -> (u8, Writer<u8>) {
+    fn prepare_and_read(&self, context: &mut CpuContext) -> (u8, Writer<u8>) {
         let address = (self.address)(context);
         (
             context.read(address),
@@ -49,14 +49,14 @@ impl ReadWrite<u8> for Indirection {
 }
 
 impl Read<u16> for Indirection {
-    fn read(&self, context: &mut dyn CpuContext) -> u16 {
+    fn read(&self, context: &mut CpuContext) -> u16 {
         let address = (self.address)(context);
         context.read16(address)
     }
 }
 
 impl Write<u16> for Indirection {
-    fn prepare(&self, context: &mut dyn CpuContext) -> Writer<u16> {
+    fn prepare(&self, context: &mut CpuContext) -> Writer<u16> {
         let address = (self.address)(context);
         Writer::new(move |context, value| context.write16(address, value))
     }

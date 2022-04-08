@@ -20,12 +20,12 @@ pub struct Cpu {
     wait_cycles: u64,
 }
 
-struct Context<'a> {
+struct Components<'a, M: Memory> {
     cpu: &'a mut Cpu,
-    memory: &'a mut dyn Memory,
+    memory: &'a mut M,
 }
 
-impl<'a> CpuContext for Context<'a> {
+impl<'a, M: Memory> cpu_context::Components for Components<'a, M> {
     fn registers(&self) -> &Registers {
         &self.cpu.registers
     }
@@ -34,12 +34,12 @@ impl<'a> CpuContext for Context<'a> {
         &mut self.cpu.registers
     }
 
-    fn memory(&self) -> &dyn Memory {
-        self.memory
+    fn read(&self, address: u16) -> u8 {
+        self.memory.read(address)
     }
 
-    fn memory_mut(&mut self) -> &mut dyn Memory {
-        self.memory
+    fn write(&mut self, address: u16, value: u8) {
+        self.memory.write(address, value)
     }
 
     fn halt(&mut self) {
@@ -66,14 +66,14 @@ impl<'a> CpuContext for Context<'a> {
 }
 
 impl Cpu {
-    pub fn tick(&mut self, memory: &mut dyn Memory) {
+    pub fn tick(&mut self, memory: &mut impl Memory) {
         if self.wait_cycles > 0 {
             self.wait_cycles -= 1;
             return;
         }
-        let mut context = Context { cpu: self, memory };
-        let instruction = Instruction::fetch(&mut context);
-        log::info!(target: "cpu_event", "Instruction: {}", instruction);
-        instruction.execute(&mut context);
+        let mut context = CpuContext::new(&mut Components { cpu: self, memory });
+        //        let instruction = Instruction::fetch(&mut context);
+        //        log::info!(target: "cpu_event", "Instruction: {}", instruction);
+        //        instruction.execute(&mut context);
     }
 }

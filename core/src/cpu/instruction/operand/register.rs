@@ -26,20 +26,20 @@ impl<T: Value> fmt::Debug for Register<T> {
 impl<T: Value> Operand for Register<T> {}
 
 impl<T: Value> Read<T> for Register<T> {
-    fn read(&self, context: &mut dyn CpuContext) -> T {
+    fn read(&self, context: &mut CpuContext) -> T {
         (self.read)(context.registers())
     }
 }
 
 impl<T: Value> Write<T> for Register<T> {
-    fn prepare(&self, _context: &mut dyn CpuContext) -> Writer<T> {
+    fn prepare(&self, _context: &mut CpuContext) -> Writer<T> {
         let write = self.write;
         Writer::new(move |context, value| write(context.registers_mut(), value))
     }
 }
 
 impl<T: Value> ReadWrite<T> for Register<T> {
-    fn prepare_and_read(&self, context: &mut dyn CpuContext) -> (T, Writer<T>) {
+    fn prepare_and_read(&self, context: &mut CpuContext) -> (T, Writer<T>) {
         let write = self.write;
         (
             (self.read)(context.registers()),

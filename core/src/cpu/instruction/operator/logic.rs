@@ -4,7 +4,7 @@ use crate::cpu::{
     registers::Flags,
 };
 
-fn and_u8<L: ReadWrite<u8>, R: Read<u8>>(format: String, lhs: L, rhs: R) -> Operator {
+fn and_u8(format: String, lhs: impl ReadWrite<u8>, rhs: impl Read<u8>) -> Operator {
     Operator::new(format, move |context| {
         let (current, writer) = lhs.prepare_and_read(context);
         let n = rhs.read(context);
@@ -19,11 +19,11 @@ fn and_u8<L: ReadWrite<u8>, R: Read<u8>>(format: String, lhs: L, rhs: R) -> Oper
     })
 }
 
-pub fn and<R: Read<u8>>(rhs: R) -> Operator {
+pub fn and(rhs: impl Read<u8>) -> Operator {
     and_u8(format!("AND {}", rhs), register::A, rhs)
 }
 
-fn or_u8<L: ReadWrite<u8>, R: Read<u8>>(format: String, lhs: L, rhs: R) -> Operator {
+fn or_u8(format: String, lhs: impl ReadWrite<u8>, rhs: impl Read<u8>) -> Operator {
     Operator::new(format, move |context| {
         let (current, writer) = lhs.prepare_and_read(context);
         let n = rhs.read(context);
@@ -38,11 +38,11 @@ fn or_u8<L: ReadWrite<u8>, R: Read<u8>>(format: String, lhs: L, rhs: R) -> Opera
     })
 }
 
-pub fn or<R: Read<u8>>(rhs: R) -> Operator {
+pub fn or(rhs: impl Read<u8>) -> Operator {
     or_u8(format!("OR {}", rhs), register::A, rhs)
 }
 
-fn xor_u8<L: ReadWrite<u8>, R: Read<u8>>(format: String, lhs: L, rhs: R) -> Operator {
+fn xor_u8(format: String, lhs: impl ReadWrite<u8>, rhs: impl Read<u8>) -> Operator {
     Operator::new(format, move |context| {
         let (current, writer) = lhs.prepare_and_read(context);
         let n = rhs.read(context);
@@ -57,6 +57,6 @@ fn xor_u8<L: ReadWrite<u8>, R: Read<u8>>(format: String, lhs: L, rhs: R) -> Oper
     })
 }
 
-pub fn xor<R: Read<u8>>(rhs: R) -> Operator {
+pub fn xor(rhs: impl Read<u8>) -> Operator {
     xor_u8(format!("XOR {}", rhs), register::A, rhs)
 }

@@ -218,15 +218,15 @@ static INSTRUCTIONS: Lazy<Vec<Instruction>> = Lazy::new(|| {
 });
 
 impl Instruction {
-    pub fn execute(&self, context: &mut dyn CpuContext) {
+    pub fn execute(&self, context: &mut CpuContext) {
         self.operator.execute(context);
     }
 
-    fn fetch_nested(context: &mut dyn CpuContext) -> &'static Self {
+    fn fetch_nested(context: &mut CpuContext) -> &'static Self {
         &NESTED_INSTRUCTION[context.fetch() as usize]
     }
 
-    pub fn fetch(context: &mut dyn CpuContext) -> &'static Self {
+    pub fn fetch(context: &mut CpuContext) -> &'static Self {
         match context.fetch() {
             NESTED_OPCODE => Self::fetch_nested(context),
             opcode => &INSTRUCTIONS[opcode as usize],

@@ -6,7 +6,7 @@ use std::fmt;
 pub struct AddLiteral8;
 
 impl Read<u16> for AddLiteral8 {
-    fn read(&self, context: &mut dyn CpuContext) -> u16 {
+    fn read(&self, context: &mut CpuContext) -> u16 {
         let value = context.fetch();
         context.add_sp(value)
     }

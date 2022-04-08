@@ -4,10 +4,10 @@ use crate::cpu::{
     registers::Flags,
 };
 
-fn add_u8<L: ReadWrite<u8>, R: Read<u8>>(
+fn add_u8(
     mnemonic: &'static str,
-    lhs: L,
-    rhs: R,
+    lhs: impl ReadWrite<u8>,
+    rhs: impl Read<u8>,
     with_carry: bool,
 ) -> Operator {
     Operator::new(format!("{} {}, {}", mnemonic, lhs, rhs), move |context| {
@@ -26,18 +26,18 @@ fn add_u8<L: ReadWrite<u8>, R: Read<u8>>(
     })
 }
 
-pub fn add<L: ReadWrite<u8>, R: Read<u8>>(lhs: L, rhs: R) -> Operator {
+pub fn add(lhs: impl ReadWrite<u8>, rhs: impl Read<u8>) -> Operator {
     add_u8("ADD", lhs, rhs, false)
 }
 
-pub fn adc<L: ReadWrite<u8>, R: Read<u8>>(lhs: L, rhs: R) -> Operator {
+pub fn adc(lhs: impl ReadWrite<u8>, rhs: impl Read<u8>) -> Operator {
     add_u8("ADC", lhs, rhs, true)
 }
 
-fn sub_u8<L: ReadWrite<u8>, R: Read<u8>>(
+fn sub_u8(
     format: String,
-    lhs: L,
-    rhs: R,
+    lhs: impl ReadWrite<u8>,
+    rhs: impl Read<u8>,
     with_carry: bool,
     with_result: bool,
 ) -> Operator {
@@ -60,7 +60,7 @@ fn sub_u8<L: ReadWrite<u8>, R: Read<u8>>(
     })
 }
 
-pub fn sub<O: Read<u8>>(operand: O) -> Operator {
+pub fn sub(operand: impl Read<u8>) -> Operator {
     sub_u8(
         format!("SUB {}", operand),
         register::A,
@@ -70,11 +70,11 @@ pub fn sub<O: Read<u8>>(operand: O) -> Operator {
     )
 }
 
-pub fn sbc<L: ReadWrite<u8>, R: Read<u8>>(lhs: L, rhs: R) -> Operator {
+pub fn sbc(lhs: impl ReadWrite<u8>, rhs: impl Read<u8>) -> Operator {
     sub_u8(format!("SBC {}, {}", lhs, rhs), lhs, rhs, true, true)
 }
 
-pub fn cp<O: Read<u8>>(operand: O) -> Operator {
+pub fn cp(operand: impl Read<u8>) -> Operator {
     sub_u8(
         format!("CP {}", operand),
         register::A,
@@ -84,7 +84,7 @@ pub fn cp<O: Read<u8>>(operand: O) -> Operator {
     )
 }
 
-pub fn inc<O: ReadWrite<u8>>(operand: O) -> Operator {
+pub fn inc(operand: impl ReadWrite<u8>) -> Operator {
     Operator::new(format!("INC {}", operand), move |context| {
         let (current, writer) = operand.prepare_and_read(context);
         let result = current.wrapping_add(1);
@@ -98,7 +98,7 @@ pub fn inc<O: ReadWrite<u8>>(operand: O) -> Operator {
     })
 }
 
-pub fn dec<O: ReadWrite<u8>>(operand: O) -> Operator {
+pub fn dec(operand: impl ReadWrite<u8>) -> Operator {
     Operator::new(format!("DEC {}", operand), move |context| {
         let (current, writer) = operand.prepare_and_read(context);
         let result = current.wrapping_sub(1);
@@ -112,7 +112,7 @@ pub fn dec<O: ReadWrite<u8>>(operand: O) -> Operator {
     })
 }
 
-pub fn add16<L: ReadWrite<u16>, R: Read<u16>>(lhs: L, rhs: R) -> Operator {
+pub fn add16(lhs: impl ReadWrite<u16>, rhs: impl Read<u16>) -> Operator {
     Operator::new(format!("ADD {}, {}", lhs, rhs), move |context| {
         let (current, writer) = lhs.prepare_and_read(context);
         let n = rhs.read(context);
@@ -128,7 +128,7 @@ pub fn add16<L: ReadWrite<u16>, R: Read<u16>>(lhs: L, rhs: R) -> Operator {
     })
 }
 
-pub fn inc16<O: ReadWrite<u16>>(operand: O) -> Operator {
+pub fn inc16(operand: impl ReadWrite<u16>) -> Operator {
     Operator::new(format!("INC {}", operand), move |context| {
         let (current, writer) = operand.prepare_and_read(context);
         writer.write(context, current.wrapping_add(1));
@@ -136,7 +136,7 @@ pub fn inc16<O: ReadWrite<u16>>(operand: O) -> Operator {
     })
 }
 
-pub fn dec16<O: ReadWrite<u16>>(operand: O) -> Operator {
+pub fn dec16(operand: impl ReadWrite<u16>) -> Operator {
     Operator::new(format!("DEC {}", operand), move |context| {
         let (current, writer) = operand.prepare_and_read(context);
         writer.write(context, current.wrapping_sub(1));

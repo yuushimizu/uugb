@@ -5,7 +5,7 @@ use crate::cpu::{
 };
 use crate::util::bits::Bits;
 
-pub fn swap<O: ReadWrite<u8>>(operand: O) -> Operator {
+pub fn swap(operand: impl ReadWrite<u8>) -> Operator {
     Operator::new(format!("SWAP {}", operand), move |context| {
         let (current, writer) = operand.prepare_and_read(context);
         let result = current.rotate_left(4);
@@ -30,7 +30,7 @@ pub fn cpl() -> Operator {
     })
 }
 
-fn rl_u8<O: ReadWrite<u8>>(format: String, operand: O, with_carry: bool) -> Operator {
+fn rl_u8(format: String, operand: impl ReadWrite<u8>, with_carry: bool) -> Operator {
     Operator::new(format, move |context| {
         let (current, writer) = operand.prepare_and_read(context);
         let result = if with_carry {
@@ -56,15 +56,15 @@ pub fn rla() -> Operator {
     rl_u8("RLA".into(), register::A, true)
 }
 
-pub fn rlc<O: ReadWrite<u8>>(operand: O) -> Operator {
+pub fn rlc(operand: impl ReadWrite<u8>) -> Operator {
     rl_u8(format!("RLC {}", operand), operand, false)
 }
 
-pub fn rl<O: ReadWrite<u8>>(operand: O) -> Operator {
+pub fn rl(operand: impl ReadWrite<u8>) -> Operator {
     rl_u8(format!("RL {}", operand), operand, true)
 }
 
-fn rr_u8<O: ReadWrite<u8>>(format: String, operand: O, with_carry: bool) -> Operator {
+fn rr_u8(format: String, operand: impl ReadWrite<u8>, with_carry: bool) -> Operator {
     Operator::new(format, move |context| {
         let (current, writer) = operand.prepare_and_read(context);
         let result = if with_carry {
@@ -90,15 +90,15 @@ pub fn rra() -> Operator {
     rr_u8("RRA".into(), register::A, true)
 }
 
-pub fn rrc<O: ReadWrite<u8>>(operand: O) -> Operator {
+pub fn rrc(operand: impl ReadWrite<u8>) -> Operator {
     rr_u8(format!("RRC {}", operand), operand, false)
 }
 
-pub fn rr<O: ReadWrite<u8>>(operand: O) -> Operator {
+pub fn rr(operand: impl ReadWrite<u8>) -> Operator {
     rr_u8(format!("RR {}", operand), operand, true)
 }
 
-pub fn sla<O: ReadWrite<u8>>(operand: O) -> Operator {
+pub fn sla(operand: impl ReadWrite<u8>) -> Operator {
     Operator::new(format!("SLA {}", operand), move |context| {
         let (current, writer) = operand.prepare_and_read(context);
         let result = current << 1;
@@ -112,7 +112,7 @@ pub fn sla<O: ReadWrite<u8>>(operand: O) -> Operator {
     })
 }
 
-pub fn sr_u8<O: ReadWrite<u8>>(mnemonic: &'static str, operand: O, arithmetic: bool) -> Operator {
+pub fn sr_u8(mnemonic: &'static str, operand: impl ReadWrite<u8>, arithmetic: bool) -> Operator {
     Operator::new(format!("{} {}", mnemonic, operand), move |context| {
         let (current, writer) = operand.prepare_and_read(context);
         let result = current >> 1 | ((arithmetic && current.bit(7)) as u8) << 7;
@@ -126,15 +126,15 @@ pub fn sr_u8<O: ReadWrite<u8>>(mnemonic: &'static str, operand: O, arithmetic: b
     })
 }
 
-pub fn sra<O: ReadWrite<u8>>(operand: O) -> Operator {
+pub fn sra(operand: impl ReadWrite<u8>) -> Operator {
     sr_u8("SRA", operand, true)
 }
 
-pub fn srl<O: ReadWrite<u8>>(operand: O) -> Operator {
+pub fn srl(operand: impl ReadWrite<u8>) -> Operator {
     sr_u8("SRL", operand, false)
 }
 
-pub fn bit<R: Read<u8>>(bit: u8, rhs: R) -> Operator {
+pub fn bit(bit: u8, rhs: impl Read<u8>) -> Operator {
     Operator::new(format!("BIT {}, {}", bit, rhs), move |context| {
         let value = rhs.read(context);
         context.set_flags(Flags {
@@ -146,14 +146,14 @@ pub fn bit<R: Read<u8>>(bit: u8, rhs: R) -> Operator {
     })
 }
 
-pub fn set<R: ReadWrite<u8>>(bit: u8, rhs: R) -> Operator {
+pub fn set(bit: u8, rhs: impl ReadWrite<u8>) -> Operator {
     Operator::new(format!("SET {}, {}", bit, rhs), move |context| {
         let (current, writer) = rhs.prepare_and_read(context);
         writer.write(context, current.set_bit(bit as u32));
     })
 }
 
-pub fn res<R: ReadWrite<u8>>(bit: u8, rhs: R) -> Operator {
+pub fn res(bit: u8, rhs: impl ReadWrite<u8>) -> Operator {
     Operator::new(format!("RES {}, {}", bit, rhs), move |context| {
         let (current, writer) = rhs.prepare_and_read(context);
         writer.write(context, current.reset_bit(bit as u32));
