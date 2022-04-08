@@ -1,13 +1,13 @@
 pub mod indirection;
 pub mod literal;
-//pub mod opcode_register;
-//pub mod register;
-//pub mod stack_pointer;
+pub mod opcode_register;
+pub mod register;
+pub mod stack_pointer;
 
-//pub use indirection::Indirection;
-//pub use literal::LITERAL;
-//pub use opcode_register::OpcodeRegister;
-//pub use register::Register;
+pub use indirection::Indirection;
+pub use literal::LITERAL;
+pub use opcode_register::OpcodeRegister;
+pub use register::Register;
 
 use crate::cpu::{Continuation, CpuContext};
 use std::fmt;

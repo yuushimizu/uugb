@@ -118,7 +118,7 @@ impl Instruction {
             0x11 => (ld16(DE, LITERAL), 3),
             0x21 => (ld16(HL, LITERAL), 3),
             0x31 => (ld16(SP, LITERAL), 3),
-            0xF9 => (ld16(SP, HL), 2),
+            0xF9 => (ld16(SP, HL), 2), // extra tick!!
             0xF8 => (ld16(HL, stack_pointer::ADD_LITERAL_8), 3),
             0x08 => (ld16(indirection::LITERAL, SP), 5),
             0xF5 => (push(AF), 4),
@@ -204,11 +204,11 @@ impl Instruction {
             0x30 => (jr_cc(jump::condition::NC, LITERAL), 2),
             0x38 => (jr_cc(jump::condition::C, LITERAL), 2),
             // Calls
-            0xCD => (call(LITERAL), 3),
-            0xC4 => (call_cc(jump::condition::NZ, LITERAL), 3),
-            0xCC => (call_cc(jump::condition::Z, LITERAL), 3),
-            0xD4 => (call_cc(jump::condition::NC, LITERAL), 3),
-            0xDC => (call_cc(jump::condition::C, LITERAL), 3),
+            0xCD => (call(LITERAL), 8),
+            0xC4 => (call_cc(jump::condition::NZ, LITERAL), 8),
+            0xCC => (call_cc(jump::condition::Z, LITERAL), 8),
+            0xD4 => (call_cc(jump::condition::NC, LITERAL), 8),
+            0xDC => (call_cc(jump::condition::C, LITERAL), 8),
             // Restarts
             0xC7 => (rst(0x00), 8),
             0xCF => (rst(0x08), 8),

@@ -57,14 +57,11 @@ impl Read<u16> for Indirection {
     }
 }
 
-/*
 impl Write<u16> for Indirection {
-    fn writer(self, context: &mut dyn CpuContext, next: F) -> Continuation {
-        let address = (self.address)(context);
-        next.bind(Box::new(move |context, value, continuation| {
-            context.write16(address, value);
-            continuation
-        }))
+    fn prepare(self, context: &mut dyn CpuContext) -> Continuation<Writer<u16>> {
+        (self.address)(context).map(|_context, address| {
+            Writer::new(move |context, value| context.write16(address, value))
+        })
     }
 }
 
@@ -72,7 +69,7 @@ macro_rules! register {
     ($name: ident, $field: ident) => {
         pub const $name: Indirection = Indirection {
             name: stringify!($name),
-            address: |context| context.registers().$field(),
+            address: |context| Continuation::just(context.registers().$field()),
         };
     };
 }
@@ -88,12 +85,12 @@ pub const LITERAL: Indirection = Indirection {
 
 pub const LITERAL_8: Indirection = Indirection {
     name: "$FF00+n",
-    address: |context| 0xFF00 | context.fetch() as u16,
+    address: |context| context.fetch().map(|_context, value| 0xFF00 | value as u16),
 };
 
 pub const C: Indirection = Indirection {
     name: "C",
-    address: |context| 0xFF00 | context.registers().c as u16,
+    address: |context| Continuation::just(0xFF00 | context.registers().c as u16),
 };
 
 pub const HLD: Indirection = Indirection {
@@ -101,7 +98,7 @@ pub const HLD: Indirection = Indirection {
     address: |context| {
         let address = context.registers().hl();
         context.registers_mut().set_hl(address.wrapping_sub(1));
-        address
+        Continuation::just(address)
     },
 };
 
@@ -110,7 +107,6 @@ pub const HLI: Indirection = Indirection {
     address: |context| {
         let address = context.registers().hl();
         context.registers_mut().set_hl(address.wrapping_add(1));
-        address
+        Continuation::just(address)
     },
 };
-*/

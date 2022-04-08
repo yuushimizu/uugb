@@ -70,7 +70,7 @@ pub trait CpuContext {
         self.registers_mut().pc = address;
     }
 
-    fn add_sp(&mut self, n: u8) -> u16 {
+    fn add_sp(&mut self, n: u8) -> Continuation<u16> {
         let sp = self.registers().sp;
         let n16 = n as i8 as u16;
         self.set_flags(Flags {
@@ -79,7 +79,7 @@ pub trait CpuContext {
             h: ((sp & 0xF) + (n16 & 0xF)) > 0xF,
             c: ((sp & 0xFF) + (n16 & 0xFF)) > 0xFF,
         });
-        sp.wrapping_add(n16)
+        Continuation::just(sp.wrapping_add(n16)).tick()
     }
 
     fn push(&mut self, value: u8) -> Continuation<()> {
@@ -110,9 +110,12 @@ pub trait CpuContext {
     fn call(&mut self, address: u16) -> Continuation<()> {
         self.push16(self.registers().pc)
             .map(move |context, _| context.jump(address))
+            .tick()
     }
 
     fn ret(&mut self) -> Continuation<()> {
-        self.pop16().map(|context, address| context.jump(address))
+        self.pop16()
+            .map(|context, address| context.jump(address))
+            .tick()
     }
 }
