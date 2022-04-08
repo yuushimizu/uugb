@@ -14,12 +14,12 @@ pub struct Components<'a> {
 mod segment {
     use super::Components;
 
-    pub enum Segment {
+    pub enum Segment<'a> {
         Leaf(fn(&Components, u16) -> u8, fn(&mut Components, u16, u8)),
-        Nested(fn(address: u16) -> &'static Segment),
+        Nested(fn(address: u16) -> &'a Segment<'a>),
     }
 
-    impl Segment {
+    impl<'a> Segment<'a> {
         pub fn read(&self, components: &Components, address: u16) -> u8 {
             use Segment::*;
             match self {
@@ -52,23 +52,10 @@ mod segment {
         |components, address, value| components.cartridge.write(address, value),
     );
 
-    pub const WRAM: Segment = {
-        const MAIN: Segment = Segment::Leaf(
-            |components, address| components.wram.read(address - 0xC000),
-            |components, address, value| components.wram.write(address - 0xC000, value),
-        );
-        const MIRROR: Segment = Segment::Leaf(
-            |components, address| components.wram.read(address - 0xD000),
-            |components, address, value| components.wram.write(address - 0xD000, value),
-        );
-        const BANK_SWITCH: Segment = Segment::Leaf(|_, _| 0xFF, |_, _, _| {});
-        Segment::Nested(|address| match address {
-            0xC000..=0xCFFF => &MAIN,
-            0xD000..=0xDFFF => &MIRROR,
-            0xFF70 => &BANK_SWITCH,
-            _ => &UNKNOWN,
-        })
-    };
+    pub const WRAM: Segment = Segment::Leaf(
+        |components, address| components.wram.read(address),
+        |components, address, value| components.wram.write(address, value),
+    );
 
     pub const UNUSABLE: Segment = Segment::Leaf(|_, _| 0xFF, |_, _, _| {});
 
