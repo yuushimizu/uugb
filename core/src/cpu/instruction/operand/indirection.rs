@@ -1,4 +1,4 @@
-use super::{Operand, Read, ReadWrite, Write, Writer};
+use super::{Operand, Read, Write};
 use crate::cpu::CpuContext;
 use std::fmt;
 
@@ -32,19 +32,9 @@ impl Read<u8> for Indirection {
 }
 
 impl Write<u8> for Indirection {
-    fn prepare(&self, context: &mut CpuContext) -> Writer<u8> {
+    fn write(&self, context: &mut CpuContext, value: u8) {
         let address = (self.address)(context);
-        Writer::new(move |context, value| context.write(address, value))
-    }
-}
-
-impl ReadWrite<u8> for Indirection {
-    fn prepare_and_read(&self, context: &mut CpuContext) -> (u8, Writer<u8>) {
-        let address = (self.address)(context);
-        (
-            context.read(address),
-            Writer::new(move |context, value| context.write(address, value)),
-        )
+        context.write(address, value);
     }
 }
 
@@ -56,9 +46,9 @@ impl Read<u16> for Indirection {
 }
 
 impl Write<u16> for Indirection {
-    fn prepare(&self, context: &mut CpuContext) -> Writer<u16> {
+    fn write(&self, context: &mut CpuContext, value: u16) {
         let address = (self.address)(context);
-        Writer::new(move |context, value| context.write16(address, value))
+        context.write16(address, value);
     }
 }
 

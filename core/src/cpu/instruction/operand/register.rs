@@ -1,4 +1,4 @@
-use super::{Operand, Read, ReadWrite, Value, Write, Writer};
+use super::{Operand, Read, Value, Write};
 use crate::cpu::{CpuContext, Registers};
 use std::fmt;
 
@@ -32,19 +32,8 @@ impl<T: Value> Read<T> for Register<T> {
 }
 
 impl<T: Value> Write<T> for Register<T> {
-    fn prepare(&self, _context: &mut CpuContext) -> Writer<T> {
-        let write = self.write;
-        Writer::new(move |context, value| write(context.registers_mut(), value))
-    }
-}
-
-impl<T: Value> ReadWrite<T> for Register<T> {
-    fn prepare_and_read(&self, context: &mut CpuContext) -> (T, Writer<T>) {
-        let write = self.write;
-        (
-            (self.read)(context.registers()),
-            Writer::new(move |context, value| write(context.registers_mut(), value)),
-        )
+    fn write(&self, context: &mut CpuContext, value: T) {
+        (self.write)(context.registers_mut(), value)
     }
 }
 

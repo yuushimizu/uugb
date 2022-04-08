@@ -1,12 +1,12 @@
 use super::Operator;
 use crate::cpu::{
-    instruction::operand::{register, Read, ReadWrite},
+    instruction::operand::{register, Read, Write},
     registers::Flags,
 };
 
-fn and_u8(format: String, lhs: impl ReadWrite<u8>, rhs: impl Read<u8>) -> Operator {
+fn and_u8(format: String, lhs: impl Read<u8> + Write<u8>, rhs: impl Read<u8>) -> Operator {
     Operator::new(format, move |context| {
-        let (current, writer) = lhs.prepare_and_read(context);
+        let current = lhs.read(context);
         let n = rhs.read(context);
         let result = current & n;
         context.set_flags(Flags {
@@ -15,7 +15,7 @@ fn and_u8(format: String, lhs: impl ReadWrite<u8>, rhs: impl Read<u8>) -> Operat
             h: true,
             c: false,
         });
-        writer.write(context, result);
+        lhs.write(context, result);
     })
 }
 
@@ -23,9 +23,9 @@ pub fn and(rhs: impl Read<u8>) -> Operator {
     and_u8(format!("AND {}", rhs), register::A, rhs)
 }
 
-fn or_u8(format: String, lhs: impl ReadWrite<u8>, rhs: impl Read<u8>) -> Operator {
+fn or_u8(format: String, lhs: impl Read<u8> + Write<u8>, rhs: impl Read<u8>) -> Operator {
     Operator::new(format, move |context| {
-        let (current, writer) = lhs.prepare_and_read(context);
+        let current = lhs.read(context);
         let n = rhs.read(context);
         let result = current | n;
         context.set_flags(Flags {
@@ -34,7 +34,7 @@ fn or_u8(format: String, lhs: impl ReadWrite<u8>, rhs: impl Read<u8>) -> Operato
             h: false,
             c: false,
         });
-        writer.write(context, result);
+        lhs.write(context, result);
     })
 }
 
@@ -42,9 +42,9 @@ pub fn or(rhs: impl Read<u8>) -> Operator {
     or_u8(format!("OR {}", rhs), register::A, rhs)
 }
 
-fn xor_u8(format: String, lhs: impl ReadWrite<u8>, rhs: impl Read<u8>) -> Operator {
+fn xor_u8(format: String, lhs: impl Read<u8> + Write<u8>, rhs: impl Read<u8>) -> Operator {
     Operator::new(format, move |context| {
-        let (current, writer) = lhs.prepare_and_read(context);
+        let current = lhs.read(context);
         let n = rhs.read(context);
         let result = current ^ n;
         context.set_flags(Flags {
@@ -53,7 +53,7 @@ fn xor_u8(format: String, lhs: impl ReadWrite<u8>, rhs: impl Read<u8>) -> Operat
             h: false,
             c: false,
         });
-        writer.write(context, result);
+        lhs.write(context, result);
     })
 }
 

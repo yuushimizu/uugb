@@ -11,9 +11,8 @@ pub fn push(source: impl Read<u16>) -> Operator {
 
 pub fn pop(destination: impl Write<u16>) -> Operator {
     Operator::new(format!("POP {}", destination), move |context| {
-        let writer = destination.prepare(context);
         let value = context.pop16();
-        writer.write(context, value);
+        destination.write(context, value);
     })
 }
 

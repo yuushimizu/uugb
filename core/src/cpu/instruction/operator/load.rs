@@ -5,9 +5,8 @@ use crate::cpu::{
 };
 
 fn load<T: Value>(context: &mut CpuContext, destination: impl Write<T>, source: impl Read<T>) {
-    let writer = destination.prepare(context);
     let value = source.read(context);
-    writer.write(context, value);
+    destination.write(context, value);
 }
 
 fn ld_generic<T: Value>(destination: impl Write<T>, source: impl Read<T>) -> Operator {
