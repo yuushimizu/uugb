@@ -1,29 +1,29 @@
 pub mod arithmetic;
 pub mod bits;
-pub mod call;
+//pub mod call;
 pub mod cpu_state;
-pub mod jump;
+//pub mod jump;
 pub mod load;
-pub mod logic;
+//pub mod logic;
 pub mod miscellaneous;
 pub mod stack;
 
 pub use arithmetic::*;
 pub use bits::*;
-pub use call::*;
+//pub use call::*;
 pub use cpu_state::*;
-pub use jump::*;
+//pub use jump::*;
 pub use load::*;
-pub use logic::*;
+//pub use logic::*;
 pub use miscellaneous::*;
 pub use stack::*;
 
-use crate::cpu::CpuContext;
+use crate::cpu::{Continuation, CpuContext};
 use std::fmt;
 
 pub struct Operator {
     format: String,
-    execute: Box<dyn Fn(&mut dyn CpuContext)>,
+    execute: Box<dyn Fn(&mut dyn CpuContext) -> Continuation<()>>,
 }
 
 impl fmt::Debug for Operator {
@@ -43,7 +43,7 @@ impl fmt::Display for Operator {
 impl Operator {
     pub fn new<E>(format: String, execute: E) -> Self
     where
-        E: Fn(&mut dyn CpuContext) + 'static,
+        E: Fn(&mut dyn CpuContext) -> Continuation<()> + 'static,
     {
         Self {
             format,

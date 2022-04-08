@@ -1,5 +1,5 @@
 use super::Operator;
-use crate::cpu::registers::Flags;
+use crate::cpu::{registers::Flags, Continuation};
 use log;
 
 pub fn daa() -> Operator {
@@ -22,6 +22,7 @@ pub fn daa() -> Operator {
             c: adjust_higher,
             ..flags
         });
+        Continuation::just(())
     })
 }
 
@@ -33,6 +34,7 @@ pub fn ccf() -> Operator {
             c: !context.registers().f.c,
             ..*context.flags()
         });
+        Continuation::just(())
     })
 }
 
@@ -44,15 +46,17 @@ pub fn scf() -> Operator {
             c: true,
             ..*context.flags()
         });
+        Continuation::just(())
     })
 }
 
 pub fn nop() -> Operator {
-    Operator::new("NOP".into(), |_context| {})
+    Operator::new("NOP".into(), |_context| Continuation::just(()))
 }
 
 pub fn unused(opcode: u8) -> Operator {
     Operator::new("*UNUSED*".into(), move |_context| {
         log::warn!("The unused opcode has called: {:02X}", opcode);
+        Continuation::just(())
     })
 }

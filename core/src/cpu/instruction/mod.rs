@@ -1,8 +1,8 @@
 mod operand;
-//mod operator;
+mod operator;
 
 use super::CpuContext;
-//use operator::Operator;
+use operator::Operator;
 use std::fmt;
 
 /*
