@@ -117,10 +117,10 @@ impl Joypad {
             })
     }
 
-    fn with_interrupt<F: FnOnce(&mut Self)>(
+    fn with_interrupt(
         &mut self,
         interrupt_controller: &mut InterruptController,
-        f: F,
+        f: impl FnOnce(&mut Self),
     ) {
         let previous_bits = self.bits() & 0xF;
         f(self);

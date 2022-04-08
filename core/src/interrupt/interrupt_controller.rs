@@ -31,14 +31,14 @@ impl InterruptController {
         self.state_mut(interrupt).is_requested = false;
     }
 
-    fn bits<F: Fn(&State) -> bool>(&self, f: F) -> u8 {
+    fn bits(&self, f: impl Fn(&State) -> bool) -> u8 {
         self.states
             .iter()
             .enumerate()
             .fold(0x00, |acc, (bit, state)| acc | (f(state) as u8) << bit)
     }
 
-    fn set_bits<F: Fn(&mut State, bool)>(&mut self, f: F, bits: u8) {
+    fn set_bits(&mut self, f: impl Fn(&mut State, bool), bits: u8) {
         for (bit, state) in self.states.iter_mut().enumerate() {
             f(state, bits.bit(bit as u32))
         }
