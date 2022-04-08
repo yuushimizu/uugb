@@ -1,11 +1,13 @@
 pub mod registers;
 
+mod continuation;
 mod cpu_context;
 mod instruction;
 
-pub use instruction::Instruction;
+//pub use instruction::Instruction;
 pub use registers::Registers;
 
+use continuation::Continuation;
 use cpu_context::CpuContext;
 
 use crate::memory::Memory;
@@ -58,10 +60,12 @@ impl<'a> CpuContext for Context<'a> {
 }
 
 impl Cpu {
+    /*
     pub fn step(&mut self, memory: &mut dyn Memory) -> Instruction {
         let mut context = Context { cpu: self, memory };
         let instruction = Instruction::next(&mut context);
         instruction.execute(&mut context);
         instruction
     }
+    */
 }
