@@ -30,10 +30,9 @@ impl GameBoy {
         }
     }
 
-    /*
-    pub fn step(&mut self) -> crate::cpu::Instruction {
+    pub fn tick(&mut self) {
         self.cpu
-            .step(&mut MappedMemory::new(mapped_memory::Components {
+            .tick(&mut MappedMemory::new(mapped_memory::Components {
                 cartridge: &mut self.cartridge,
                 wram: &mut self.wram,
                 hram: &mut self.hram,
@@ -42,5 +41,4 @@ impl GameBoy {
                 interrupt_controller: &mut self.interrupt_controller,
             }))
     }
-    */
 }

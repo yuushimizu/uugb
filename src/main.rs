@@ -1,6 +1,7 @@
 use core::{cartridge, cartridge::Cartridge, GameBoy};
 
 use clap::Parser;
+use simplelog::*;
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
@@ -64,15 +65,20 @@ fn print_cartridge_info(header: &cartridge::Header) {
 
 fn boot(cartridge: Cartridge) {
     let mut game_boy = GameBoy::boot(cartridge);
-    /*
-    for _ in 0..20 {
-        let instruction = game_boy.step();
-        println!("{}", instruction);
+    for _ in 0..(4194304 / 4) {
+        game_boy.tick();
     }
-    */
 }
 
 fn main() {
+    /*
+    CombinedLogger::init(vec![TermLogger::new(
+        LevelFilter::Debug,
+        Config::default(),
+        TerminalMode::Mixed,
+        ColorChoice::Auto,
+    )]).unwrap();
+    */
     let arg = Args::parse();
     let mut file = File::open(&arg.file).unwrap_or_else(|_err| {
         eprintln!("Could not open the file: {}", arg.file.display());

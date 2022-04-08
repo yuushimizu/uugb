@@ -16,7 +16,7 @@ impl<T: Value> fmt::Display for Register<T> {
 }
 
 impl<T: Value> fmt::Debug for Register<T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_struct("Register")
             .field("name", &self.name)
             .finish()

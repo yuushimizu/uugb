@@ -1,10 +1,25 @@
 use super::CpuContext;
+use std::fmt;
 
 #[must_use]
 pub enum Continuation<T> {
     Return(T),
     Continue(Box<dyn FnOnce(&mut dyn CpuContext) -> Continuation<T>>),
     Tick(Box<Continuation<T>>),
+}
+
+impl<T> fmt::Debug for Continuation<T>
+where
+    T: fmt::Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use Continuation::*;
+        match self {
+            Return(value) => f.debug_tuple("Return").field(value).finish(),
+            Continue(_) => f.debug_tuple("Continue").finish(),
+            Tick(_) => f.debug_tuple("Tick").finish(),
+        }
+    }
 }
 
 impl<T: 'static> Continuation<T> {

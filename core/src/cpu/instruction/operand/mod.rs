@@ -41,10 +41,6 @@ impl<T: Value> Writer<T> {
             Continuation::just(())
         })
     }
-
-    pub fn tick(self) -> Self {
-        Self::new(move |context, value| self.write(context, value).tick())
-    }
 }
 
 pub trait Write<T: Value>: Operand {

@@ -4,20 +4,22 @@ mod continuation;
 mod cpu_context;
 mod instruction;
 
-//pub use instruction::Instruction;
+pub use instruction::Instruction;
 pub use registers::Registers;
 
 use continuation::Continuation;
 use cpu_context::CpuContext;
+use log;
 
 use crate::memory::Memory;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Default)]
 pub struct Cpu {
     registers: Registers,
     is_halting: bool,
     interrupt_master_enable_flag: bool,
     interrupt_master_enabling: bool,
+    continuation: Option<Continuation<()>>,
 }
 
 struct Context<'a> {
@@ -43,10 +45,12 @@ impl<'a> CpuContext for Context<'a> {
     }
 
     fn halt(&mut self) {
+        self.cpu.is_halting = true;
         todo!("HALT");
     }
 
     fn stop(&mut self) {
+        self.cpu.is_halting = true;
         todo!("STOP");
     }
 
@@ -60,12 +64,29 @@ impl<'a> CpuContext for Context<'a> {
 }
 
 impl Cpu {
-    /*
-    pub fn step(&mut self, memory: &mut dyn Memory) -> Instruction {
+    pub fn tick(&mut self, memory: &mut dyn Memory) {
+        use Continuation::*;
+        let mut continuation = self.continuation.take();
         let mut context = Context { cpu: self, memory };
-        let instruction = Instruction::next(&mut context);
-        instruction.execute(&mut context);
-        instruction
+        loop {
+            match continuation {
+                None | Some(Return(_)) => {
+                    continuation = Some(Instruction::fetch(&mut context).then(
+                        |context, instruction| {
+                            log::info!(target: "cpu_event", "Instruction: {}", instruction);
+                            instruction.execute(context)
+                        },
+                    ))
+                }
+                Some(Continue(next)) => {
+                    continuation = Some(next(&mut context));
+                }
+                Some(Tick(next)) => {
+                    continuation = Some(*next);
+                    break;
+                }
+            }
+        }
+        self.continuation = continuation;
     }
-    */
 }

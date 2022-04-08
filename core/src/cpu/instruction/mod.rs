@@ -30,10 +30,10 @@ impl Instruction {
         self.operator.execute(context)
     }
 
-    fn next_cb(context: &mut dyn CpuContext, opcode: u8) -> Continuation<Self> {
+    fn fetch_cb(context: &mut dyn CpuContext, opcode: u8) -> Continuation<Self> {
         use operand::*;
         use operator::*;
-        context.fetch().map(move |context, sub_opcode| {
+        context.fetch().map(move |_context, sub_opcode| {
             let opcode_register = OpcodeRegister::from(sub_opcode);
             let bit_operand = sub_opcode >> 3 & 0b111;
             Self {
@@ -58,7 +58,7 @@ impl Instruction {
         })
     }
 
-    pub fn next(context: &mut dyn CpuContext) -> Continuation<Self> {
+    pub fn fetch(context: &mut dyn CpuContext) -> Continuation<Self> {
         use operand::register::*;
         use operand::*;
         use operator::*;
@@ -159,7 +159,7 @@ impl Instruction {
                     0x2B => dec16(HL),
                     0x3B => dec16(SP),
                     // Miscellaneous
-                    0xCB => return Self::next_cb(context, opcode),
+                    0xCB => return Self::fetch_cb(context, opcode),
                     0x27 => daa(),
                     0x2F => cpl(),
                     0x3F => ccf(),

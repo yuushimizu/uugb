@@ -4,25 +4,10 @@ use super::{
 use crate::cpu::CpuContext;
 use std::fmt;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum OperandType {
-    Register,
-    Indirection,
-}
-
 #[derive(Debug, Clone, Copy)]
 pub enum OpcodeRegister {
     Register(Register<u8>),
     Indirection(Indirection),
-}
-
-impl OpcodeRegister {
-    pub fn operand_type(&self) -> OperandType {
-        match self {
-            Self::Register(_) => OperandType::Register,
-            Self::Indirection(_) => OperandType::Indirection,
-        }
-    }
 }
 
 impl From<u8> for OpcodeRegister {
