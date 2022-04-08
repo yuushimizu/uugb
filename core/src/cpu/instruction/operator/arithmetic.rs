@@ -127,7 +127,7 @@ pub fn dec<O: ReadWrite<u8>>(operand: O) -> Operator {
     })
 }
 
-fn add16<L: ReadWrite<u16>, R: Read<u16>>(lhs: L, rhs: R) -> Operator {
+pub fn add16<L: ReadWrite<u16>, R: Read<u16>>(lhs: L, rhs: R) -> Operator {
     Operator::new(format!("ADD {}, {}", lhs, rhs), move |context| {
         lhs.prepare_and_read(context)
             .then(move |context, (current, writer)| {

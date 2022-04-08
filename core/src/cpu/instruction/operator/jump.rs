@@ -54,7 +54,7 @@ pub mod condition {
 
 pub use condition::Condition;
 
-fn jp_nn() -> Operator {
+pub fn jp_nn() -> Operator {
     Operator::new(format!("JP #"), move |context| {
         context
             .fetch16()
@@ -63,7 +63,7 @@ fn jp_nn() -> Operator {
     })
 }
 
-fn jp_hl() -> Operator {
+pub fn jp_hl() -> Operator {
     Operator::new(format!("JP HL"), move |context| {
         context.jump(context.registers().hl());
         Continuation::just(())

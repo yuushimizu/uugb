@@ -51,7 +51,7 @@ impl Operator {
         }
     }
 
-    pub fn execute(&self, context: &mut dyn CpuContext) {
-        (self.execute)(context);
+    pub fn execute(&self, context: &mut dyn CpuContext) -> Continuation<()> {
+        (self.execute)(context)
     }
 }

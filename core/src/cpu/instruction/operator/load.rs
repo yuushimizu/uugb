@@ -30,7 +30,7 @@ pub fn ld16<D: Write<u16>, S: Read<u16>>(destination: D, source: S) -> Operator 
     ld_generic(destination, source)
 }
 
-pub fn ld_sp_hl() -> Operator {
+pub fn ld16_sp_hl() -> Operator {
     Operator::new("LD SP, HL".into(), |context| {
         load(context, register::SP, register::HL).tick()
     })
