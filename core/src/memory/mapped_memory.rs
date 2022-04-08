@@ -1,5 +1,6 @@
 use super::{Hram, Memory, Wram};
 use crate::{cartridge::Cartridge, interrupt::InterruptController, io::Joypad, timer::Timer};
+use log;
 
 #[derive(Debug)]
 pub struct Components<'a> {
@@ -49,10 +50,18 @@ mod segment {
         )
     }
 
-    pub fn wram(base_address: u16) -> Segment {
+    pub fn wram() -> Segment {
         Segment::new(
-            move |components, address| components.wram.read(address - base_address),
-            move |components, address, value| components.wram.write(address - base_address, value),
+            |components, address| match address {
+                0xC000..=0xCFFF => components.wram.read(address - 0xC000),
+                0xD000..=0xDFFF => components.wram.read(address - 0xD000),
+                _ => unreachable!(),
+            },
+            |components, address, value| match address {
+                0xC000..=0xCFFF => components.wram.write(address - 0xC000, value),
+                0xD000..=0xDFFF => components.wram.write(address - 0xD000, value),
+                _ => unreachable!(),
+            },
         )
     }
 
@@ -60,11 +69,12 @@ mod segment {
         Segment::new(|_, _| 0xFF, |_, _, _| {})
     }
 
-    pub fn hram(base_address: u16) -> Segment {
+    pub fn hram() -> Segment {
+        const BASE_ADDRESS: u16 = 0xFF80;
         Segment::new(
-            move |components, address| components.hram.read(address - base_address),
+            move |components, address| components.hram.read(address - BASE_ADDRESS),
             move |components, address, value| {
-                components.hram.write(address - base_address, value);
+                components.hram.write(address - BASE_ADDRESS, value);
             },
         )
     }
@@ -76,6 +86,18 @@ mod segment {
                 components
                     .joypad
                     .set_bits(value, components.interrupt_controller)
+            },
+        )
+    }
+
+    pub fn serial() -> Segment {
+        Segment::new(
+            |components, address| {
+                log::info!("Serial Port is not implemented yet u_u");
+                0
+            },
+            |components, address, value| {
+                log::info!("serial Port is not implemented yet x_x");
             },
         )
     }
@@ -115,10 +137,58 @@ mod segment {
         )
     }
 
+    pub fn apu() -> Segment {
+        Segment::new(
+            |components, address| {
+                log::info!("APU is not implemented yet >_<");
+                0
+            },
+            |components, address, value| {
+                log::info!("APU is not implemented yet x_x");
+            },
+        )
+    }
+
+    pub fn ppu() -> Segment {
+        Segment::new(
+            |components, address| {
+                log::info!("APU is not implemented yet >_<");
+                0
+            },
+            |components, address, value| {
+                log::info!("APU is not implemented yet x_x");
+            },
+        )
+    }
+
+    pub fn ir() -> Segment {
+        Segment::new(
+            |components, address| {
+                log::info!("IR is not implemented yet >_<");
+                0
+            },
+            |components, address, value| {
+                log::info!("IR is not implemented yet x_x");
+            },
+        )
+    }
+
     pub fn interrupt_enabled() -> Segment {
         Segment::new(
             |components, _address| components.interrupt_controller.enabled_bits(),
             |components, _address, value| components.interrupt_controller.set_enabled_bits(value),
+        )
+    }
+
+    pub fn unknown() -> Segment {
+        Segment::new(
+            |components, address| {
+                log::warn!("Attempt to read from the unknown segment: {:04X}", address);
+                0xFF
+            },
+            |components, address, value| {
+                log::warn!("Attempt to write to the unknown segment: {:04X}", address);
+            },
         )
     }
 }
@@ -139,16 +209,30 @@ impl<'a> MappedMemory<'a> {
             0x0000..=0x7FFF => cartridge(),
             0x8000..=0x9FFF => panic!("VRAM"),
             0xA000..=0xBFFF => cartridge(),
-            0xC000..=0xDFFF => wram(0xC000),
-            0xE000..=0xFDFF => wram(0xE000), // mirror
+            0xC000..=0xFDFF => wram(),
             0xFE00..=0xFE9F => panic!("OAM"),
             0xFEA0..=0xFEFF => unusable(),
             0xFF00 => joypad(),
+            0xFF01..=0xFF02 => serial(),
+            0xFF03 => unknown(),
             0xFF04..=0xFF07 => timer(),
+            0xFF08..=0xFF0E => unknown(),
             0xFF0F => interrupt_requested(),
-            0xFF80..=0xFFFE => hram(0xFF80),
+            0xFF10..=0xFF3F => apu(),
+            0xFF40..=0xFF4F => ppu(),
+            0xFF50 => unknown(),
+            0xFF51..=0xFF55 => ppu(),
+            0xFF56 => ir(),
+            0xFF57..=0xFF67 => unknown(),
+            0xFF68..=0xFF6C => ppu(),
+            0xFF6D..=0xFF6F => unknown(),
+            0xFF70 => wram(),
+            0xFF71 => unknown(),
+            0xFF72..=0xFF75 => unknown(), // undocumented registers?
+            0xFF76..=0xFF77 => apu(),
+            0xFF78..=0xFF7F => unknown(),
+            0xFF80..=0xFFFE => hram(),
             0xFFFF => interrupt_enabled(),
-            _ => panic!("Read from the address: {:04X}", address),
         }
     }
 }
