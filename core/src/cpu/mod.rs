@@ -71,9 +71,10 @@ impl Cpu {
             self.wait_cycles -= 1;
             return;
         }
-        let mut context = CpuContext::new(&mut Components { cpu: self, memory });
-        //        let instruction = Instruction::fetch(&mut context);
-        //        log::info!(target: "cpu_event", "Instruction: {}", instruction);
-        //        instruction.execute(&mut context);
+        let mut components = Components { cpu: self, memory };
+        let mut context = CpuContext::new(&mut components);
+        let instruction = Instruction::fetch(&mut context);
+        log::info!(target: "cpu_event", "Instruction: {}", instruction);
+        instruction.execute(&mut context);
     }
 }

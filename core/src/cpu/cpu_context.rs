@@ -50,11 +50,11 @@ impl<'a> CpuContext<'a> {
     }
 
     pub fn disable_interrupts(&mut self) {
-        self.disable_interrupts();
+        self.components.disable_interrupts();
     }
 
     pub fn enable_interrupts(&mut self) {
-        self.enable_interrupts();
+        self.components.enable_interrupts();
     }
 
     pub fn wait(&mut self) {
