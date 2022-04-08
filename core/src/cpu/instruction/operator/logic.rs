@@ -4,59 +4,44 @@ use crate::cpu::{
     registers::Flags,
 };
 
-fn and_u8(format: String, lhs: impl Read<u8> + Write<u8>, rhs: impl Read<u8>) -> Operator {
-    Operator::new(format, move |context| {
-        let current = lhs.read(context);
-        let n = rhs.read(context);
-        let result = current & n;
+pub fn and(operand: impl Read<u8>) -> Operator {
+    Operator::new(format!("AND {}", operand), move |context| {
+        let n = operand.read(context);
+        let result = context.registers().a & n;
         context.set_flags(Flags {
             z: result == 0,
             n: false,
             h: true,
             c: false,
         });
-        lhs.write(context, result);
+        context.registers_mut().a = result;
     })
 }
 
-pub fn and(rhs: impl Read<u8>) -> Operator {
-    and_u8(format!("AND {}", rhs), register::A, rhs)
-}
-
-fn or_u8(format: String, lhs: impl Read<u8> + Write<u8>, rhs: impl Read<u8>) -> Operator {
-    Operator::new(format, move |context| {
-        let current = lhs.read(context);
-        let n = rhs.read(context);
-        let result = current | n;
+pub fn or(operand: impl Read<u8>) -> Operator {
+    Operator::new(format!("OR {}", operand), move |context| {
+        let n = operand.read(context);
+        let result = context.registers().a | n;
         context.set_flags(Flags {
             z: result == 0,
             n: false,
             h: false,
             c: false,
         });
-        lhs.write(context, result);
+        context.registers_mut().a = result;
     })
 }
 
-pub fn or(rhs: impl Read<u8>) -> Operator {
-    or_u8(format!("OR {}", rhs), register::A, rhs)
-}
-
-fn xor_u8(format: String, lhs: impl Read<u8> + Write<u8>, rhs: impl Read<u8>) -> Operator {
-    Operator::new(format, move |context| {
-        let current = lhs.read(context);
-        let n = rhs.read(context);
-        let result = current ^ n;
+pub fn xor(operand: impl Read<u8>) -> Operator {
+    Operator::new(format!("XOR {}", operand), move |context| {
+        let n = operand.read(context);
+        let result = context.registers().a ^ n;
         context.set_flags(Flags {
             z: result == 0,
             n: false,
             h: false,
             c: false,
         });
-        lhs.write(context, result);
+        context.registers_mut().a = result;
     })
-}
-
-pub fn xor(rhs: impl Read<u8>) -> Operator {
-    xor_u8(format!("XOR {}", rhs), register::A, rhs)
 }
