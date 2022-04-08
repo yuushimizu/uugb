@@ -1,20 +1,20 @@
 pub mod arithmetic;
 pub mod bits;
-//pub mod call;
+pub mod call;
 pub mod cpu_state;
-//pub mod jump;
+pub mod jump;
 pub mod load;
-//pub mod logic;
+pub mod logic;
 pub mod miscellaneous;
 pub mod stack;
 
 pub use arithmetic::*;
 pub use bits::*;
-//pub use call::*;
+pub use call::*;
 pub use cpu_state::*;
-//pub use jump::*;
+pub use jump::*;
 pub use load::*;
-//pub use logic::*;
+pub use logic::*;
 pub use miscellaneous::*;
 pub use stack::*;
 

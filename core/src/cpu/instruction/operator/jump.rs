@@ -1,11 +1,11 @@
 use super::Operator;
-use crate::cpu::instruction::operand::Read;
+use crate::cpu::{instruction::operand::Read, Continuation};
 
 pub mod condition {
     use crate::cpu::{registers::Flags, CpuContext};
     use std::fmt;
 
-    #[derive(Clone)]
+    #[derive(Clone, Copy)]
     pub struct Condition {
         name: &'static str,
         predicate: fn(&Flags) -> bool,
@@ -54,34 +54,55 @@ pub mod condition {
 
 pub use condition::Condition;
 
-pub fn jp_cc<L: Read<u16>>(condition: Condition, location: L) -> Operator {
-    Operator::new(format!("JP {}, {}", condition, location), move |context| {
-        let address = location.read(context);
-        if condition.is_satisfied(context) {
-            context.jump(address);
-        }
+fn jp_nn() -> Operator {
+    Operator::new(format!("JP #"), move |context| {
+        context
+            .fetch16()
+            .map(|context, address| context.jump(address))
+            .tick()
     })
 }
 
-pub fn jp<L: Read<u16>>(location: L) -> Operator {
-    Operator::new(format!("JP {}", location), move |context| {
-        let address = location.read(context);
-        context.jump(address);
+fn jp_hl() -> Operator {
+    Operator::new(format!("JP HL"), move |context| {
+        context.jump(context.registers().hl());
+        Continuation::just(())
     })
 }
 
-pub fn jr_cc<O: Read<u8>>(condition: Condition, operand: O) -> Operator {
-    Operator::new(format!("JR {}, {}", condition, operand), move |context| {
-        let offset = operand.read(context);
-        if condition.is_satisfied(context) {
-            context.jump(context.registers().pc.wrapping_add(offset as i8 as u16));
-        }
+pub fn jp_cc<A: Read<u16>>(condition: Condition, address: A) -> Operator {
+    Operator::new(format!("JP {}, {}", condition, address), move |context| {
+        address.read(context).then(move |context, address| {
+            if condition.is_satisfied(context) {
+                context.jump(address);
+                Continuation::just(()).tick()
+            } else {
+                Continuation::just(())
+            }
+        })
     })
 }
 
 pub fn jr<O: Read<u8>>(operand: O) -> Operator {
     Operator::new(format!("JR {}", operand), move |context| {
-        let offset = operand.read(context);
-        context.jump(context.registers().pc.wrapping_add(offset as i8 as u16));
+        operand
+            .read(context)
+            .map(|context, offset| {
+                context.jump(context.registers().pc.wrapping_add(offset as i8 as u16))
+            })
+            .tick()
+    })
+}
+
+pub fn jr_cc<O: Read<u8>>(condition: Condition, operand: O) -> Operator {
+    Operator::new(format!("JR {}, {}", condition, operand), move |context| {
+        operand.read(context).then(move |context, offset| {
+            if condition.is_satisfied(context) {
+                context.jump(context.registers().pc.wrapping_add(offset as i8 as u16));
+                Continuation::just(()).tick()
+            } else {
+                Continuation::just(())
+            }
+        })
     })
 }

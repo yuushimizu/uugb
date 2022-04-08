@@ -6,15 +6,19 @@ use crate::cpu::{
 
 fn and_u8<L: ReadWrite<u8>, R: Read<u8>>(format: String, lhs: L, rhs: R) -> Operator {
     Operator::new(format, move |context| {
-        let (current, writer) = lhs.read_write(context);
-        let result = current & rhs.read(context);
-        writer(context, result);
-        context.set_flags(Flags {
-            z: result == 0,
-            n: false,
-            h: true,
-            c: false,
-        });
+        lhs.prepare_and_read(context)
+            .then(move |context, (current, writer)| {
+                rhs.read(context).then(move |context, n| {
+                    let result = current & n;
+                    context.set_flags(Flags {
+                        z: result == 0,
+                        n: false,
+                        h: true,
+                        c: false,
+                    });
+                    writer.write(context, result)
+                })
+            })
     })
 }
 
@@ -24,15 +28,19 @@ pub fn and<R: Read<u8>>(rhs: R) -> Operator {
 
 fn or_u8<L: ReadWrite<u8>, R: Read<u8>>(format: String, lhs: L, rhs: R) -> Operator {
     Operator::new(format, move |context| {
-        let (current, writer) = lhs.read_write(context);
-        let result = current | rhs.read(context);
-        writer(context, result);
-        context.set_flags(Flags {
-            z: result == 0,
-            n: false,
-            h: false,
-            c: false,
-        });
+        lhs.prepare_and_read(context)
+            .then(move |context, (current, writer)| {
+                rhs.read(context).then(move |context, n| {
+                    let result = current | n;
+                    context.set_flags(Flags {
+                        z: result == 0,
+                        n: false,
+                        h: false,
+                        c: false,
+                    });
+                    writer.write(context, result)
+                })
+            })
     })
 }
 
@@ -42,15 +50,19 @@ pub fn or<R: Read<u8>>(rhs: R) -> Operator {
 
 fn xor_u8<L: ReadWrite<u8>, R: Read<u8>>(format: String, lhs: L, rhs: R) -> Operator {
     Operator::new(format, move |context| {
-        let (current, writer) = lhs.read_write(context);
-        let result = current ^ rhs.read(context);
-        writer(context, result);
-        context.set_flags(Flags {
-            z: result == 0,
-            n: false,
-            h: false,
-            c: false,
-        });
+        lhs.prepare_and_read(context)
+            .then(move |context, (current, writer)| {
+                rhs.read(context).then(move |context, n| {
+                    let result = current ^ n;
+                    context.set_flags(Flags {
+                        z: result == 0,
+                        n: false,
+                        h: false,
+                        c: false,
+                    });
+                    writer.write(context, result)
+                })
+            })
     })
 }
 
