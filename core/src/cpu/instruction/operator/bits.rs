@@ -2,24 +2,20 @@ use super::Operator;
 use crate::cpu::{
     instruction::operand::{register, Read, ReadWrite},
     registers::Flags,
-    Continuation,
 };
 use crate::util::bits::Bits;
 
 pub fn swap<O: ReadWrite<u8>>(operand: O) -> Operator {
     Operator::new(format!("SWAP {}", operand), move |context| {
-        operand
-            .prepare_and_read(context)
-            .then(|context, (current, writer)| {
-                let result = current.rotate_left(4);
-                context.set_flags(Flags {
-                    z: result == 0,
-                    n: false,
-                    h: false,
-                    c: false,
-                });
-                writer.write(context, result)
-            })
+        let (current, writer) = operand.prepare_and_read(context);
+        let result = current.rotate_left(4);
+        context.set_flags(Flags {
+            z: result == 0,
+            n: false,
+            h: false,
+            c: false,
+        });
+        writer.write(context, result);
     })
 }
 
@@ -31,28 +27,24 @@ pub fn cpl() -> Operator {
             h: true,
             ..*context.flags()
         });
-        Continuation::just(())
     })
 }
 
 fn rl_u8<O: ReadWrite<u8>>(format: String, operand: O, with_carry: bool) -> Operator {
     Operator::new(format, move |context| {
-        operand
-            .prepare_and_read(context)
-            .then(move |context, (current, writer)| {
-                let result = if with_carry {
-                    current << 1 | context.flags().c as u8
-                } else {
-                    current.rotate_left(1)
-                };
-                context.set_flags(Flags {
-                    z: result == 0,
-                    n: false,
-                    h: false,
-                    c: current.bit(7),
-                });
-                writer.write(context, result)
-            })
+        let (current, writer) = operand.prepare_and_read(context);
+        let result = if with_carry {
+            current << 1 | context.flags().c as u8
+        } else {
+            current.rotate_left(1)
+        };
+        context.set_flags(Flags {
+            z: result == 0,
+            n: false,
+            h: false,
+            c: current.bit(7),
+        });
+        writer.write(context, result);
     })
 }
 
@@ -74,22 +66,19 @@ pub fn rl<O: ReadWrite<u8>>(operand: O) -> Operator {
 
 fn rr_u8<O: ReadWrite<u8>>(format: String, operand: O, with_carry: bool) -> Operator {
     Operator::new(format, move |context| {
-        operand
-            .prepare_and_read(context)
-            .then(move |context, (current, writer)| {
-                let result = if with_carry {
-                    current >> 1 | (context.flags().c as u8) << 7
-                } else {
-                    current.rotate_right(1)
-                };
-                context.set_flags(Flags {
-                    z: result == 0,
-                    n: false,
-                    h: false,
-                    c: current.bit(0),
-                });
-                writer.write(context, result)
-            })
+        let (current, writer) = operand.prepare_and_read(context);
+        let result = if with_carry {
+            current >> 1 | (context.flags().c as u8) << 7
+        } else {
+            current.rotate_right(1)
+        };
+        context.set_flags(Flags {
+            z: result == 0,
+            n: false,
+            h: false,
+            c: current.bit(0),
+        });
+        writer.write(context, result);
     })
 }
 
@@ -111,35 +100,29 @@ pub fn rr<O: ReadWrite<u8>>(operand: O) -> Operator {
 
 pub fn sla<O: ReadWrite<u8>>(operand: O) -> Operator {
     Operator::new(format!("SLA {}", operand), move |context| {
-        operand
-            .prepare_and_read(context)
-            .then(|context, (current, writer)| {
-                let result = current << 1;
-                context.set_flags(Flags {
-                    z: result == 0,
-                    n: false,
-                    h: false,
-                    c: current.bit(7),
-                });
-                writer.write(context, result)
-            })
+        let (current, writer) = operand.prepare_and_read(context);
+        let result = current << 1;
+        context.set_flags(Flags {
+            z: result == 0,
+            n: false,
+            h: false,
+            c: current.bit(7),
+        });
+        writer.write(context, result);
     })
 }
 
 pub fn sr_u8<O: ReadWrite<u8>>(mnemonic: &'static str, operand: O, arithmetic: bool) -> Operator {
     Operator::new(format!("{} {}", mnemonic, operand), move |context| {
-        operand
-            .prepare_and_read(context)
-            .then(move |context, (current, writer)| {
-                let result = current >> 1 | ((arithmetic && current.bit(7)) as u8) << 7;
-                context.set_flags(Flags {
-                    z: result == 0,
-                    n: false,
-                    h: false,
-                    c: current.bit(0),
-                });
-                writer.write(context, result)
-            })
+        let (current, writer) = operand.prepare_and_read(context);
+        let result = current >> 1 | ((arithmetic && current.bit(7)) as u8) << 7;
+        context.set_flags(Flags {
+            z: result == 0,
+            n: false,
+            h: false,
+            c: current.bit(0),
+        });
+        writer.write(context, result);
     })
 }
 
@@ -153,31 +136,26 @@ pub fn srl<O: ReadWrite<u8>>(operand: O) -> Operator {
 
 pub fn bit<R: Read<u8>>(bit: u8, rhs: R) -> Operator {
     Operator::new(format!("BIT {}, {}", bit, rhs), move |context| {
-        rhs.read(context).map(move |context, value| {
-            context.set_flags(Flags {
-                z: !value.bit(bit as u32),
-                n: false,
-                h: true,
-                ..*context.flags()
-            });
-        })
+        let value = rhs.read(context);
+        context.set_flags(Flags {
+            z: !value.bit(bit as u32),
+            n: false,
+            h: true,
+            ..*context.flags()
+        });
     })
 }
 
 pub fn set<R: ReadWrite<u8>>(bit: u8, rhs: R) -> Operator {
     Operator::new(format!("SET {}, {}", bit, rhs), move |context| {
-        rhs.prepare_and_read(context)
-            .then(move |context, (current, writer)| {
-                writer.write(context, current.set_bit(bit as u32))
-            })
+        let (current, writer) = rhs.prepare_and_read(context);
+        writer.write(context, current.set_bit(bit as u32));
     })
 }
 
 pub fn res<R: ReadWrite<u8>>(bit: u8, rhs: R) -> Operator {
     Operator::new(format!("RES {}, {}", bit, rhs), move |context| {
-        rhs.prepare_and_read(context)
-            .then(move |context, (current, writer)| {
-                writer.write(context, current.reset_bit(bit as u32))
-            })
+        let (current, writer) = rhs.prepare_and_read(context);
+        writer.write(context, current.reset_bit(bit as u32));
     })
 }

@@ -1,13 +1,11 @@
 pub mod registers;
 
-mod continuation;
 mod cpu_context;
 mod instruction;
 
 pub use instruction::Instruction;
 pub use registers::Registers;
 
-use continuation::Continuation;
 use cpu_context::CpuContext;
 use log;
 
@@ -19,7 +17,7 @@ pub struct Cpu {
     is_halting: bool,
     interrupt_master_enable_flag: bool,
     interrupt_master_enabling: bool,
-    continuation: Option<Continuation<()>>,
+    wait_cycles: u64,
 }
 
 struct Context<'a> {
@@ -61,32 +59,21 @@ impl<'a> CpuContext for Context<'a> {
     fn enable_interrupts(&mut self) {
         self.cpu.interrupt_master_enabling = true;
     }
+
+    fn wait(&mut self) {
+        self.cpu.wait_cycles += 1;
+    }
 }
 
 impl Cpu {
     pub fn tick(&mut self, memory: &mut dyn Memory) {
-        use Continuation::*;
-        let mut continuation = self.continuation.take();
-        let mut context = Context { cpu: self, memory };
-        loop {
-            match continuation {
-                None | Some(Return(_)) => {
-                    continuation = Some(Instruction::fetch(&mut context).then(
-                        |context, instruction| {
-                            log::info!(target: "cpu_event", "Instruction: {}", instruction);
-                            instruction.execute(context)
-                        },
-                    ))
-                }
-                Some(Continue(next)) => {
-                    continuation = Some(next(&mut context));
-                }
-                Some(Tick(next)) => {
-                    continuation = Some(*next);
-                    break;
-                }
-            }
+        if self.wait_cycles > 0 {
+            self.wait_cycles -= 1;
+            return;
         }
-        self.continuation = continuation;
+        let mut context = Context { cpu: self, memory };
+        let instruction = Instruction::fetch(&mut context);
+        log::info!(target: "cpu_event", "Instruction: {}", instruction);
+        instruction.execute(&mut context);
     }
 }

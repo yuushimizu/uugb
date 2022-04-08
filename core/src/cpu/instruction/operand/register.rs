@@ -1,4 +1,4 @@
-use super::{Continuation, Operand, Read, ReadWrite, Value, Write, Writer};
+use super::{Operand, Read, ReadWrite, Value, Write, Writer};
 use crate::cpu::{CpuContext, Registers};
 use std::fmt;
 
@@ -26,27 +26,25 @@ impl<T: Value> fmt::Debug for Register<T> {
 impl<T: Value> Operand for Register<T> {}
 
 impl<T: Value> Read<T> for Register<T> {
-    fn read(&self, context: &mut dyn CpuContext) -> Continuation<T> {
-        Continuation::just((self.read)(context.registers()))
+    fn read(&self, context: &mut dyn CpuContext) -> T {
+        (self.read)(context.registers())
     }
 }
 
 impl<T: Value> Write<T> for Register<T> {
-    fn prepare(&self, _context: &mut dyn CpuContext) -> Continuation<Writer<T>> {
+    fn prepare(&self, _context: &mut dyn CpuContext) -> Writer<T> {
         let write = self.write;
-        Continuation::just(Writer::just(move |context, value| {
-            write(context.registers_mut(), value)
-        }))
+        Writer::new(move |context, value| write(context.registers_mut(), value))
     }
 }
 
 impl<T: Value> ReadWrite<T> for Register<T> {
-    fn prepare_and_read(&self, context: &mut dyn CpuContext) -> Continuation<(T, Writer<T>)> {
+    fn prepare_and_read(&self, context: &mut dyn CpuContext) -> (T, Writer<T>) {
         let write = self.write;
-        Continuation::just((
+        (
             (self.read)(context.registers()),
-            Writer::just(move |context, value| write(context.registers_mut(), value)),
-        ))
+            Writer::new(move |context, value| write(context.registers_mut(), value)),
+        )
     }
 }
 

@@ -1,4 +1,4 @@
-use super::{Continuation, Operand, Read};
+use super::{Operand, Read};
 use crate::cpu::CpuContext;
 use std::fmt;
 
@@ -6,8 +6,9 @@ use std::fmt;
 pub struct AddLiteral8;
 
 impl Read<u16> for AddLiteral8 {
-    fn read(&self, context: &mut dyn CpuContext) -> Continuation<u16> {
-        context.fetch().then(|context, value| context.add_sp(value))
+    fn read(&self, context: &mut dyn CpuContext) -> u16 {
+        let value = context.fetch();
+        context.add_sp(value)
     }
 }
 

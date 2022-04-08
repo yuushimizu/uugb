@@ -1,6 +1,4 @@
-use super::{
-    indirection, Continuation, Indirection, Operand, Read, ReadWrite, Register, Write, Writer,
-};
+use super::{indirection, Indirection, Operand, Read, ReadWrite, Register, Write, Writer};
 use crate::cpu::CpuContext;
 use std::fmt;
 
@@ -42,7 +40,7 @@ impl fmt::Display for OpcodeRegister {
 impl Operand for OpcodeRegister {}
 
 impl Read<u8> for OpcodeRegister {
-    fn read(&self, context: &mut dyn CpuContext) -> Continuation<u8> {
+    fn read(&self, context: &mut dyn CpuContext) -> u8 {
         match self {
             Self::Register(register) => register.read(context),
             Self::Indirection(indirection) => indirection.read(context),
@@ -51,7 +49,7 @@ impl Read<u8> for OpcodeRegister {
 }
 
 impl Write<u8> for OpcodeRegister {
-    fn prepare(&self, context: &mut dyn CpuContext) -> Continuation<Writer<u8>> {
+    fn prepare(&self, context: &mut dyn CpuContext) -> Writer<u8> {
         match self {
             Self::Register(register) => register.prepare(context),
             Self::Indirection(indirection) => indirection.prepare(context),
@@ -60,7 +58,7 @@ impl Write<u8> for OpcodeRegister {
 }
 
 impl ReadWrite<u8> for OpcodeRegister {
-    fn prepare_and_read(&self, context: &mut dyn CpuContext) -> Continuation<(u8, Writer<u8>)> {
+    fn prepare_and_read(&self, context: &mut dyn CpuContext) -> (u8, Writer<u8>) {
         match self {
             Self::Register(register) => register.prepare_and_read(context),
             Self::Indirection(indirection) => indirection.prepare_and_read(context),

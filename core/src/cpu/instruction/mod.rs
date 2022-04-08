@@ -1,7 +1,7 @@
 mod operand;
 mod operator;
 
-use super::{Continuation, CpuContext};
+use super::CpuContext;
 use once_cell::sync::Lazy;
 use operator::Operator;
 use std::fmt;
@@ -218,22 +218,18 @@ static INSTRUCTIONS: Lazy<Vec<Instruction>> = Lazy::new(|| {
 });
 
 impl Instruction {
-    pub fn execute(&self, context: &mut dyn CpuContext) -> Continuation<()> {
-        self.operator.execute(context)
+    pub fn execute(&self, context: &mut dyn CpuContext) {
+        self.operator.execute(context);
     }
 
-    fn fetch_nested(context: &mut dyn CpuContext) -> Continuation<&'static Self> {
-        context
-            .fetch()
-            .map(move |_context, opcode| &NESTED_INSTRUCTION[opcode as usize])
+    fn fetch_nested(context: &mut dyn CpuContext) -> &'static Self {
+        &NESTED_INSTRUCTION[context.fetch() as usize]
     }
 
-    pub fn fetch(context: &mut dyn CpuContext) -> Continuation<&'static Self> {
-        context.fetch().then(|context, opcode| {
-            Continuation::just(match opcode {
-                NESTED_OPCODE => return Self::fetch_nested(context),
-                _ => &INSTRUCTIONS[opcode as usize],
-            })
-        })
+    pub fn fetch(context: &mut dyn CpuContext) -> &'static Self {
+        match context.fetch() {
+            NESTED_OPCODE => Self::fetch_nested(context),
+            opcode => &INSTRUCTIONS[opcode as usize],
+        }
     }
 }

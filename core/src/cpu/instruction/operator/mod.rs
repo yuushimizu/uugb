@@ -18,12 +18,12 @@ pub use logic::*;
 pub use miscellaneous::*;
 pub use stack::*;
 
-use crate::cpu::{Continuation, CpuContext};
+use crate::cpu::CpuContext;
 use std::fmt;
 
 pub struct Operator {
     format: String,
-    execute: Box<dyn Fn(&mut dyn CpuContext) -> Continuation<()> + Sync + Send>,
+    execute: Box<dyn Fn(&mut dyn CpuContext) + Sync + Send>,
 }
 
 impl fmt::Debug for Operator {
@@ -41,7 +41,7 @@ impl fmt::Display for Operator {
 }
 
 impl Operator {
-    pub fn new<E: Fn(&mut dyn CpuContext) -> Continuation<()> + Sync + Send + 'static>(
+    pub fn new<E: Fn(&mut dyn CpuContext) + Sync + Send + 'static>(
         format: String,
         execute: E,
     ) -> Self {
@@ -51,7 +51,7 @@ impl Operator {
         }
     }
 
-    pub fn execute(&self, context: &mut dyn CpuContext) -> Continuation<()> {
-        (self.execute)(context)
+    pub fn execute(&self, context: &mut dyn CpuContext) {
+        (self.execute)(context);
     }
 }

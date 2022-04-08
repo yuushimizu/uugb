@@ -71,7 +71,6 @@ fn boot(cartridge: Cartridge) {
 }
 
 fn main() {
-    /*
     CombinedLogger::init(vec![TermLogger::new(
         LevelFilter::Debug,
         Config::default(),
@@ -79,7 +78,6 @@ fn main() {
         ColorChoice::Auto,
     )])
     .unwrap();
-    */
     let arg = Args::parse();
     let mut file = File::open(&arg.file).unwrap_or_else(|_err| {
         eprintln!("Could not open the file: {}", arg.file.display());

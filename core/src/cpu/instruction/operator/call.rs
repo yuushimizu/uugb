@@ -1,23 +1,19 @@
 use super::{jump::condition::Condition, Operator};
-use crate::cpu::{instruction::operand::Read, Continuation};
+use crate::cpu::instruction::operand::Read;
 
 pub fn call<A: Read<u16>>(address: A) -> Operator {
     Operator::new(format!("CALL {}", address), move |context| {
-        address
-            .read(context)
-            .then(|context, address| context.call(address))
+        let address = address.read(context);
+        context.call(address);
     })
 }
 
 pub fn call_cc<A: Read<u16>>(condition: Condition, address: A) -> Operator {
     Operator::new(format!("CALL {}, {}", condition, address), move |context| {
-        address.read(context).then(move |context, address| {
-            if condition.is_satisfied(context) {
-                context.call(address)
-            } else {
-                Continuation::just(())
-            }
-        })
+        let address = address.read(context);
+        if condition.is_satisfied(context) {
+            context.call(address);
+        }
     })
 }
 
@@ -32,17 +28,15 @@ pub fn ret() -> Operator {
 pub fn ret_cc(condition: Condition) -> Operator {
     Operator::new(format!("RET {}", condition), move |context| {
         if condition.is_satisfied(context) {
-            context.ret()
-        } else {
-            Continuation::just(())
+            context.ret();
         }
-        .tick()
+        context.wait();
     })
 }
 
 pub fn reti() -> Operator {
     Operator::new("RETI".into(), move |context| {
         context.enable_interrupts();
-        context.ret()
+        context.ret();
     })
 }

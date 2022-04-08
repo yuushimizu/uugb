@@ -1,11 +1,11 @@
-use super::{Continuation, Operand, Read, ReadWrite, Write, Writer};
+use super::{Operand, Read, ReadWrite, Write, Writer};
 use crate::cpu::CpuContext;
 use std::fmt;
 
 #[derive(Clone, Copy)]
 pub struct Indirection {
     name: &'static str,
-    address: fn(&mut dyn CpuContext) -> Continuation<u16>,
+    address: fn(&mut dyn CpuContext) -> u16,
 }
 
 impl fmt::Debug for Indirection {
@@ -25,43 +25,40 @@ impl fmt::Display for Indirection {
 impl Operand for Indirection {}
 
 impl Read<u8> for Indirection {
-    fn read(&self, context: &mut dyn CpuContext) -> Continuation<u8> {
-        (self.address)(context).then(|context, address| context.read(address))
+    fn read(&self, context: &mut dyn CpuContext) -> u8 {
+        let address = (self.address)(context);
+        context.read(address)
     }
 }
 
 impl Write<u8> for Indirection {
-    fn prepare(&self, context: &mut dyn CpuContext) -> Continuation<Writer<u8>> {
-        (self.address)(context).map(|_context, address| {
-            Writer::new(move |context, value| context.write(address, value))
-        })
+    fn prepare(&self, context: &mut dyn CpuContext) -> Writer<u8> {
+        let address = (self.address)(context);
+        Writer::new(move |context, value| context.write(address, value))
     }
 }
 
 impl ReadWrite<u8> for Indirection {
-    fn prepare_and_read(&self, context: &mut dyn CpuContext) -> Continuation<(u8, Writer<u8>)> {
-        (self.address)(context).then(|context, address| {
-            context.read(address).map(move |_context, value| {
-                (
-                    value,
-                    Writer::new(move |context, value| context.write(address, value)),
-                )
-            })
-        })
+    fn prepare_and_read(&self, context: &mut dyn CpuContext) -> (u8, Writer<u8>) {
+        let address = (self.address)(context);
+        (
+            context.read(address),
+            Writer::new(move |context, value| context.write(address, value)),
+        )
     }
 }
 
 impl Read<u16> for Indirection {
-    fn read(&self, context: &mut dyn CpuContext) -> Continuation<u16> {
-        (self.address)(context).then(|context, address| context.read16(address))
+    fn read(&self, context: &mut dyn CpuContext) -> u16 {
+        let address = (self.address)(context);
+        context.read16(address)
     }
 }
 
 impl Write<u16> for Indirection {
-    fn prepare(&self, context: &mut dyn CpuContext) -> Continuation<Writer<u16>> {
-        (self.address)(context).map(|_context, address| {
-            Writer::new(move |context, value| context.write16(address, value))
-        })
+    fn prepare(&self, context: &mut dyn CpuContext) -> Writer<u16> {
+        let address = (self.address)(context);
+        Writer::new(move |context, value| context.write16(address, value))
     }
 }
 
@@ -69,7 +66,7 @@ macro_rules! register {
     ($name: ident, $field: ident) => {
         pub const $name: Indirection = Indirection {
             name: stringify!($name),
-            address: |context| Continuation::just(context.registers().$field()),
+            address: |context| context.registers().$field(),
         };
     };
 }
@@ -85,12 +82,12 @@ pub const LITERAL: Indirection = Indirection {
 
 pub const LITERAL_8: Indirection = Indirection {
     name: "$FF00+n",
-    address: |context| context.fetch().map(|_context, value| 0xFF00 | value as u16),
+    address: |context| 0xFF00 | context.fetch() as u16,
 };
 
 pub const C: Indirection = Indirection {
     name: "C",
-    address: |context| Continuation::just(0xFF00 | context.registers().c as u16),
+    address: |context| 0xFF00 | context.registers().c as u16,
 };
 
 pub const HLD: Indirection = Indirection {
@@ -98,7 +95,7 @@ pub const HLD: Indirection = Indirection {
     address: |context| {
         let address = context.registers().hl();
         context.registers_mut().set_hl(address.wrapping_sub(1));
-        Continuation::just(address)
+        address
     },
 };
 
@@ -107,6 +104,6 @@ pub const HLI: Indirection = Indirection {
     address: |context| {
         let address = context.registers().hl();
         context.registers_mut().set_hl(address.wrapping_add(1));
-        Continuation::just(address)
+        address
     },
 };

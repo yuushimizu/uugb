@@ -1,5 +1,5 @@
 use super::Operator;
-use crate::cpu::{instruction::operand::Read, Continuation};
+use crate::cpu::{instruction::operand::Read, CpuContext};
 
 pub mod condition {
     use crate::cpu::{registers::Flags, CpuContext};
@@ -56,53 +56,46 @@ pub use condition::Condition;
 
 pub fn jp_nn() -> Operator {
     Operator::new(format!("JP #"), move |context| {
-        context
-            .fetch16()
-            .map(|context, address| context.jump(address))
-            .tick()
+        let address = context.fetch16();
+        context.jump(address);
+        context.wait();
     })
 }
 
 pub fn jp_hl() -> Operator {
     Operator::new(format!("JP HL"), move |context| {
         context.jump(context.registers().hl());
-        Continuation::just(())
     })
 }
 
 pub fn jp_cc<A: Read<u16>>(condition: Condition, address: A) -> Operator {
     Operator::new(format!("JP {}, {}", condition, address), move |context| {
-        address.read(context).then(move |context, address| {
-            if condition.is_satisfied(context) {
-                context.jump(address);
-                Continuation::just(()).tick()
-            } else {
-                Continuation::just(())
-            }
-        })
+        let address = address.read(context);
+        if condition.is_satisfied(context) {
+            context.jump(address);
+            context.wait();
+        }
     })
+}
+
+fn relative_jump(context: &mut dyn CpuContext, offset: u8) {
+    context.jump(context.registers().pc.wrapping_add(offset as i8 as u16));
 }
 
 pub fn jr<O: Read<u8>>(operand: O) -> Operator {
     Operator::new(format!("JR {}", operand), move |context| {
-        operand
-            .read(context)
-            .map(|context, offset| {
-                context.jump(context.registers().pc.wrapping_add(offset as i8 as u16))
-            })
-            .tick()
+        let offset = operand.read(context);
+        relative_jump(context, offset);
+        context.wait();
     })
 }
 
 pub fn jr_cc<O: Read<u8>>(condition: Condition, operand: O) -> Operator {
     Operator::new(format!("JR {}, {}", condition, operand), move |context| {
-        operand.read(context).then(move |context, offset| {
-            if condition.is_satisfied(context) {
-                context.jump(context.registers().pc.wrapping_add(offset as i8 as u16));
-                Continuation::just(()).tick()
-            } else {
-                Continuation::just(())
-            }
-        })
+        let offset = operand.read(context);
+        if condition.is_satisfied(context) {
+            relative_jump(context, offset);
+            context.wait();
+        }
     })
 }
