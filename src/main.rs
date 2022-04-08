@@ -77,7 +77,8 @@ fn main() {
         Config::default(),
         TerminalMode::Mixed,
         ColorChoice::Auto,
-    )]).unwrap();
+    )])
+    .unwrap();
     */
     let arg = Args::parse();
     let mut file = File::open(&arg.file).unwrap_or_else(|_err| {

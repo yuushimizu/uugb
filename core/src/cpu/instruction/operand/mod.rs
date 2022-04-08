@@ -12,14 +12,14 @@ pub use register::Register;
 use crate::cpu::{Continuation, CpuContext};
 use std::fmt;
 
-pub trait Operand: 'static + Copy + fmt::Display + fmt::Debug {}
+pub trait Operand: 'static + Sync + Send + Copy + fmt::Display + fmt::Debug {}
 
 pub trait Value: 'static + Sized + Copy {}
 
 impl<T: 'static + Sized + Copy> Value for T {}
 
 pub trait Read<T: Value>: Operand {
-    fn read(self, context: &mut dyn CpuContext) -> Continuation<T>;
+    fn read(&self, context: &mut dyn CpuContext) -> Continuation<T>;
 }
 
 pub struct Writer<T: Value> {
@@ -44,9 +44,9 @@ impl<T: Value> Writer<T> {
 }
 
 pub trait Write<T: Value>: Operand {
-    fn prepare(self, context: &mut dyn CpuContext) -> Continuation<Writer<T>>;
+    fn prepare(&self, context: &mut dyn CpuContext) -> Continuation<Writer<T>>;
 }
 
 pub trait ReadWrite<T: Value>: Operand {
-    fn prepare_and_read(self, context: &mut dyn CpuContext) -> Continuation<(T, Writer<T>)>;
+    fn prepare_and_read(&self, context: &mut dyn CpuContext) -> Continuation<(T, Writer<T>)>;
 }

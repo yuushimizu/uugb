@@ -25,13 +25,13 @@ impl fmt::Display for Indirection {
 impl Operand for Indirection {}
 
 impl Read<u8> for Indirection {
-    fn read(self, context: &mut dyn CpuContext) -> Continuation<u8> {
+    fn read(&self, context: &mut dyn CpuContext) -> Continuation<u8> {
         (self.address)(context).then(|context, address| context.read(address))
     }
 }
 
 impl Write<u8> for Indirection {
-    fn prepare(self, context: &mut dyn CpuContext) -> Continuation<Writer<u8>> {
+    fn prepare(&self, context: &mut dyn CpuContext) -> Continuation<Writer<u8>> {
         (self.address)(context).map(|_context, address| {
             Writer::new(move |context, value| context.write(address, value))
         })
@@ -39,7 +39,7 @@ impl Write<u8> for Indirection {
 }
 
 impl ReadWrite<u8> for Indirection {
-    fn prepare_and_read(self, context: &mut dyn CpuContext) -> Continuation<(u8, Writer<u8>)> {
+    fn prepare_and_read(&self, context: &mut dyn CpuContext) -> Continuation<(u8, Writer<u8>)> {
         (self.address)(context).then(|context, address| {
             context.read(address).map(move |_context, value| {
                 (
@@ -52,13 +52,13 @@ impl ReadWrite<u8> for Indirection {
 }
 
 impl Read<u16> for Indirection {
-    fn read(self, context: &mut dyn CpuContext) -> Continuation<u16> {
+    fn read(&self, context: &mut dyn CpuContext) -> Continuation<u16> {
         (self.address)(context).then(|context, address| context.read16(address))
     }
 }
 
 impl Write<u16> for Indirection {
-    fn prepare(self, context: &mut dyn CpuContext) -> Continuation<Writer<u16>> {
+    fn prepare(&self, context: &mut dyn CpuContext) -> Continuation<Writer<u16>> {
         (self.address)(context).map(|_context, address| {
             Writer::new(move |context, value| context.write16(address, value))
         })

@@ -2,6 +2,7 @@ mod operand;
 mod operator;
 
 use super::{Continuation, CpuContext};
+use once_cell::sync::Lazy;
 use operator::Operator;
 use std::fmt;
 
@@ -25,21 +26,19 @@ impl fmt::Display for Instruction {
     }
 }
 
-impl Instruction {
-    pub fn execute(&self, context: &mut dyn CpuContext) -> Continuation<()> {
-        self.operator.execute(context)
-    }
+const NESTED_OPCODE: u8 = 0xCB;
 
-    fn fetch_cb(context: &mut dyn CpuContext, opcode: u8) -> Continuation<Self> {
-        use operand::*;
-        use operator::*;
-        context.fetch().map(move |_context, sub_opcode| {
-            let opcode_register = OpcodeRegister::from(sub_opcode);
-            let bit_operand = sub_opcode >> 3 & 0b111;
-            Self {
-                opcode,
-                sub_opcode: Some(sub_opcode),
-                operator: match sub_opcode {
+static NESTED_INSTRUCTION: Lazy<Vec<Instruction>> = Lazy::new(|| {
+    (0x00..=0xFF)
+        .map(|opcode| {
+            use operand::*;
+            use operator::*;
+            let opcode_register = OpcodeRegister::from(opcode);
+            let bit_operand = opcode >> 3 & 0b111;
+            Instruction {
+                opcode: NESTED_OPCODE,
+                sub_opcode: Some(opcode),
+                operator: match opcode {
                     // Miscellaneous
                     0x30..=0x37 => swap(opcode_register),
                     // Rotates & Shifts
@@ -56,19 +55,21 @@ impl Instruction {
                 },
             }
         })
-    }
+        .collect()
+});
 
-    pub fn fetch(context: &mut dyn CpuContext) -> Continuation<Self> {
-        use operand::register::*;
-        use operand::*;
-        use operator::*;
-        context.fetch().then(|context, opcode| {
+static INSTRUCTIONS: Lazy<Vec<Instruction>> = Lazy::new(|| {
+    (0x00..=0xFF)
+        .map(|opcode| {
+            use operand::register::*;
+            use operand::*;
+            use operator::*;
             let opcode_register = OpcodeRegister::from(opcode);
-
-            Continuation::just(Self {
+            Instruction {
                 opcode,
                 sub_opcode: None,
                 operator: match opcode {
+                    NESTED_OPCODE => unused(opcode),
                     // Miscellaneous (HALT)
                     0x76 => halt(),
                     // 8-Bit Loads
@@ -159,7 +160,6 @@ impl Instruction {
                     0x2B => dec16(HL),
                     0x3B => dec16(SP),
                     // Miscellaneous
-                    0xCB => return Self::fetch_cb(context, opcode),
                     0x27 => daa(),
                     0x2F => cpl(),
                     0x3F => ccf(),
@@ -212,6 +212,27 @@ impl Instruction {
                         unused(opcode)
                     }
                 },
+            }
+        })
+        .collect()
+});
+
+impl Instruction {
+    pub fn execute(&self, context: &mut dyn CpuContext) -> Continuation<()> {
+        self.operator.execute(context)
+    }
+
+    fn fetch_nested(context: &mut dyn CpuContext) -> Continuation<&'static Self> {
+        context
+            .fetch()
+            .map(move |_context, opcode| &NESTED_INSTRUCTION[opcode as usize])
+    }
+
+    pub fn fetch(context: &mut dyn CpuContext) -> Continuation<&'static Self> {
+        context.fetch().then(|context, opcode| {
+            Continuation::just(match opcode {
+                NESTED_OPCODE => return Self::fetch_nested(context),
+                _ => &INSTRUCTIONS[opcode as usize],
             })
         })
     }

@@ -23,7 +23,7 @@ use std::fmt;
 
 pub struct Operator {
     format: String,
-    execute: Box<dyn Fn(&mut dyn CpuContext) -> Continuation<()>>,
+    execute: Box<dyn Fn(&mut dyn CpuContext) -> Continuation<()> + Sync + Send>,
 }
 
 impl fmt::Debug for Operator {
@@ -41,10 +41,10 @@ impl fmt::Display for Operator {
 }
 
 impl Operator {
-    pub fn new<E>(format: String, execute: E) -> Self
-    where
-        E: Fn(&mut dyn CpuContext) -> Continuation<()> + 'static,
-    {
+    pub fn new<E: Fn(&mut dyn CpuContext) -> Continuation<()> + Sync + Send + 'static>(
+        format: String,
+        execute: E,
+    ) -> Self {
         Self {
             format,
             execute: Box::new(execute),
