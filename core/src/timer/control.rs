@@ -6,7 +6,7 @@ pub struct InputClock {
 }
 
 impl InputClock {
-    pub fn falling_edge_bit_mask(&self) -> u16 {
+    pub fn bit_mask(&self) -> u16 {
         self.ticks
     }
 }
