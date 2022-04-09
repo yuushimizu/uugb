@@ -61,7 +61,7 @@ impl<'a, M: Memory> cpu_context::Components for Components<'a, M> {
     }
 
     fn wait(&mut self) {
-        self.cpu.wait_cycles += 1;
+        self.cpu.wait_cycles += 4;
     }
 }
 

@@ -1,14 +1,17 @@
 use super::{Hram, Memory, Wram};
-use crate::{cartridge::Cartridge, interrupt::InterruptController, io::Joypad, timer::Timer};
+use crate::{
+    cartridge::Cartridge, interrupt::InterruptController, io::Joypad, serial::Serial, timer::Timer,
+};
 
 #[derive(Debug)]
 pub struct Components<'a> {
     pub cartridge: &'a mut Cartridge,
     pub wram: &'a mut Wram,
     pub hram: &'a mut Hram,
+    pub interrupt_controller: &'a mut InterruptController,
     pub joypad: &'a mut Joypad,
     pub timer: &'a mut Timer,
-    pub interrupt_controller: &'a mut InterruptController,
+    pub serial: &'a mut Serial,
 }
 
 mod segment {
@@ -75,14 +78,17 @@ mod segment {
         },
     );
 
-    pub const SERIAL: Segment = Segment::Leaf(
-        |_components, _address| {
-            panic!("serial");
-        },
-        |_components, _address, _value| {
-            panic!("serial");
-        },
-    );
+    pub const SERIAL: Segment = Segment::Nested(|address| match address {
+        0xFF01 => &Segment::Leaf(
+            |components, _| components.serial.data(),
+            |components, _, value| components.serial.set_data(value),
+        ),
+        0xFF02 => &Segment::Leaf(
+            |components, _| components.serial.control_bits(),
+            |components, _, value| components.serial.set_control_bits(value),
+        ),
+        _ => unreachable!(),
+    });
 
     pub const TIMER: Segment = Segment::Nested(|address| match address {
         0xFF04 => &Segment::Leaf(

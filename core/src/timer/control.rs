@@ -2,20 +2,20 @@ use crate::util::bits::Bits;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct InputClock {
-    ticks: u16,
+    cycles: u16,
 }
 
 impl InputClock {
     pub fn bit_mask(&self) -> u16 {
-        self.ticks
+        self.cycles
     }
 }
 
 pub const INPUT_CLOCKS: [InputClock; 4] = [
-    InputClock { ticks: 1024 },
-    InputClock { ticks: 16 },
-    InputClock { ticks: 64 },
-    InputClock { ticks: 256 },
+    InputClock { cycles: 1024 },
+    InputClock { cycles: 16 },
+    InputClock { cycles: 64 },
+    InputClock { cycles: 256 },
 ];
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
