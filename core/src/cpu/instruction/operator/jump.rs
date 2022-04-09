@@ -1,7 +1,7 @@
 use super::Operator;
-use crate::cpu::{
-    instruction::operand::{Condition, Read},
-    CpuContext,
+use crate::cpu::instruction::{
+    operand::{Condition, Read},
+    Context,
 };
 
 pub fn jp_nn() -> Operator {
@@ -28,7 +28,7 @@ pub fn jp_cc(condition: Condition, address: impl Read<u16>) -> Operator {
     })
 }
 
-fn relative_jump(context: &mut CpuContext, offset: u8) {
+fn relative_jump(context: &mut Context, offset: u8) {
     context.jump(context.registers().pc.wrapping_add(offset as i8 as u16));
 }
 

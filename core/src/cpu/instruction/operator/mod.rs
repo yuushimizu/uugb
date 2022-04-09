@@ -18,12 +18,12 @@ pub use logic::*;
 pub use miscellaneous::*;
 pub use stack::*;
 
-use crate::cpu::CpuContext;
+use crate::cpu::instruction::Context;
 use std::fmt;
 
 pub struct Operator {
     format: String,
-    execute: Box<dyn Fn(&mut CpuContext) + Sync + Send>,
+    execute: Box<dyn Fn(&mut Context) + Sync + Send>,
 }
 
 impl fmt::Debug for Operator {
@@ -41,14 +41,14 @@ impl fmt::Display for Operator {
 }
 
 impl Operator {
-    pub fn new(format: String, execute: impl Fn(&mut CpuContext) + Sync + Send + 'static) -> Self {
+    pub fn new(format: String, execute: impl Fn(&mut Context) + Sync + Send + 'static) -> Self {
         Self {
             format,
             execute: Box::new(execute),
         }
     }
 
-    pub fn execute(&self, context: &mut CpuContext) {
+    pub fn execute(&self, context: &mut Context) {
         (self.execute)(context);
     }
 }

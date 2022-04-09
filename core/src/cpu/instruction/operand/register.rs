@@ -1,5 +1,5 @@
 use super::{Operand, Read, Value, Write};
-use crate::cpu::{CpuContext, Registers};
+use crate::cpu::{instruction::Context, Registers};
 use std::fmt;
 
 #[derive(Clone, Copy)]
@@ -26,13 +26,13 @@ impl<T: Value> fmt::Debug for Register<T> {
 impl<T: Value> Operand for Register<T> {}
 
 impl<T: Value> Read<T> for Register<T> {
-    fn read(&self, context: &mut CpuContext) -> T {
+    fn read(&self, context: &mut Context) -> T {
         (self.read)(context.registers())
     }
 }
 
 impl<T: Value> Write<T> for Register<T> {
-    fn write(&self, context: &mut CpuContext, value: T) {
+    fn write(&self, context: &mut Context, value: T) {
         (self.write)(context.registers_mut(), value)
     }
 }

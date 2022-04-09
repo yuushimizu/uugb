@@ -11,7 +11,7 @@ pub use literal::LITERAL;
 pub use opcode_register::OpcodeRegister;
 pub use register::Register;
 
-use crate::cpu::CpuContext;
+use crate::cpu::instruction::Context;
 use std::fmt;
 
 pub trait Operand: 'static + Sync + Send + Copy + fmt::Display + fmt::Debug {}
@@ -21,9 +21,9 @@ pub trait Value: 'static + Sized + Copy {}
 impl<T: 'static + Sized + Copy> Value for T {}
 
 pub trait Read<T: Value>: Operand {
-    fn read(&self, context: &mut CpuContext) -> T;
+    fn read(&self, context: &mut Context) -> T;
 }
 
 pub trait Write<T: Value>: Operand {
-    fn write(&self, context: &mut CpuContext, value: T);
+    fn write(&self, context: &mut Context, value: T);
 }

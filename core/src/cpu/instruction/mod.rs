@@ -1,9 +1,12 @@
+pub mod context;
+
 mod operand;
 mod operator;
 
-use super::CpuContext;
-use once_cell::sync::Lazy;
+pub use context::Context;
 use operator::Operator;
+
+use once_cell::sync::Lazy;
 use std::fmt;
 
 #[derive(Debug)]
@@ -218,15 +221,15 @@ static INSTRUCTIONS: Lazy<Vec<Instruction>> = Lazy::new(|| {
 });
 
 impl Instruction {
-    pub fn execute(&self, context: &mut CpuContext) {
+    pub fn execute(&self, context: &mut Context) {
         self.operator.execute(context);
     }
 
-    fn fetch_nested(context: &mut CpuContext) -> &'static Self {
+    fn fetch_nested(context: &mut Context) -> &'static Self {
         &NESTED_INSTRUCTION[context.fetch() as usize]
     }
 
-    pub fn fetch(context: &mut CpuContext) -> &'static Self {
+    pub fn fetch(context: &mut Context) -> &'static Self {
         match context.fetch() {
             NESTED_OPCODE => Self::fetch_nested(context),
             opcode => &INSTRUCTIONS[opcode as usize],

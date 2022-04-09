@@ -1,10 +1,10 @@
 use super::Operator;
-use crate::cpu::{
-    instruction::operand::{register, Read, Value, Write},
-    CpuContext,
+use crate::cpu::instruction::{
+    operand::{register, Read, Value, Write},
+    Context,
 };
 
-fn load<T: Value>(context: &mut CpuContext, destination: impl Write<T>, source: impl Read<T>) {
+fn load<T: Value>(context: &mut Context, destination: impl Write<T>, source: impl Read<T>) {
     let value = source.read(context);
     destination.write(context, value);
 }

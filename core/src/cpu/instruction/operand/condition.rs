@@ -1,4 +1,4 @@
-use crate::cpu::{registers::Flags, CpuContext};
+use crate::cpu::{instruction::Context, registers::Flags};
 use std::fmt;
 
 #[derive(Clone, Copy)]
@@ -22,7 +22,7 @@ impl fmt::Display for Condition {
 }
 
 impl Condition {
-    pub fn is_satisfied(&self, context: &CpuContext) -> bool {
+    pub fn is_satisfied(&self, context: &Context) -> bool {
         (self.predicate)(context.flags())
     }
 }

@@ -1,11 +1,9 @@
 pub mod registers;
 
-mod cpu_context;
 mod instruction;
 
 pub use registers::Registers;
 
-use cpu_context::CpuContext;
 use instruction::Instruction;
 
 use crate::memory::Memory;
@@ -25,7 +23,7 @@ struct Components<'a, M: Memory> {
     memory: &'a mut M,
 }
 
-impl<'a, M: Memory> cpu_context::Components for Components<'a, M> {
+impl<'a, M: Memory> instruction::context::Components for Components<'a, M> {
     fn registers(&self) -> &Registers {
         &self.cpu.registers
     }
@@ -72,7 +70,7 @@ impl Cpu {
             return;
         }
         let mut components = Components { cpu: self, memory };
-        let mut context = CpuContext::new(&mut components);
+        let mut context = instruction::Context::new(&mut components);
         let instruction = Instruction::fetch(&mut context);
         log::info!(target: "cpu_event", "Instruction: {}", instruction);
         instruction.execute(&mut context);

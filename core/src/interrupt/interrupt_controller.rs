@@ -44,8 +44,8 @@ impl InterruptController {
     pub fn pending_interrupt(&self) -> Option<Interrupt> {
         Interrupt::ORDERED
             .iter()
-            .find(|&&interrupt| self.state(interrupt).is_pending())
-            .map(|&interrupt| interrupt)
+            .find(|&interrupt| self.state(*interrupt).is_pending())
+            .copied()
     }
 
     fn bits(&self, f: impl Fn(&State) -> bool) -> u8 {

@@ -1,4 +1,4 @@
-use super::{registers::Flags, Registers};
+use crate::cpu::{registers::Flags, Registers};
 
 pub trait Components {
     fn registers(&self) -> &Registers;
@@ -24,11 +24,11 @@ fn to_u16(lower: u8, upper: u8) -> u16 {
     (upper as u16) << 8 | lower as u16
 }
 
-pub struct CpuContext<'a> {
+pub struct Context<'a> {
     components: &'a mut dyn Components,
 }
 
-impl<'a> CpuContext<'a> {
+impl<'a> Context<'a> {
     pub fn new(components: &'a mut impl Components) -> Self {
         Self { components }
     }

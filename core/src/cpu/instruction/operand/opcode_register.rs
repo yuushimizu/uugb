@@ -1,5 +1,5 @@
 use super::{indirection, Indirection, Operand, Read, Register, Write};
-use crate::cpu::CpuContext;
+use crate::cpu::instruction::Context;
 use std::fmt;
 
 #[derive(Debug, Clone, Copy)]
@@ -40,7 +40,7 @@ impl fmt::Display for OpcodeRegister {
 impl Operand for OpcodeRegister {}
 
 impl Read<u8> for OpcodeRegister {
-    fn read(&self, context: &mut CpuContext) -> u8 {
+    fn read(&self, context: &mut Context) -> u8 {
         match self {
             Self::Register(register) => register.read(context),
             Self::Indirection(indirection) => indirection.read(context),
@@ -49,7 +49,7 @@ impl Read<u8> for OpcodeRegister {
 }
 
 impl Write<u8> for OpcodeRegister {
-    fn write(&self, context: &mut CpuContext, value: u8) {
+    fn write(&self, context: &mut Context, value: u8) {
         match self {
             Self::Register(register) => register.write(context, value),
             Self::Indirection(indirection) => indirection.write(context, value),
