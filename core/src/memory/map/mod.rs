@@ -21,7 +21,7 @@ use hram::HRAM;
 use interrupt::{INTERRUPT_ENABLED, INTERRUPT_REQUESTED};
 use ir::IR;
 use joypad::JOYPAD;
-use ppu::PPU;
+use ppu::{OAM, PPU, VRAM};
 use segment::Segment;
 use serial::SERIAL;
 use timer::TIMER;
@@ -34,10 +34,10 @@ use super::Memory;
 pub const ROOT: Segment = Segment::Nested(|address| {
     match address {
         0x0000..=0x7FFF => &CARTRIDGE,
-        0x8000..=0x9FFF => &PPU,
+        0x8000..=0x9FFF => &VRAM,
         0xA000..=0xBFFF => &CARTRIDGE,
         0xC000..=0xFDFF => &WRAM,
-        0xFE00..=0xFE9F => &PPU,
+        0xFE00..=0xFE9F => &OAM,
         0xFEA0..=0xFEFF => &UNUSABLE,
         0xFF00 => &JOYPAD,
         0xFF01..=0xFF02 => &SERIAL,

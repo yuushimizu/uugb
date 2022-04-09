@@ -1,14 +1,16 @@
 use super::{Segment, UNKNOWN};
 
-pub const PPU: Segment = Segment::Nested(|address| match address {
-    0x8000..=0x9FFF => &Segment::Offset(
-        0x8000,
-        &Segment::Leaf(
-            |components, address| components.ppu.vram().read(address),
-            |components, address, value| components.ppu.vram_mut().write(address, value),
-        ),
+pub const VRAM: Segment = Segment::Offset(
+    0x8000,
+    &Segment::Leaf(
+        |components, address| components.ppu.vram().read(address),
+        |components, address, value| components.ppu.vram_mut().write(address, value),
     ),
-    0xFE00..=0xFE9F => &Segment::Leaf(|_, _| 0, |_, _, _| {}),
+);
+
+pub const OAM: Segment = Segment::Leaf(|_, _| 0, |_, _, _| {});
+
+pub const PPU: Segment = Segment::Nested(|address| match address {
     0xFF40 => &Segment::Leaf(
         |components, _| components.ppu.control_bits(),
         |components, _, value| components.ppu.set_control_bits(value),
