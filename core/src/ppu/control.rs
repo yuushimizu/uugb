@@ -2,15 +2,9 @@ use super::vram::TileDataArea;
 use super::vram::TileMapArea;
 use crate::util::bits::Bits;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct Control {
     bits: u8,
-}
-
-impl Default for Control {
-    fn default() -> Self {
-        Self { bits: 0b10010001 }
-    }
 }
 
 impl Control {
@@ -28,9 +22,9 @@ impl Control {
 
     pub fn window_tile_map_area(&self) -> TileMapArea {
         if self.bits.bit(6) {
-            TileMapArea::Area1
+            TileMapArea::Second
         } else {
-            TileMapArea::Area0
+            TileMapArea::First
         }
     }
 
@@ -40,17 +34,17 @@ impl Control {
 
     pub fn background_tile_data_area(&self) -> TileDataArea {
         if self.bits.bit(4) {
-            TileDataArea::Area1
+            TileDataArea::Origin
         } else {
-            TileDataArea::Area0
+            TileDataArea::Shifted
         }
     }
 
     pub fn background_tile_map_area(&self) -> TileMapArea {
         if self.bits.bit(3) {
-            TileMapArea::Area1
+            TileMapArea::Second
         } else {
-            TileMapArea::Area0
+            TileMapArea::First
         }
     }
 

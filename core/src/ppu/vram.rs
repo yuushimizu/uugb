@@ -1,13 +1,13 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TileDataArea {
-    Area0,
-    Area1,
+    Shifted,
+    Origin,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TileMapArea {
-    Area0,
-    Area1,
+    First,
+    Second,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

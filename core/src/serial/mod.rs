@@ -26,11 +26,11 @@ pub struct Serial {
     is_fast: bool,
     uses_internal_clock: bool,
     transfered_bits: u8,
-    rest_cycles: u16,
+    rest_cycles: u64,
 }
 
 impl Serial {
-    fn cycles(&self) -> u16 {
+    fn cycles(&self) -> u64 {
         if self.is_fast {
             16
         } else {
