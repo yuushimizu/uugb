@@ -1,10 +1,12 @@
-use core::{cartridge, cartridge::Cartridge, GameBoy};
+use core::{
+    cartridge::{self, Cartridge},
+    GameBoy,
+};
 
 use clap::Parser;
 use simplelog::*;
 use std::fs::File;
-use std::io::Read;
-use std::path::PathBuf;
+use std::{io::Read, path::PathBuf};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]

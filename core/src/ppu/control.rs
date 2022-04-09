@@ -1,5 +1,4 @@
-use super::vram::TileDataArea;
-use super::vram::TileMapArea;
+use super::vram::{TileDataArea, TileMapArea};
 use crate::util::bits::Bits;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]

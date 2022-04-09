@@ -1,9 +1,9 @@
 pub mod hram;
-pub mod mapped_memory;
+pub mod map;
 pub mod wram;
 
 pub use hram::Hram;
-pub use mapped_memory::MappedMemory;
+pub use map::MappedMemory;
 pub use wram::Wram;
 
 pub trait Memory {

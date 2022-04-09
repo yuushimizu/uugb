@@ -1,12 +1,11 @@
 pub mod header;
-pub mod mbc;
+
+mod mbc;
 
 pub use header::*;
-pub use mbc::Mbc;
 
-use mbc::MbcContext;
-use std::rc::Rc;
-use std::result;
+use mbc::{Mbc, MbcContext};
+use std::{rc::Rc, result};
 
 #[derive(Debug)]
 struct State {

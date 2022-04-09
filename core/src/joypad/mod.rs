@@ -1,5 +1,7 @@
-use crate::interrupt::{Interrupt, InterruptController};
-use crate::util::bits::Bits;
+use crate::{
+    interrupt::{Interrupt, InterruptController},
+    util::bits::Bits,
+};
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]

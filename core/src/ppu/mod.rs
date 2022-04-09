@@ -1,9 +1,9 @@
-mod control;
 pub mod oam;
 pub mod vram;
 
-use crate::interrupt::InterruptController;
-use crate::util::bits::Bits;
+mod control;
+
+use crate::{interrupt::InterruptController, util::bits::Bits};
 use control::Control;
 use vram::Vram;
 

@@ -3,10 +3,10 @@ pub mod registers;
 mod cpu_context;
 mod instruction;
 
-pub use instruction::Instruction;
 pub use registers::Registers;
 
 use cpu_context::CpuContext;
+use instruction::Instruction;
 use log;
 
 use crate::memory::Memory;

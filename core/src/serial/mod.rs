@@ -1,5 +1,7 @@
-use crate::interrupt::{Interrupt, InterruptController};
-use crate::util::bits::Bits;
+use crate::{
+    interrupt::{Interrupt, InterruptController},
+    util::bits::Bits,
+};
 
 pub trait SerialConnection {
     fn send(&mut self, bit: bool);
