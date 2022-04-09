@@ -7,6 +7,12 @@ pub struct State {
     is_requested: bool,
 }
 
+impl State {
+    fn is_pending(&self) -> bool {
+        self.is_enabled && self.is_requested
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct InterruptController {
     states: [State; Interrupt::ORDERED.len()],
@@ -19,6 +25,10 @@ impl Interrupt {
 }
 
 impl InterruptController {
+    fn state(&self, interrupt: Interrupt) -> &State {
+        &self.states[interrupt.bit() as usize]
+    }
+
     fn state_mut(&mut self, interrupt: Interrupt) -> &mut State {
         &mut self.states[interrupt.bit() as usize]
     }
@@ -29,6 +39,13 @@ impl InterruptController {
 
     pub fn clear(&mut self, interrupt: Interrupt) {
         self.state_mut(interrupt).is_requested = false;
+    }
+
+    pub fn pending_interrupt(&self) -> Option<Interrupt> {
+        Interrupt::ORDERED
+            .iter()
+            .find(|&&interrupt| self.state(interrupt).is_pending())
+            .map(|&interrupt| interrupt)
     }
 
     fn bits(&self, f: impl Fn(&State) -> bool) -> u8 {
