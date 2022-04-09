@@ -55,10 +55,30 @@ mod segment {
         |components, address, value| components.cartridge.write(address, value),
     );
 
-    pub const WRAM: Segment = Segment::Leaf(
-        |components, address| components.wram.read(address),
-        |components, address, value| components.wram.write(address, value),
-    );
+    pub const WRAM: Segment = {
+        const PRIMARY_START: u16 = 0xC000;
+        const PRIMARY_END: u16 = 0xCFFF;
+        const BANK_START: u16 = 0xD000;
+        const BANK_END: u16 = 0xDFFF;
+        const BANK_SWITCH_ADDRESS: u16 = 0xFF70;
+        Segment::Nested(|address| match address {
+            PRIMARY_START..=PRIMARY_END => &Segment::Leaf(
+                |components, address| components.wram.read(address - PRIMARY_START),
+                |components, address, value| components.wram.write(address - PRIMARY_START, value),
+            ),
+            BANK_START..=BANK_END => &Segment::Leaf(
+                |components, address| components.wram.read_bank(address - BANK_START),
+                |components, address, value| {
+                    components.wram.write_bank(address - BANK_START, value)
+                },
+            ),
+            BANK_SWITCH_ADDRESS => &Segment::Leaf(
+                |components, _| components.wram.bank_switch(),
+                |components, _, value| components.wram.set_bank_switch(value),
+            ),
+            _ => unreachable!(),
+        })
+    };
 
     pub const UNUSABLE: Segment = Segment::Leaf(|_, _| 0xFF, |_, _, _| {});
 
