@@ -80,7 +80,7 @@ mod segment {
                 |components, _| components.wram.bank_switch(),
                 |components, _, value| components.wram.set_bank_switch(value),
             ),
-            _ => unreachable!(),
+            _ => &UNKNOWN,
         })
     };
 
@@ -114,7 +114,7 @@ mod segment {
             |components, _| components.serial.control_bits(),
             |components, _, value| components.serial.set_control_bits(value),
         ),
-        _ => unreachable!(),
+        _ => &UNKNOWN,
     });
 
     pub const TIMER: Segment = Segment::Nested(|address| match address {
@@ -134,7 +134,7 @@ mod segment {
             |components, _| components.timer.control_bits(),
             |components, _, value| components.timer.set_control_bits(value),
         ),
-        _ => unreachable!(),
+        _ => &UNKNOWN,
     });
 
     pub const INTERRUPT_REQUESTED: Segment = Segment::Leaf(
@@ -156,7 +156,7 @@ mod segment {
         0xFF40..=0xFF4F => &Segment::Leaf(|_, _| 0, |_, _, _| {}),
         0xFF51..=0xFF55 => &Segment::Leaf(|_, _| 0, |_, _, _| {}),
         0xFF68..=0xFF6C => &Segment::Leaf(|_, _| 0, |_, _, _| {}),
-        _ => unreachable!(),
+        _ => &UNKNOWN,
     });
 
     pub const IR: Segment = Segment::Leaf(|_, _| 0, |_, _, _| {});
