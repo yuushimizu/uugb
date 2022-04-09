@@ -1,24 +1,11 @@
+pub mod connection;
+
+pub use connection::*;
+
 use crate::{
     interrupt::{Interrupt, InterruptController},
     util::bits::Bits,
 };
-
-pub trait SerialConnection {
-    fn send(&mut self, bit: bool);
-
-    fn receive(&self) -> bool;
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct NoConnection;
-
-impl SerialConnection for NoConnection {
-    fn send(&mut self, _bit: bool) {}
-
-    fn receive(&self) -> bool {
-        true
-    }
-}
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct Serial {

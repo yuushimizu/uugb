@@ -1,10 +1,12 @@
+mod control;
 mod coordinate;
+mod renderer;
+
 pub mod oam;
 pub mod vram;
 
-mod control;
-
 pub use coordinate::Coordinate;
+pub use renderer::Renderer;
 
 use control::Control;
 use vram::Vram;
@@ -66,7 +68,7 @@ pub struct Ppu {
 }
 
 impl Ppu {
-    pub fn tick(&mut self, interrupt_controller: &InterruptController) {}
+    pub fn tick(&mut self, interrupt_controller: &InterruptController, renderer: impl Renderer) {}
 
     pub fn vram(&self) -> &Vram {
         &self.vram
