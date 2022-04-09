@@ -22,6 +22,7 @@ mod segment {
     pub enum Segment<'a> {
         Leaf(fn(&Components, u16) -> u8, fn(&mut Components, u16, u8)),
         Nested(fn(address: u16) -> &'a Segment<'a>),
+        Offset(u16, &'a Segment<'a>),
     }
 
     impl<'a> Segment<'a> {
@@ -30,6 +31,7 @@ mod segment {
             match self {
                 Leaf(reader, _) => reader(components, address),
                 Nested(inner) => inner(address).read(components, address),
+                Offset(offset, inner) => inner.read(components, address - offset),
             }
         }
 
@@ -38,6 +40,7 @@ mod segment {
             match self {
                 Leaf(_, writer) => writer(components, address, value),
                 Nested(inner) => inner(address).write(components, address, value),
+                Offset(offset, inner) => inner.write(components, address - offset, value),
             }
         }
     }
@@ -59,13 +62,19 @@ mod segment {
 
     pub const WRAM: Segment = {
         Segment::Nested(|address| match address {
-            0xC000..=0xCFFF => &Segment::Leaf(
-                |components, address| components.wram.read(address - 0xC000),
-                |components, address, value| components.wram.write(address - 0xC000, value),
+            0xC000..=0xCFFF => &Segment::Offset(
+                0xC000,
+                &Segment::Leaf(
+                    |components, address| components.wram.read(address),
+                    |components, address, value| components.wram.write(address, value),
+                ),
             ),
-            0xD000..=0xDFFF => &Segment::Leaf(
-                |components, address| components.wram.read_bank(address - 0xD000),
-                |components, address, value| components.wram.write_bank(address - 0xD000, value),
+            0xD000..=0xDFFF => &Segment::Offset(
+                0xD000,
+                &Segment::Leaf(
+                    |components, address| components.wram.read_bank(address),
+                    |components, address, value| components.wram.write_bank(address, value),
+                ),
             ),
             0xFF70 => &Segment::Leaf(
                 |components, _| components.wram.bank_switch(),
@@ -77,11 +86,14 @@ mod segment {
 
     pub const UNUSABLE: Segment = Segment::Leaf(|_, _| 0xFF, |_, _, _| {});
 
-    pub const HRAM: Segment = Segment::Leaf(
-        |components, address| components.hram.read(address - 0xFF80),
-        |components, address, value| {
-            components.hram.write(address - 0xFF80, value);
-        },
+    pub const HRAM: Segment = Segment::Offset(
+        0xFF80,
+        &Segment::Leaf(
+            |components, address| components.hram.read(address),
+            |components, address, value| {
+                components.hram.write(address, value);
+            },
+        ),
     );
 
     pub const JOYPAD: Segment = Segment::Leaf(
@@ -133,9 +145,12 @@ mod segment {
     pub const APU: Segment = Segment::Leaf(|_, _| 0, |_, _, _| {});
 
     pub const PPU: Segment = Segment::Nested(|address| match address {
-        0x8000..=0x9FFF => &Segment::Leaf(
-            |components, address| components.ppu.read_vram(address - 0x8000),
-            |components, address, value| components.ppu.write_vram(address - 0x8000, value),
+        0x8000..=0x9FFF => &Segment::Offset(
+            0x8000,
+            &Segment::Leaf(
+                |components, address| components.ppu.read_vram(address),
+                |components, address, value| components.ppu.write_vram(address, value),
+            ),
         ),
         0xFE00..=0xFE9F => &Segment::Leaf(|_, _| 0, |_, _, _| {}),
         0xFF40..=0xFF4F => &Segment::Leaf(|_, _| 0, |_, _, _| {}),
