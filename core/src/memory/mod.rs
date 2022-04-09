@@ -24,10 +24,12 @@ impl<'a> Memory<'a> {
     }
 
     pub fn read(&self, address: u16) -> u8 {
-        ROOT.read(self.0.refs(), address)
+        let refs = self.0.refs();
+        ROOT.read(&refs, address)
     }
 
     pub fn write(&mut self, address: u16, value: u8) {
-        ROOT.write(self.0.refs_mut(), address, value)
+        let mut refs = self.0.refs_mut();
+        ROOT.write(&mut refs, address, value)
     }
 }
