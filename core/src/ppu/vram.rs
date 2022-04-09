@@ -1,3 +1,15 @@
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum TileDataArea {
+    Area0,
+    Area1,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum TileMapArea {
+    Area0,
+    Area1,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Vram {
     data: Vec<u8>,

@@ -148,8 +148,8 @@ mod segment {
         0x8000..=0x9FFF => &Segment::Offset(
             0x8000,
             &Segment::Leaf(
-                |components, address| components.ppu.read_vram(address),
-                |components, address, value| components.ppu.write_vram(address, value),
+                |components, address| components.ppu.vram().read(address),
+                |components, address, value| components.ppu.vram_mut().write(address, value),
             ),
         ),
         0xFE00..=0xFE9F => &Segment::Leaf(|_, _| 0, |_, _, _| {}),

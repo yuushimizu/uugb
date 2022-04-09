@@ -75,13 +75,10 @@ impl DummySerialConnection {
 
 impl crate::serial::SerialConnection for DummySerialConnection {
     fn send(&mut self, bit: bool) {
+        use crate::util::bits::Bits;
         self.bits.push(bit);
         if self.bits.len() >= 8 {
-            match self.file.write(&[self
-                .bits
-                .iter()
-                .fold(0x00u8, |acc, &bit| acc << 1 | (bit as u8))])
-            {
+            match self.file.write(&[u8::from_bits(&self.bits)]) {
                 Ok(_) => {}
                 Err(err) => {
                     eprintln!("Serial output error: {:?}", err);
