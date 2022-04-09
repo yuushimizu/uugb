@@ -18,12 +18,12 @@ pub const PPU: Segment = Segment::Nested(|address| match address {
         |components, _, value| components.ppu.set_status_bits(value),
     ),
     0xFF42 => &Segment::Leaf(
-        |components, _| components.ppu.scroll_y(),
-        |components, _, value| components.ppu.set_scroll_y(value),
+        |components, _| components.ppu.scroll_position().y,
+        |components, _, value| components.ppu.scroll_position_mut().y = value,
     ),
     0xFF43 => &Segment::Leaf(
-        |components, _| components.ppu.scroll_x(),
-        |components, _, value| components.ppu.set_scroll_x(value),
+        |components, _| components.ppu.scroll_position().x,
+        |components, _, value| components.ppu.scroll_position_mut().x = value,
     ),
     0xFF44 => &Segment::Leaf(|components, _| components.ppu.current_y(), |_, _, _| {}),
     0xFF45 => &Segment::Leaf(
@@ -33,12 +33,12 @@ pub const PPU: Segment = Segment::Nested(|address| match address {
     0xFF46 => &Segment::Leaf(|_, _| 0, |_, _, _| {}), // DMA
     0xFF47..=0xFF49 => &Segment::Leaf(|_, _| 0, |_, _, _| {}), // CGB: Monochrome palettes
     0xFF4A => &Segment::Leaf(
-        |components, _| components.ppu.window_y(),
-        |components, _, value| components.ppu.set_window_y(value),
+        |components, _| components.ppu.window_position().y,
+        |components, _, value| components.ppu.window_position_mut().y = value,
     ),
     0xFF4B => &Segment::Leaf(
-        |components, _| components.ppu.window_x(),
-        |components, _, value| components.ppu.set_window_x(value),
+        |components, _| components.ppu.window_position().x,
+        |components, _, value| components.ppu.window_position_mut().x = value,
     ),
     0xFF4C => &Segment::Leaf(|_, _| 0, |_, _, _| {}),
     0xFF4D => &Segment::Leaf(|_, _| 0, |_, _, _| {}), // CGB: Prepare Speed Switch

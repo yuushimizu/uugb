@@ -1,7 +1,10 @@
+mod coordinate;
 pub mod oam;
 pub mod vram;
 
 mod control;
+
+pub use coordinate::Coordinate;
 
 use control::Control;
 use vram::Vram;
@@ -57,10 +60,8 @@ pub struct Ppu {
     mode: Mode,
     current_y: u8,
     y_compare: u8,
-    scroll_y: u8,
-    scroll_x: u8,
-    window_y: u8,
-    window_x: u8,
+    scroll_position: Coordinate,
+    window_position: Coordinate,
     cycles: u64,
 }
 
@@ -93,20 +94,12 @@ impl Ppu {
         self.interrupt_source.set_bits(value >> 3);
     }
 
-    pub fn scroll_y(&self) -> u8 {
-        self.scroll_y
+    pub fn scroll_position(&self) -> Coordinate {
+        self.scroll_position
     }
 
-    pub fn set_scroll_y(&mut self, value: u8) {
-        self.scroll_y = value;
-    }
-
-    pub fn scroll_x(&self) -> u8 {
-        self.scroll_x
-    }
-
-    pub fn set_scroll_x(&mut self, value: u8) {
-        self.scroll_x = value;
+    pub fn scroll_position_mut(&mut self) -> &mut Coordinate {
+        &mut self.scroll_position
     }
 
     pub fn current_y(&self) -> u8 {
@@ -121,19 +114,11 @@ impl Ppu {
         self.y_compare = value;
     }
 
-    pub fn window_y(&self) -> u8 {
-        self.window_y
+    pub fn window_position(&self) -> Coordinate {
+        self.window_position
     }
 
-    pub fn set_window_y(&mut self, value: u8) {
-        self.window_y = value;
-    }
-
-    pub fn window_x(&self) -> u8 {
-        self.window_x
-    }
-
-    pub fn set_window_x(&mut self, value: u8) {
-        self.window_x = value;
+    pub fn window_position_mut(&mut self) -> &mut Coordinate {
+        &mut self.window_position
     }
 }
