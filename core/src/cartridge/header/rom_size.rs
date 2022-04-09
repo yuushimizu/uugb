@@ -25,9 +25,9 @@ impl RomSize {
     pub fn amount(&self) -> usize {
         (match self.code {
             0x00..=0x08 => 32 * 2usize.pow(self.code.into()),
-            0x52 => (1.1 * 1024 as f64) as usize,
-            0x53 => (1.2 * 1024 as f64) as usize,
-            0x54 => (1.5 * 1024 as f64) as usize,
+            0x52 => (1.1 * 1024_f64) as usize,
+            0x53 => (1.2 * 1024_f64) as usize,
+            0x54 => (1.5 * 1024_f64) as usize,
             _ => 0,
         } * 1024)
     }

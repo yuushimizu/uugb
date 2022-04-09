@@ -117,7 +117,7 @@ static INSTRUCTIONS: Lazy<Vec<Instruction>> = Lazy::new(|| {
                     0xC6 => add(A, LITERAL),
                     0x88..=0x8F => adc(A, opcode_register),
                     0xCE => adc(A, LITERAL),
-                    0x80..=0x97 => sub(opcode_register),
+                    0x90..=0x97 => sub(opcode_register),
                     0xD6 => sub(LITERAL),
                     0x98..=0x9F => sbc(A, opcode_register),
                     0xDE => sbc(A, LITERAL),

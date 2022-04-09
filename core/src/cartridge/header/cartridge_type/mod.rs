@@ -13,7 +13,7 @@ pub struct CartridgeType {
 
 impl From<u8> for CartridgeType {
     fn from(code: u8) -> Self {
-        Self { code: code }
+        Self { code }
     }
 }
 
@@ -61,7 +61,7 @@ impl CartridgeType {
     }
 
     pub fn code(&self) -> u8 {
-        return self.code;
+        self.code
     }
 
     pub fn mbc_type(&self) -> MbcType {

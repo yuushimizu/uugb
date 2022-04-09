@@ -14,7 +14,7 @@ impl Read<u16> for AddLiteral8 {
 
 impl fmt::Display for AddLiteral8 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", "SP+n")
+        write!(f, "SP+n")
     }
 }
 

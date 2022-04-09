@@ -55,7 +55,7 @@ pub mod condition {
 pub use condition::Condition;
 
 pub fn jp_nn() -> Operator {
-    Operator::new(format!("JP #"), move |context| {
+    Operator::new("JP #".into(), move |context| {
         let address = context.fetch16();
         context.jump(address);
         context.wait();
@@ -63,7 +63,7 @@ pub fn jp_nn() -> Operator {
 }
 
 pub fn jp_hl() -> Operator {
-    Operator::new(format!("JP HL"), move |context| {
+    Operator::new("JP HL".into(), move |context| {
         context.jump(context.registers().hl());
     })
 }

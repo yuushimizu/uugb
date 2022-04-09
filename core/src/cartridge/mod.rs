@@ -47,14 +47,14 @@ pub fn create_mbc(header: &Header) -> Result<Box<dyn Mbc>> {
     use MbcType::*;
     let cartridge_type = &header.cartridge_type;
     match cartridge_type.mbc_type() {
-        Mbc1 => Ok(Box::new(mbc::Mbc1::new())),
+        Mbc1 => Ok(Box::new(mbc::Mbc1::default())),
         _ => Err(Error::MbcNotImplemented(cartridge_type.clone())),
     }
 }
 
 impl Cartridge {
     pub fn new(rom: Rc<Vec<u8>>) -> Result<Self> {
-        let header = Header::load(&rom).map_err(|err| Error::HeaderError(err))?;
+        let header = Header::load(&rom).map_err(Error::HeaderError)?;
         let state = State {
             rom,
             ram: vec![0x00u8; header.ram_size.amount()],

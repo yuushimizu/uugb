@@ -165,29 +165,26 @@ fn name_from_old_code(code: u8) -> &'static str {
 }
 
 fn name_from_new_code(code: &[u8]) -> &'static str {
-    u8::from_str_radix(ascii::from_bytes(&code).as_str(), 16).map_or(
-        "",
-        |combined| match combined {
-            0x19 => "B-AI",
-            0x20 => "KSS",
-            0x22 => "POW",
-            0x28 => "KEMCO",
-            0x30 => "Viacom",
-            0x33 => "Ocean/Acclaim",
-            0x37 => "TAITO",
-            0x38 => "Hudson",
-            0x47 => "Bullet-Proof",
-            0x54 => "KONAMI",
-            0x55 => "Hi Tech Entertainment",
-            0x58 => "Mattel",
-            0x64 => "LucasArts",
-            0x75 => "SCI",
-            0x87 => "Tsukuda Original",
-            0x93 => "Ocean/Acclaim",
-            0x99 => "PACK-IN-SOFT",
-            combined => name_from_old_code(combined),
-        },
-    )
+    u8::from_str_radix(ascii::from_bytes(code).as_str(), 16).map_or("", |combined| match combined {
+        0x19 => "B-AI",
+        0x20 => "KSS",
+        0x22 => "POW",
+        0x28 => "KEMCO",
+        0x30 => "Viacom",
+        0x33 => "Ocean/Acclaim",
+        0x37 => "TAITO",
+        0x38 => "Hudson",
+        0x47 => "Bullet-Proof",
+        0x54 => "KONAMI",
+        0x55 => "Hi Tech Entertainment",
+        0x58 => "Mattel",
+        0x64 => "LucasArts",
+        0x75 => "SCI",
+        0x87 => "Tsukuda Original",
+        0x93 => "Ocean/Acclaim",
+        0x99 => "PACK-IN-SOFT",
+        combined => name_from_old_code(combined),
+    })
 }
 
 impl Licensee {

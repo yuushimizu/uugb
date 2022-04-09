@@ -27,8 +27,8 @@ pub struct Mbc1 {
     banking_mode: BankingMode,
 }
 
-impl Mbc1 {
-    pub fn new() -> Self {
+impl Default for Mbc1 {
+    fn default() -> Self {
         Self {
             rom_bank_number_lower: 1,
             ram_bank_number_or_rom_bank_number_upper: 0,
@@ -36,7 +36,9 @@ impl Mbc1 {
             banking_mode: BankingMode::Simple,
         }
     }
+}
 
+impl Mbc1 {
     fn first_rom_bank_number(&self) -> u8 {
         use BankingMode::*;
         match self.banking_mode {
@@ -89,7 +91,7 @@ fn bin_digits(n: u8) -> u8 {
 }
 
 fn bit_mask(n: u8) -> u8 {
-    0b1 << bin_digits(n) - 0b1
+    0b1 << (bin_digits(n) - 0b1)
 }
 
 trait MbcContextHelpers: MbcContext {
@@ -127,7 +129,7 @@ trait MbcContextHelpers: MbcContext {
 impl<T: MbcContext + ?Sized> MbcContextHelpers for T {}
 
 impl Mbc for Mbc1 {
-    fn read(self: &Self, context: &dyn MbcContext, address: u16) -> u8 {
+    fn read(&self, context: &dyn MbcContext, address: u16) -> u8 {
         match address {
             0x0000..=0x3FFF => context.rom_bank(self.first_rom_bank_number())[address as usize],
             0x4000..=0x7FFF => context.rom_bank(self.rom_bank_number())[address as usize - 0x4000],
@@ -139,7 +141,7 @@ impl Mbc for Mbc1 {
         }
     }
 
-    fn write(self: &mut Self, context: &mut dyn MbcContext, address: u16, value: u8) {
+    fn write(&mut self, context: &mut dyn MbcContext, address: u16, value: u8) {
         match address {
             0x0000..=0x1FFF => self.set_ram_enabled(value),
             0x2000..=0x3FFF => self.set_rom_bank_number_lower(value),

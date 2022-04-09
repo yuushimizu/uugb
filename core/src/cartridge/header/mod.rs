@@ -56,7 +56,7 @@ const MIN_HEADER_LENGTH: usize = 0x014F + 1;
 impl Header {
     pub fn load(rom: &[u8]) -> Result<Self> {
         if rom.len() < MIN_HEADER_LENGTH {
-            Err(Error::TooSmall)?
+            return Err(Error::TooSmall);
         }
         Ok(Self {
             entry_point: EntryPoint::load(rom),
