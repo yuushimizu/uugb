@@ -1,9 +1,10 @@
 mod control;
 mod divider;
 
-use crate::interrupt::{Interrupt, InterruptController};
 use control::Control;
 use divider::Divider;
+
+use crate::interrupt::{Interrupt, InterruptController};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct Timer {

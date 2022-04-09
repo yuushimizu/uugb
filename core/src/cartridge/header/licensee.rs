@@ -1,6 +1,5 @@
 use crate::util::ascii;
-use std::fmt;
-use std::ops::RangeInclusive;
+use std::{fmt, ops::RangeInclusive};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Licensee {

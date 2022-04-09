@@ -5,8 +5,7 @@ use core::{
 
 use clap::Parser;
 use simplelog::*;
-use std::fs::File;
-use std::{io::Read, path::PathBuf};
+use std::{fs::File, io::Read, path::PathBuf};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]

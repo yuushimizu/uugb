@@ -1,9 +1,11 @@
 use super::Operator;
-use crate::cpu::{
-    instruction::operand::{register, Read, Write},
-    registers::Flags,
+use crate::{
+    cpu::{
+        instruction::operand::{register, Read, Write},
+        registers::Flags,
+    },
+    util::bits::Bits,
 };
-use crate::util::bits::Bits;
 
 pub fn swap(operand: impl Read<u8> + Write<u8>) -> Operator {
     Operator::new(format!("SWAP {}", operand), move |context| {

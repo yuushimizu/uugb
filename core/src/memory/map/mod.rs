@@ -1,176 +1,35 @@
-use super::{Hram, Memory, Wram};
+mod apu;
+mod cartridge;
+mod components;
+mod hram;
+mod interrupt;
+mod ir;
+mod joypad;
+mod ppu;
+mod segment;
+mod serial;
+mod timer;
+mod unknown;
+mod unusable;
+mod wram;
 
-use crate::{
-    cartridge::Cartridge, interrupt::InterruptController, joypad::Joypad, ppu::Ppu, serial::Serial,
-    timer::Timer,
-};
+pub use components::Components;
 
-#[derive(Debug)]
-pub struct Components<'a> {
-    pub cartridge: &'a mut Cartridge,
-    pub wram: &'a mut Wram,
-    pub ppu: &'a mut Ppu,
-    pub hram: &'a mut Hram,
-    pub interrupt_controller: &'a mut InterruptController,
-    pub joypad: &'a mut Joypad,
-    pub timer: &'a mut Timer,
-    pub serial: &'a mut Serial,
-}
+use apu::APU;
+use cartridge::CARTRIDGE;
+use hram::HRAM;
+use interrupt::{INTERRUPT_ENABLED, INTERRUPT_REQUESTED};
+use ir::IR;
+use joypad::JOYPAD;
+use ppu::PPU;
+use segment::Segment;
+use serial::SERIAL;
+use timer::TIMER;
+use unknown::UNKNOWN;
+use unusable::UNUSABLE;
+use wram::WRAM;
 
-pub enum Segment<'a> {
-    Leaf(fn(&Components, u16) -> u8, fn(&mut Components, u16, u8)),
-    Nested(fn(address: u16) -> &'a Segment<'a>),
-    Offset(u16, &'a Segment<'a>),
-}
-
-impl<'a> Segment<'a> {
-    pub fn read(&self, components: &Components, address: u16) -> u8 {
-        use Segment::*;
-        match self {
-            Leaf(reader, _) => reader(components, address),
-            Nested(inner) => inner(address).read(components, address),
-            Offset(offset, inner) => inner.read(components, address - offset),
-        }
-    }
-
-    pub fn write(&self, components: &mut Components, address: u16, value: u8) {
-        use Segment::*;
-        match self {
-            Leaf(_, writer) => writer(components, address, value),
-            Nested(inner) => inner(address).write(components, address, value),
-            Offset(offset, inner) => inner.write(components, address - offset, value),
-        }
-    }
-}
-
-pub const UNKNOWN: Segment = Segment::Leaf(
-    |_, address| {
-        log::warn!("Attempt to read from the unknown segment: {:04X}", address);
-        0xFF
-    },
-    |_, address, _| {
-        log::warn!("Attempt to write to the unknown segment: {:04X}", address);
-    },
-);
-
-pub const CARTRIDGE: Segment = Segment::Leaf(
-    |components, address| components.cartridge.read(address),
-    |components, address, value| components.cartridge.write(address, value),
-);
-
-pub const WRAM: Segment = {
-    Segment::Nested(|address| match address {
-        0xC000..=0xCFFF => &Segment::Offset(
-            0xC000,
-            &Segment::Leaf(
-                |components, address| components.wram.read(address),
-                |components, address, value| components.wram.write(address, value),
-            ),
-        ),
-        0xD000..=0xDFFF => &Segment::Offset(
-            0xD000,
-            &Segment::Leaf(
-                |components, address| components.wram.read_bank(address),
-                |components, address, value| components.wram.write_bank(address, value),
-            ),
-        ),
-        0xFF70 => &Segment::Leaf(
-            |components, _| components.wram.bank_switch(),
-            |components, _, value| components.wram.set_bank_switch(value),
-        ),
-        _ => &UNKNOWN,
-    })
-};
-
-pub const UNUSABLE: Segment = Segment::Leaf(|_, _| 0xFF, |_, _, _| {});
-
-pub const HRAM: Segment = Segment::Offset(
-    0xFF80,
-    &Segment::Leaf(
-        |components, address| components.hram.read(address),
-        |components, address, value| {
-            components.hram.write(address, value);
-        },
-    ),
-);
-
-pub const JOYPAD: Segment = Segment::Leaf(
-    |components, _| components.joypad.bits(),
-    |components, _, value| {
-        components
-            .joypad
-            .set_bits(value, components.interrupt_controller)
-    },
-);
-
-pub const SERIAL: Segment = Segment::Nested(|address| match address {
-    0xFF01 => &Segment::Leaf(
-        |components, _| components.serial.data(),
-        |components, _, value| components.serial.set_data(value),
-    ),
-    0xFF02 => &Segment::Leaf(
-        |components, _| components.serial.control_bits(),
-        |components, _, value| components.serial.set_control_bits(value),
-    ),
-    _ => &UNKNOWN,
-});
-
-pub const TIMER: Segment = Segment::Nested(|address| match address {
-    0xFF04 => &Segment::Leaf(
-        |components, _| components.timer.divider_register(),
-        |components, _, _| components.timer.reset_divider(),
-    ),
-    0xFF05 => &Segment::Leaf(
-        |components, _| components.timer.counter(),
-        |components, _, value| components.timer.set_counter(value),
-    ),
-    0xFF06 => &Segment::Leaf(
-        |components, _| components.timer.modulo(),
-        |components, _, value| components.timer.set_modulo(value),
-    ),
-    0xFF07 => &Segment::Leaf(
-        |components, _| components.timer.control_bits(),
-        |components, _, value| components.timer.set_control_bits(value),
-    ),
-    _ => &UNKNOWN,
-});
-
-pub const INTERRUPT_REQUESTED: Segment = Segment::Leaf(
-    |components, _| components.interrupt_controller.requested_bits(),
-    |components, _, value| components.interrupt_controller.set_requested_bits(value),
-);
-
-pub const APU: Segment = Segment::Leaf(|_, _| 0, |_, _, _| {});
-
-pub const PPU: Segment = Segment::Nested(|address| match address {
-    0x8000..=0x9FFF => &Segment::Offset(
-        0x8000,
-        &Segment::Leaf(
-            |components, address| components.ppu.vram().read(address),
-            |components, address, value| components.ppu.vram_mut().write(address, value),
-        ),
-    ),
-    0xFE00..=0xFE9F => &Segment::Leaf(|_, _| 0, |_, _, _| {}),
-    0xFF40 => &Segment::Leaf(
-        |components, _| components.ppu.control_bits(),
-        |components, _, value| components.ppu.set_control_bits(value),
-    ),
-    0xFF41 => &Segment::Leaf(
-        |components, _| components.ppu.status_bits(),
-        |components, _, value| components.ppu.set_status_bits(value),
-    ),
-    0xFF42..=0xFF4F => &Segment::Leaf(|_, _| 0, |_, _, _| {}),
-    0xFF51..=0xFF55 => &Segment::Leaf(|_, _| 0, |_, _, _| {}),
-    0xFF68..=0xFF6C => &Segment::Leaf(|_, _| 0, |_, _, _| {}),
-    _ => &UNKNOWN,
-});
-
-pub const IR: Segment = Segment::Leaf(|_, _| 0, |_, _, _| {});
-
-pub const INTERRUPT_ENABLED: Segment = Segment::Leaf(
-    |components, _| components.interrupt_controller.enabled_bits(),
-    |components, _, value| components.interrupt_controller.set_enabled_bits(value),
-);
+use super::Memory;
 
 pub const ROOT: Segment = Segment::Nested(|address| {
     match address {

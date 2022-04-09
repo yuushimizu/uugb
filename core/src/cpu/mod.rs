@@ -7,9 +7,9 @@ pub use registers::Registers;
 
 use cpu_context::CpuContext;
 use instruction::Instruction;
-use log;
 
 use crate::memory::Memory;
+use log;
 
 #[derive(Debug, Default)]
 pub struct Cpu {

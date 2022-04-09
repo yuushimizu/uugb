@@ -1,10 +1,9 @@
 pub mod header;
-
 mod mbc;
 
 pub use header::*;
-
 use mbc::{Mbc, MbcContext};
+
 use std::{rc::Rc, result};
 
 #[derive(Debug)]

@@ -3,9 +3,10 @@ pub mod vram;
 
 mod control;
 
-use crate::{interrupt::InterruptController, util::bits::Bits};
 use control::Control;
 use vram::Vram;
+
+use crate::{interrupt::InterruptController, util::bits::Bits};
 
 const WIDTH: u8 = 160;
 
