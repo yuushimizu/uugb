@@ -18,12 +18,12 @@ pub struct Cpu {
     wait_cycles: u64,
 }
 
-struct Components<'a, M: Memory> {
-    cpu: &'a mut Cpu,
-    memory: &'a mut M,
+struct Components<'cpu, 'memory> {
+    cpu: &'cpu mut Cpu,
+    memory: &'memory mut Memory<'memory>,
 }
 
-impl<'a, M: Memory> instruction::context::Components for Components<'a, M> {
+impl<'cpu, 'memory> instruction::context::Components for Components<'cpu, 'memory> {
     fn registers(&self) -> &Registers {
         &self.cpu.registers
     }
@@ -64,7 +64,7 @@ impl<'a, M: Memory> instruction::context::Components for Components<'a, M> {
 }
 
 impl Cpu {
-    pub fn tick(&mut self, memory: &mut impl Memory) {
+    pub fn tick<'cpu, 'memory>(&'cpu mut self, memory: &'memory mut Memory<'memory>) {
         if self.wait_cycles > 0 {
             self.wait_cycles -= 1;
             return;

@@ -1,6 +1,5 @@
 mod apu;
 mod cartridge;
-mod components;
 mod hram;
 mod interrupt;
 mod ir;
@@ -12,8 +11,6 @@ mod timer;
 mod unknown;
 mod unusable;
 mod wram;
-
-pub use components::Components;
 
 use apu::APU;
 use cartridge::CARTRIDGE;
@@ -28,8 +25,6 @@ use timer::TIMER;
 use unknown::UNKNOWN;
 use unusable::UNUSABLE;
 use wram::WRAM;
-
-use super::Memory;
 
 pub const ROOT: Segment = Segment::Nested(|address| {
     match address {
@@ -60,22 +55,3 @@ pub const ROOT: Segment = Segment::Nested(|address| {
         0xFFFF => &INTERRUPT_ENABLED,
     }
 });
-
-#[derive(Debug)]
-pub struct MappedMemory<'a>(Components<'a>);
-
-impl<'a> MappedMemory<'a> {
-    pub fn new(components: Components<'a>) -> Self {
-        Self(components)
-    }
-}
-
-impl<'a> Memory for MappedMemory<'a> {
-    fn read(&self, address: u16) -> u8 {
-        ROOT.read(&self.0, address)
-    }
-
-    fn write(&mut self, address: u16, value: u8) {
-        ROOT.write(&mut self.0, address, value)
-    }
-}

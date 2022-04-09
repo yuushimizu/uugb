@@ -3,7 +3,7 @@ use crate::{
     cpu::Cpu,
     interrupt::InterruptController,
     joypad::Joypad,
-    memory::{self, Hram, MappedMemory, Wram},
+    memory::{self, Hram, Memory, Wram},
     ppu::Ppu,
     serial::Serial,
     timer::Timer,
@@ -39,17 +39,16 @@ impl GameBoy {
     }
 
     pub fn tick(&mut self) {
-        self.cpu
-            .tick(&mut MappedMemory::new(memory::map::Components {
-                cartridge: &mut self.cartridge,
-                wram: &mut self.wram,
-                ppu: &mut self.ppu,
-                hram: &mut self.hram,
-                interrupt_controller: &mut self.interrupt_controller,
-                joypad: &mut self.joypad,
-                timer: &mut self.timer,
-                serial: &mut self.serial,
-            }));
+        self.cpu.tick(&mut Memory::new(memory::Components {
+            cartridge: &mut self.cartridge,
+            wram: &mut self.wram,
+            ppu: &mut self.ppu,
+            hram: &mut self.hram,
+            interrupt_controller: &mut self.interrupt_controller,
+            joypad: &mut self.joypad,
+            timer: &mut self.timer,
+            serial: &mut self.serial,
+        }));
         self.timer.tick(&mut self.interrupt_controller);
         self.serial
             .tick(&mut self.interrupt_controller, &mut self.serial_connection);

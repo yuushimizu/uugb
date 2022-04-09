@@ -1,4 +1,4 @@
-use super::Components;
+use crate::memory::Components;
 
 pub enum Segment<'a> {
     Leaf(fn(&Components, u16) -> u8, fn(&mut Components, u16, u8)),
