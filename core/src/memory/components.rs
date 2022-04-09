@@ -9,7 +9,19 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub struct Components<'a> {
+pub struct ComponentsRefs<'a> {
+    pub cartridge: &'a Cartridge,
+    pub wram: &'a Wram,
+    pub ppu: &'a Ppu,
+    pub hram: &'a Hram,
+    pub interrupt_controller: &'a InterruptController,
+    pub joypad: &'a Joypad,
+    pub timer: &'a Timer,
+    pub serial: &'a Serial,
+}
+
+#[derive(Debug)]
+pub struct ComponentsRefsMut<'a> {
     pub cartridge: &'a mut Cartridge,
     pub wram: &'a mut Wram,
     pub ppu: &'a mut Ppu,
@@ -18,4 +30,10 @@ pub struct Components<'a> {
     pub joypad: &'a mut Joypad,
     pub timer: &'a mut Timer,
     pub serial: &'a mut Serial,
+}
+
+pub trait Components {
+    fn refs(&self) -> ComponentsRefs;
+
+    fn refs_mut(&mut self) -> ComponentsRefsMut;
 }

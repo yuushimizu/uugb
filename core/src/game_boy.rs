@@ -9,9 +9,9 @@ use crate::{
     timer::Timer,
 };
 
-pub struct GameBoy {
+#[derive(Debug)]
+struct MemoryComponents {
     cartridge: Cartridge,
-    cpu: Cpu,
     wram: Wram,
     ppu: Ppu,
     hram: Hram,
@@ -19,27 +19,24 @@ pub struct GameBoy {
     joypad: Joypad,
     timer: Timer,
     serial: Serial,
-    serial_connection: DummySerialConnection,
 }
 
-impl GameBoy {
-    pub fn boot(cartridge: Cartridge) -> Self {
-        Self {
-            cartridge,
-            cpu: Default::default(),
-            wram: Default::default(),
-            ppu: Default::default(),
-            hram: Default::default(),
-            interrupt_controller: Default::default(),
-            joypad: Default::default(),
-            timer: Default::default(),
-            serial: Default::default(),
-            serial_connection: DummySerialConnection::new(),
+impl memory::Components for MemoryComponents {
+    fn refs(&self) -> memory::ComponentsRefs {
+        memory::ComponentsRefs {
+            cartridge: &self.cartridge,
+            wram: &self.wram,
+            ppu: &self.ppu,
+            hram: &self.hram,
+            interrupt_controller: &self.interrupt_controller,
+            joypad: &self.joypad,
+            timer: &self.timer,
+            serial: &self.serial,
         }
     }
 
-    pub fn tick(&mut self) {
-        self.cpu.tick(&mut Memory::new(memory::Components {
+    fn refs_mut(&mut self) -> memory::ComponentsRefsMut {
+        memory::ComponentsRefsMut {
             cartridge: &mut self.cartridge,
             wram: &mut self.wram,
             ppu: &mut self.ppu,
@@ -48,16 +45,51 @@ impl GameBoy {
             joypad: &mut self.joypad,
             timer: &mut self.timer,
             serial: &mut self.serial,
-        }));
-        self.timer.tick(&mut self.interrupt_controller);
-        self.serial
-            .tick(&mut self.interrupt_controller, &mut self.serial_connection);
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct GameBoy {
+    cpu: Cpu,
+    memory_components: MemoryComponents,
+    serial_connection: DummySerialConnection,
+}
+
+impl GameBoy {
+    pub fn boot(cartridge: Cartridge) -> Self {
+        Self {
+            cpu: Default::default(),
+            memory_components: MemoryComponents {
+                cartridge,
+                wram: Default::default(),
+                ppu: Default::default(),
+                hram: Default::default(),
+                interrupt_controller: Default::default(),
+                joypad: Default::default(),
+                timer: Default::default(),
+                serial: Default::default(),
+            },
+            serial_connection: DummySerialConnection::new(),
+        }
+    }
+
+    pub fn tick(&mut self) {
+        self.cpu.tick(&mut Memory::new(&mut self.memory_components));
+        self.memory_components
+            .timer
+            .tick(&mut self.memory_components.interrupt_controller);
+        self.memory_components.serial.tick(
+            &mut self.memory_components.interrupt_controller,
+            &mut self.serial_connection,
+        );
     }
 }
 
 use std::fs::File;
 use std::io::prelude::*;
 
+#[derive(Debug)]
 struct DummySerialConnection {
     file: File,
     bits: Vec<bool>,
