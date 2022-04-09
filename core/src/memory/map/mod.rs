@@ -46,14 +46,12 @@ pub const ROOT: Segment = Segment::Nested(|address| {
         0xFF08..=0xFF0E => &UNKNOWN,
         0xFF0F => &INTERRUPT_REQUESTED,
         0xFF10..=0xFF3F => &APU,
-        0xFF40..=0xFF4F => &PPU,
-        0xFF50 => &UNKNOWN,
-        0xFF51..=0xFF55 => &PPU,
+        0xFF40..=0xFF55 => &PPU,
         0xFF56 => &IR,
         0xFF57..=0xFF67 => &UNKNOWN,
         0xFF68..=0xFF6C => &PPU,
         0xFF6D..=0xFF6F => &UNKNOWN,
-        0xFF70 => &WRAM,
+        0xFF70 => &WRAM, // CGB: WRAM Bank
         0xFF71 => &UNKNOWN,
         0xFF72..=0xFF75 => &UNKNOWN, // undocumented registers?
         0xFF76..=0xFF77 => &APU,
