@@ -13,8 +13,8 @@ impl Default for Flags {
         Self {
             z: true,
             n: false,
-            h: false,
-            c: false,
+            h: true,
+            c: true,
         }
     }
 }
@@ -56,11 +56,11 @@ impl Default for Registers {
             a: 0x11,
             f: Default::default(),
             b: 0x00,
-            c: 0x00,
-            d: 0xFF,
-            e: 0x56,
-            h: 0x00,
-            l: 0x0D,
+            c: 0x13,
+            d: 0x00,
+            e: 0xD8,
+            h: 0x01,
+            l: 0x4D,
             pc: 0x0100,
             sp: 0xFFFE,
         }

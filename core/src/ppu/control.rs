@@ -1,9 +1,15 @@
 use super::vram::{TileDataArea, TileMapArea};
 use crate::util::bits::Bits;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Control {
     bits: u8,
+}
+
+impl Default for Control {
+    fn default() -> Self {
+        Self { bits: 0b10010001 }
+    }
 }
 
 impl Control {
