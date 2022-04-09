@@ -2,8 +2,9 @@ use crate::{
     cartridge::Cartridge,
     cpu::Cpu,
     interrupt::InterruptController,
-    io::Joypad,
+    joypad::Joypad,
     memory::{mapped_memory, Hram, MappedMemory, Wram},
+    ppu::Ppu,
     serial::Serial,
     timer::Timer,
 };
@@ -12,6 +13,7 @@ pub struct GameBoy {
     cartridge: Cartridge,
     cpu: Cpu,
     wram: Wram,
+    ppu: Ppu,
     hram: Hram,
     interrupt_controller: InterruptController,
     joypad: Joypad,
@@ -26,6 +28,7 @@ impl GameBoy {
             cartridge,
             cpu: Default::default(),
             wram: Default::default(),
+            ppu: Default::default(),
             hram: Default::default(),
             interrupt_controller: Default::default(),
             joypad: Default::default(),
@@ -40,6 +43,7 @@ impl GameBoy {
             .tick(&mut MappedMemory::new(mapped_memory::Components {
                 cartridge: &mut self.cartridge,
                 wram: &mut self.wram,
+                ppu: &mut self.ppu,
                 hram: &mut self.hram,
                 interrupt_controller: &mut self.interrupt_controller,
                 joypad: &mut self.joypad,
@@ -69,7 +73,7 @@ impl DummySerialConnection {
     }
 }
 
-impl crate::serial::Connection for DummySerialConnection {
+impl crate::serial::SerialConnection for DummySerialConnection {
     fn send(&mut self, bit: bool) {
         self.bits.push(bit);
         if self.bits.len() >= 8 {

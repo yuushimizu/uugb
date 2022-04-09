@@ -1,7 +1,7 @@
 use crate::interrupt::{Interrupt, InterruptController};
 use crate::util::bits::Bits;
 
-pub trait Connection {
+pub trait SerialConnection {
     fn send(&mut self, bit: bool);
 
     fn receive(&self) -> bool;
@@ -10,7 +10,7 @@ pub trait Connection {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct NoConnection;
 
-impl Connection for NoConnection {
+impl SerialConnection for NoConnection {
     fn send(&mut self, _bit: bool) {}
 
     fn receive(&self) -> bool {
@@ -45,7 +45,7 @@ impl Serial {
         self.rest_cycles = self.cycles();
     }
 
-    fn transfer(&mut self, connection: &mut impl Connection) {
+    fn transfer(&mut self, connection: &mut impl SerialConnection) {
         let input = connection.receive();
         let output = self.buffer.bit(7);
         self.buffer = self.buffer << 1 | (input as u8);
@@ -60,7 +60,7 @@ impl Serial {
     pub fn tick(
         &mut self,
         interrupt_controller: &mut InterruptController,
-        connection: &mut impl Connection,
+        connection: &mut impl SerialConnection,
     ) {
         if self.rest_cycles > 0 {
             self.rest_cycles -= 1;
@@ -96,7 +96,7 @@ impl Serial {
         }
     }
 
-    pub fn receive(&mut self, connection: &mut impl Connection) {
+    pub fn receive(&mut self, connection: &mut impl SerialConnection) {
         if !self.uses_internal_clock {
             if !self.is_started {
                 self.start();

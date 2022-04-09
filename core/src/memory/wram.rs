@@ -1,6 +1,6 @@
 use log;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Wram {
     data: Vec<u8>,
 }
@@ -8,7 +8,7 @@ pub struct Wram {
 impl Default for Wram {
     fn default() -> Self {
         Self {
-            data: vec![0x00u8; 0x2000],
+            data: vec![0x00u8; 0x1000],
         }
     }
 }
@@ -40,5 +40,5 @@ impl Wram {
         0x00
     }
 
-    pub fn set_bank_switch(&self, value: u8) {}
+    pub fn set_bank_switch(&self, _value: u8) {}
 }

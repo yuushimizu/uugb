@@ -1,12 +1,14 @@
 use super::{Hram, Memory, Wram};
 use crate::{
-    cartridge::Cartridge, interrupt::InterruptController, io::Joypad, serial::Serial, timer::Timer,
+    cartridge::Cartridge, interrupt::InterruptController, joypad::Joypad, ppu::Ppu, serial::Serial,
+    timer::Timer,
 };
 
 #[derive(Debug)]
 pub struct Components<'a> {
     pub cartridge: &'a mut Cartridge,
     pub wram: &'a mut Wram,
+    pub ppu: &'a mut Ppu,
     pub hram: &'a mut Hram,
     pub interrupt_controller: &'a mut InterruptController,
     pub joypad: &'a mut Joypad,
@@ -56,23 +58,16 @@ mod segment {
     );
 
     pub const WRAM: Segment = {
-        const PRIMARY_START: u16 = 0xC000;
-        const PRIMARY_END: u16 = 0xCFFF;
-        const BANK_START: u16 = 0xD000;
-        const BANK_END: u16 = 0xDFFF;
-        const BANK_SWITCH_ADDRESS: u16 = 0xFF70;
         Segment::Nested(|address| match address {
-            PRIMARY_START..=PRIMARY_END => &Segment::Leaf(
-                |components, address| components.wram.read(address - PRIMARY_START),
-                |components, address, value| components.wram.write(address - PRIMARY_START, value),
+            0xC000..=0xCFFF => &Segment::Leaf(
+                |components, address| components.wram.read(address - 0xC000),
+                |components, address, value| components.wram.write(address - 0xC000, value),
             ),
-            BANK_START..=BANK_END => &Segment::Leaf(
-                |components, address| components.wram.read_bank(address - BANK_START),
-                |components, address, value| {
-                    components.wram.write_bank(address - BANK_START, value)
-                },
+            0xD000..=0xDFFF => &Segment::Leaf(
+                |components, address| components.wram.read_bank(address - 0xD000),
+                |components, address, value| components.wram.write_bank(address - 0xD000, value),
             ),
-            BANK_SWITCH_ADDRESS => &Segment::Leaf(
+            0xFF70 => &Segment::Leaf(
                 |components, _| components.wram.bank_switch(),
                 |components, _, value| components.wram.set_bank_switch(value),
             ),
@@ -137,7 +132,17 @@ mod segment {
 
     pub const APU: Segment = Segment::Leaf(|_, _| 0, |_, _, _| {});
 
-    pub const PPU: Segment = Segment::Leaf(|_, _| 0, |_, _, _| {});
+    pub const PPU: Segment = Segment::Nested(|address| match address {
+        0x8000..=0x9FFF => &Segment::Leaf(
+            |components, address| components.ppu.read_vram(address - 0x8000),
+            |components, address, value| components.ppu.write_vram(address - 0x8000, value),
+        ),
+        0xFE00..=0xFE9F => &Segment::Leaf(|_, _| 0, |_, _, _| {}),
+        0xFF40..=0xFF4F => &Segment::Leaf(|_, _| 0, |_, _, _| {}),
+        0xFF51..=0xFF55 => &Segment::Leaf(|_, _| 0, |_, _, _| {}),
+        0xFF68..=0xFF6C => &Segment::Leaf(|_, _| 0, |_, _, _| {}),
+        _ => unreachable!(),
+    });
 
     pub const IR: Segment = Segment::Leaf(|_, _| 0, |_, _, _| {});
 
