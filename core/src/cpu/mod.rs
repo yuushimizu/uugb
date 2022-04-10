@@ -66,6 +66,20 @@ impl<'a> instruction::context::Components for InstructionContextComponents<'a> {
 }
 
 impl Cpu {
+    fn with_instruction_context(
+        &mut self,
+        context: &mut impl Context,
+        f: impl FnOnce(&mut instruction::Context),
+    ) {
+        let mut instruction_context_components = InstructionContextComponents {
+            cpu: self,
+            memory: Memory::new(context),
+        };
+        let mut instruction_context =
+            instruction::Context::new(&mut instruction_context_components);
+        f(&mut instruction_context);
+    }
+
     pub fn tick(&mut self, context: &mut impl Context) {
         if self.wait_cycles > 0 {
             self.wait_cycles -= 1;
@@ -77,16 +91,12 @@ impl Cpu {
                 self.interrupt_enabled = false;
                 self.interrupt_enabling = false;
                 context.interrupt_controller_mut().clear(interrupt);
-                let mut instruction_context_components = InstructionContextComponents {
-                    cpu: self,
-                    memory: Memory::new(context),
-                };
-                let mut instruction_context =
-                    instruction::Context::new(&mut instruction_context_components);
-                log::info!(target: "cpu_event", "Handle interrupt: {:?}", interrupt);
-                instruction_context.wait();
-                instruction_context.wait();
-                instruction_context.call(interrupt.address());
+                self.with_instruction_context(context, |instruction_context| {
+                    log::info!(target: "cpu_event", "Handle interrupt: {:?}", interrupt);
+                    instruction_context.wait();
+                    instruction_context.wait();
+                    instruction_context.call(interrupt.address());
+                });
                 return;
             }
         }
@@ -95,17 +105,11 @@ impl Cpu {
         }
         let interrupt_enabling = self.interrupt_enabling;
         self.interrupt_enabling = false;
-        {
-            let mut instruction_context_components = InstructionContextComponents {
-                cpu: self,
-                memory: Memory::new(context),
-            };
-            let mut instruction_context =
-                instruction::Context::new(&mut instruction_context_components);
-            let instruction = Instruction::fetch(&mut instruction_context);
+        self.with_instruction_context(context, |instruction_context| {
+            let instruction = Instruction::fetch(instruction_context);
             log::info!(target: "cpu_event", "Instruction: {}", instruction);
-            instruction.execute(&mut instruction_context);
-        }
+            instruction.execute(instruction_context);
+        });
         if interrupt_enabling {
             self.interrupt_enabled = true;
         }
