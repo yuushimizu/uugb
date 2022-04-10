@@ -81,7 +81,7 @@ impl GameBoy {
                 timer: Default::default(),
                 serial: Default::default(),
             },
-            dummy_renderer: DummyRenderer {},
+            dummy_renderer: Default::default(),
             dummy_serial_connection: Default::default(),
         }
     }
@@ -105,11 +105,30 @@ impl GameBoy {
 use std::fs::File;
 use std::io::prelude::*;
 
-#[derive(Debug)]
-struct DummyRenderer {}
+#[derive(Debug, Default)]
+struct DummyRenderer {
+    buffer: String,
+}
 
 impl crate::ppu::Renderer for DummyRenderer {
-    fn render(&mut self, position: crate::ppu::Coordinate, color: u8) {}
+    fn render(&mut self, position: crate::ppu::Coordinate, color: u8) {
+        if position.x == 0 {
+            if position.y == 0 {
+                print!("{}[2J", 27 as char);
+                println!("{}", self.buffer);
+                self.buffer.clear();
+            } else {
+                self.buffer.push_str("\n");
+            }
+        }
+        self.buffer.push_str(match color {
+            0b00 => "  ",
+            0b01 => "__",
+            0b10 => "::",
+            0b11 => "██",
+            _ => "",
+        });
+    }
 }
 
 #[derive(Debug)]

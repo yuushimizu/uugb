@@ -21,7 +21,7 @@ impl<'vram> TileData<'vram> {
             .iter()
             .map(|offset| self.data[index + offset])
             .map(|byte| byte >> (7 - position.x as usize % 8))
-            .fold(0b00, |acc, bit| acc << 0 | bit)
+            .fold(0b00, |acc, bit| acc << 1 | bit)
     }
 }
 

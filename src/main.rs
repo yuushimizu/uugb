@@ -66,8 +66,10 @@ fn print_cartridge_info(header: &cartridge::Header) {
 
 fn boot(cartridge: Cartridge) {
     let mut game_boy = GameBoy::boot(cartridge);
-    for _ in 0..(4194304) {
-        game_boy.tick();
+    for _ in 0..30 {
+        for _ in 0..(4194304) {
+            game_boy.tick();
+        }
     }
 }
 

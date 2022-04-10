@@ -131,7 +131,12 @@ impl Ppu {
             return;
         }
         let current_mode = self.mode();
-        if current_mode == Mode::Transfer {}
+        if current_mode == Mode::Transfer {
+            if self.current_position.x < WIDTH {
+                self.render_pixel(renderer);
+            }
+            self.current_position.x += 1;
+        }
         self.advance_cycle();
         self.request_interrupt(current_mode, interrupt_controller);
     }
