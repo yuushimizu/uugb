@@ -66,9 +66,11 @@ fn print_cartridge_info(header: &cartridge::Header) {
 
 fn boot(cartridge: Cartridge) {
     let mut game_boy = GameBoy::boot(cartridge);
-    for _ in 0..60 {
+    let mut buffer = String::new();
+    for _ in 0..600 {
         for _ in 0..(4194304) {
             game_boy.tick();
+            _ = std::io::stdin().read_line(&mut buffer);
         }
     }
     use std::io::*;
@@ -77,7 +79,6 @@ fn boot(cartridge: Cartridge) {
 }
 
 fn main() {
-    /*
     CombinedLogger::init(vec![TermLogger::new(
         LevelFilter::Debug,
         Config::default(),
@@ -85,7 +86,6 @@ fn main() {
         ColorChoice::Auto,
     )])
     .unwrap();
-    */
     let arg = Args::parse();
     let mut file = File::open(&arg.file).unwrap_or_else(|_err| {
         eprintln!("Could not open the file: {}", arg.file.display());
