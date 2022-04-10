@@ -41,6 +41,12 @@ impl InterruptController {
         self.state_mut(interrupt).is_requested = false;
     }
 
+    pub fn clear_all(&mut self) {
+        for state in self.states.iter_mut() {
+            state.is_requested = false;
+        }
+    }
+
     pub fn pending_interrupt(&self) -> Option<Interrupt> {
         Interrupt::ORDERED
             .iter()

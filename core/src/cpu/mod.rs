@@ -15,6 +15,7 @@ use log;
 pub struct Cpu {
     registers: Registers,
     is_halting: bool,
+    is_stopped: bool,
     interrupt_enabled: bool,
     interrupt_enabling: bool,
     wait_cycles: u64,
@@ -48,7 +49,7 @@ impl<'a> instruction::context::Components for InstructionContextComponents<'a> {
 
     fn stop(&mut self) {
         self.cpu.is_halting = true;
-        todo!("STOP");
+        self.cpu.is_stopped = true;
     }
 
     fn disable_interrupts(&mut self) {
@@ -111,6 +112,9 @@ impl Cpu {
         });
         if interrupt_enabling {
             self.interrupt_enabled = true;
+        }
+        if self.is_stopped {
+            context.interrupt_controller_mut().clear_all();
         }
     }
 }
