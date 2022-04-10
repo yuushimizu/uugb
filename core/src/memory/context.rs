@@ -32,8 +32,8 @@ pub struct ComponentsRefsMut<'a> {
     pub serial: &'a mut Serial,
 }
 
-pub trait Components {
-    fn refs(&self) -> ComponentsRefs;
+pub trait Context {
+    fn components(&self) -> ComponentsRefs;
 
-    fn refs_mut(&mut self) -> ComponentsRefsMut;
+    fn components_mut(&mut self) -> ComponentsRefsMut;
 }

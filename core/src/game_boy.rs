@@ -21,8 +21,8 @@ struct MemoryComponents {
     serial: Serial,
 }
 
-impl memory::Components for MemoryComponents {
-    fn refs(&self) -> memory::ComponentsRefs {
+impl memory::Context for MemoryComponents {
+    fn components(&self) -> memory::ComponentsRefs {
         memory::ComponentsRefs {
             cartridge: &self.cartridge,
             wram: &self.wram,
@@ -35,7 +35,7 @@ impl memory::Components for MemoryComponents {
         }
     }
 
-    fn refs_mut(&mut self) -> memory::ComponentsRefsMut {
+    fn components_mut(&mut self) -> memory::ComponentsRefsMut {
         memory::ComponentsRefsMut {
             cartridge: &mut self.cartridge,
             wram: &mut self.wram,
