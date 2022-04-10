@@ -43,6 +43,7 @@ pub struct Ppu {
     control: Control,
     interrupt_source: InterruptSource,
     current_y: u8,
+    current_x: u8,
     y_compare: u8,
     background_palette: Palette,
     object_palette0: Palette,
@@ -70,6 +71,7 @@ impl Ppu {
         self.cycles_in_line += 1;
         if self.cycles_in_line >= CYCLES_PER_LINE {
             self.current_y += 1;
+            self.current_x = 0;
             self.cycles_in_line = 0;
             if self.current_y >= LINES_PER_FRAME {
                 self.current_y = 0;
@@ -77,20 +79,17 @@ impl Ppu {
         }
     }
 
-    pub fn tick(
-        &mut self,
+    fn request_interrupt(
+        &self,
+        previous_mode: Mode,
         interrupt_controller: &mut InterruptController,
-        renderer: &mut impl Renderer,
     ) {
         use Mode::*;
-        let current_mode = self.mode();
-        if current_mode == Transfer {}
-        self.advance_cycle();
-        if current_mode != self.mode() && self.mode() == VBlank {
+        if previous_mode != self.mode() && self.mode() == VBlank {
             interrupt_controller.request(Interrupt::VBlank);
         }
         if self.current_y == self.y_compare && self.interrupt_source.ly()
-            || (current_mode != self.mode()
+            || (previous_mode != self.mode()
                 && match self.mode() {
                     HBlank => self.interrupt_source.hblank(),
                     VBlank => self.interrupt_source.vblank(),
@@ -100,6 +99,17 @@ impl Ppu {
         {
             interrupt_controller.request(Interrupt::LcdStat);
         }
+    }
+
+    pub fn tick(
+        &mut self,
+        interrupt_controller: &mut InterruptController,
+        renderer: &mut impl Renderer,
+    ) {
+        let current_mode = self.mode();
+        if current_mode == Mode::Transfer {}
+        self.advance_cycle();
+        self.request_interrupt(current_mode, interrupt_controller);
     }
 
     pub fn vram(&self) -> &Vram {
