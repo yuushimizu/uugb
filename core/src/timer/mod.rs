@@ -13,24 +13,26 @@ pub struct Timer {
     counter: u8,
     modulo: u8,
     previous_output: bool,
-    overflow: bool,
-    is_reloaded: bool,
+    wait_cycles: u64,
 }
 
 impl Timer {
     pub fn tick(&mut self, interrupt_controller: &mut InterruptController) {
-        self.is_reloaded = false;
         self.divider.tick();
-        if self.overflow {
-            self.overflow = false;
-            self.counter = self.modulo;
-            interrupt_controller.request(Interrupt::Timer);
-            self.is_reloaded = true;
+        if self.wait_cycles > 0 {
+            self.wait_cycles -= 0;
+            return;
         }
+        self.wait_cycles = 4;
         let output = self.control.is_enabled()
             && self.divider.counter() & self.control.input_clock().bit_mask() != 0;
         if self.previous_output && !output {
-            (self.counter, self.overflow) = self.counter.overflowing_add(1);
+            if self.counter == 0xFF {
+                self.counter = self.modulo;
+                interrupt_controller.request(Interrupt::Timer);
+            } else {
+                self.counter = self.counter.wrapping_add(1);
+            }
         }
         self.previous_output = output;
     }
@@ -48,10 +50,7 @@ impl Timer {
     }
 
     pub fn set_counter(&mut self, value: u8) {
-        self.overflow = false;
-        if !self.is_reloaded {
-            self.counter = value;
-        }
+        self.counter = value;
     }
 
     pub fn modulo(&self) -> u8 {
@@ -60,9 +59,6 @@ impl Timer {
 
     pub fn set_modulo(&mut self, value: u8) {
         self.modulo = value;
-        if self.is_reloaded {
-            self.counter = value;
-        }
     }
 
     pub fn control_bits(&self) -> u8 {
