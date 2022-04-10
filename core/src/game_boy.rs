@@ -63,7 +63,8 @@ impl cpu::Context for MemoryComponents {
 pub struct GameBoy {
     cpu: Cpu,
     memory_components: MemoryComponents,
-    serial_connection: DummySerialConnection,
+    dummy_renderer: DummyRenderer,
+    dummy_serial_connection: DummySerialConnection,
 }
 
 impl GameBoy {
@@ -80,18 +81,23 @@ impl GameBoy {
                 timer: Default::default(),
                 serial: Default::default(),
             },
-            serial_connection: DummySerialConnection::new(),
+            dummy_renderer: DummyRenderer {},
+            dummy_serial_connection: Default::default(),
         }
     }
 
     pub fn tick(&mut self) {
         self.cpu.tick(&mut self.memory_components);
+        self.memory_components.ppu.tick(
+            &mut self.memory_components.interrupt_controller,
+            &mut self.dummy_renderer,
+        );
         self.memory_components
             .timer
             .tick(&mut self.memory_components.interrupt_controller);
         self.memory_components.serial.tick(
             &mut self.memory_components.interrupt_controller,
-            &mut self.serial_connection,
+            &mut self.dummy_serial_connection,
         );
     }
 }
@@ -100,13 +106,20 @@ use std::fs::File;
 use std::io::prelude::*;
 
 #[derive(Debug)]
+struct DummyRenderer {}
+
+impl crate::ppu::Renderer for DummyRenderer {
+    fn render(&mut self, position: crate::ppu::Coordinate, color: u8) {}
+}
+
+#[derive(Debug)]
 struct DummySerialConnection {
     file: File,
     bits: Vec<bool>,
 }
 
-impl DummySerialConnection {
-    fn new() -> Self {
+impl Default for DummySerialConnection {
+    fn default() -> Self {
         Self {
             file: File::create("./log/dummy-serial").unwrap(),
             bits: vec![],

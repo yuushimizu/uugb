@@ -15,15 +15,19 @@ use control::Control;
 use interrupt_source::InterruptSource;
 use vram::Vram;
 
-use crate::interrupt::InterruptController;
+use crate::interrupt::{Interrupt, InterruptController};
 
 const WIDTH: u8 = 160;
 
 const HEIGHT: u8 = 144;
 
+const LINES_PER_FRAME: u8 = 154;
+
 const CYCLES_PER_LINE: u64 = 456;
 
 const OAM_SEARCH_CYCLES: u64 = 80;
+
+const TRANSFER_CYCLES: u64 = 168;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum Mode {
@@ -33,18 +37,11 @@ enum Mode {
     Transfer = 0b11,
 }
 
-impl Default for Mode {
-    fn default() -> Self {
-        Self::HBlank
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct Ppu {
     vram: Vram,
     control: Control,
     interrupt_source: InterruptSource,
-    mode: Mode,
     current_y: u8,
     y_compare: u8,
     background_palette: Palette,
@@ -52,11 +49,58 @@ pub struct Ppu {
     object_palette1: Palette,
     scroll_position: Coordinate,
     window_position: Coordinate,
-    cycles: u64,
+    cycles_in_line: u64,
 }
 
 impl Ppu {
-    pub fn tick(&mut self, interrupt_controller: &InterruptController, renderer: impl Renderer) {}
+    fn mode(&self) -> Mode {
+        use Mode::*;
+        if self.current_y >= HEIGHT {
+            VBlank
+        } else if self.cycles_in_line < OAM_SEARCH_CYCLES {
+            OamSearch
+        } else if self.cycles_in_line < OAM_SEARCH_CYCLES + TRANSFER_CYCLES {
+            Transfer
+        } else {
+            HBlank
+        }
+    }
+
+    fn advance_cycle(&mut self) {
+        self.cycles_in_line += 1;
+        if self.cycles_in_line >= CYCLES_PER_LINE {
+            self.current_y += 1;
+            self.cycles_in_line = 0;
+            if self.current_y >= LINES_PER_FRAME {
+                self.current_y = 0;
+            }
+        }
+    }
+
+    pub fn tick(
+        &mut self,
+        interrupt_controller: &mut InterruptController,
+        renderer: &mut impl Renderer,
+    ) {
+        use Mode::*;
+        let current_mode = self.mode();
+        if current_mode == Transfer {}
+        self.advance_cycle();
+        if current_mode != self.mode() && self.mode() == VBlank {
+            interrupt_controller.request(Interrupt::VBlank);
+        }
+        if self.current_y == self.y_compare && self.interrupt_source.ly()
+            || (current_mode != self.mode()
+                && match self.mode() {
+                    HBlank => self.interrupt_source.hblank(),
+                    VBlank => self.interrupt_source.vblank(),
+                    OamSearch => self.interrupt_source.oam(),
+                    _ => false,
+                })
+        {
+            interrupt_controller.request(Interrupt::LcdStat);
+        }
+    }
 
     pub fn vram(&self) -> &Vram {
         &self.vram
@@ -80,7 +124,7 @@ impl Ppu {
     pub fn status_bits(&self) -> u8 {
         self.interrupt_source.bits() << 3
             | ((self.current_y == self.y_compare) as u8) << 2
-            | (self.mode as u8)
+            | (self.mode() as u8)
     }
 
     pub fn set_status_bits(&mut self, value: u8) {

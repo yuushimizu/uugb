@@ -13,6 +13,6 @@ impl Palette {
     }
 
     pub fn apply(&self, data: u8) -> u8 {
-        self.bits >> (data * 2) * 0b11
+        self.bits >> (data * 2) & 0b11
     }
 }
