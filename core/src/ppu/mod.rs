@@ -55,7 +55,9 @@ pub struct Ppu {
 impl Ppu {
     fn mode(&self) -> Mode {
         use Mode::*;
-        if self.current_position.y >= HEIGHT {
+        if !self.control.is_enabled() {
+            HBlank
+        } else if self.current_position.y >= HEIGHT {
             VBlank
         } else if self.cycles_in_line < OAM_SEARCH_CYCLES {
             OamSearch

@@ -2,41 +2,71 @@ use super::Operator;
 use crate::cpu::instruction::operand::{Condition, Read};
 
 pub fn call(address: impl Read<u16>) -> Operator {
-    Operator::new(format!("CALL {}", address), move |context| {
-        let address = address.read(context);
-        context.call(address);
-    })
+    Operator::new(
+        move |context| {
+            let address = address.read(context);
+            context.call(address);
+        },
+        move |context| format!("CALL {}", address.debug(context)),
+    )
 }
 
 pub fn call_cc(condition: Condition, address: impl Read<u16>) -> Operator {
-    Operator::new(format!("CALL {}, {}", condition, address), move |context| {
-        let address = address.read(context);
-        if condition.is_satisfied(context) {
-            context.call(address);
-        }
-    })
+    Operator::new(
+        move |context| {
+            let address = address.read(context);
+            if condition.read(context) {
+                context.call(address);
+            }
+        },
+        move |context| {
+            format!(
+                "CALL {}, {}",
+                condition.debug(context),
+                address.debug(context),
+            )
+        },
+    )
 }
 
 pub fn rst(address: u8) -> Operator {
-    Operator::new("RST".into(), move |context| context.call(address as u16))
+    Operator::new(
+        move |context| context.call(address as u16),
+        move |context| format!("RST {:02X}", address),
+    )
 }
 
 pub fn ret() -> Operator {
-    Operator::new("RET".into(), |context| context.ret())
+    Operator::new(
+        |context| context.ret(),
+        |context| format!("RET:{:04X}", context.debug_u16(context.registers().sp)),
+    )
 }
 
 pub fn ret_cc(condition: Condition) -> Operator {
-    Operator::new(format!("RET {}", condition), move |context| {
-        if condition.is_satisfied(context) {
-            context.ret();
-        }
-        context.wait();
-    })
+    Operator::new(
+        move |context| {
+            if condition.read(context) {
+                context.ret();
+            }
+            context.wait();
+        },
+        move |context| {
+            format!(
+                "RET:{:04X} {}",
+                context.debug_u16(context.registers().sp),
+                condition.debug(context)
+            )
+        },
+    )
 }
 
 pub fn reti() -> Operator {
-    Operator::new("RETI".into(), move |context| {
-        context.enable_interrupts();
-        context.ret();
-    })
+    Operator::new(
+        move |context| {
+            context.enable_interrupts();
+            context.ret();
+        },
+        |context| format!("RETI:{:04X}", context.debug_u16(context.registers().sp),),
+    )
 }

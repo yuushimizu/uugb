@@ -6,6 +6,7 @@ use std::fmt;
 pub struct Indirection {
     name: &'static str,
     address: fn(&mut Context) -> u16,
+    debug_address: fn(&Context) -> u16,
 }
 
 impl fmt::Debug for Indirection {
@@ -16,18 +17,22 @@ impl fmt::Debug for Indirection {
     }
 }
 
-impl fmt::Display for Indirection {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "({})", self.name)
-    }
-}
-
 impl Operand for Indirection {}
 
 impl Read<u8> for Indirection {
     fn read(&self, context: &mut Context) -> u8 {
         let address = (self.address)(context);
         context.read(address)
+    }
+
+    fn debug(&self, context: &Context) -> String {
+        let address = (self.debug_address)(context);
+        format!(
+            "({}:{:04X}):{:02X}",
+            self.name,
+            address,
+            context.debug_u8(address)
+        )
     }
 }
 
@@ -36,12 +41,27 @@ impl Write<u8> for Indirection {
         let address = (self.address)(context);
         context.write(address, value);
     }
+
+    fn debug(&self, context: &Context) -> String {
+        let address = (self.debug_address)(context);
+        format!("({}:{:04X})", self.name, address,)
+    }
 }
 
 impl Read<u16> for Indirection {
     fn read(&self, context: &mut Context) -> u16 {
         let address = (self.address)(context);
         context.read16(address)
+    }
+
+    fn debug(&self, context: &Context) -> String {
+        let address = (self.debug_address)(context);
+        format!(
+            "({}:{:04X}):{:04X}",
+            self.name,
+            address,
+            context.debug_u16(address)
+        )
     }
 }
 
@@ -50,6 +70,11 @@ impl Write<u16> for Indirection {
         let address = (self.address)(context);
         context.write16(address, value);
     }
+
+    fn debug(&self, context: &Context) -> String {
+        let address = (self.debug_address)(context);
+        format!("({}:{:04X})", self.name, address,)
+    }
 }
 
 macro_rules! register {
@@ -57,27 +82,33 @@ macro_rules! register {
         pub const $name: Indirection = Indirection {
             name: stringify!($name),
             address: |context| context.registers().$field(),
+            debug_address: |context| context.registers().$field(),
         };
     };
 }
 
 register!(BC, bc);
+
 register!(DE, bc);
+
 register!(HL, bc);
 
 pub const LITERAL: Indirection = Indirection {
     name: "nn",
     address: |context| context.fetch16(),
+    debug_address: |context| context.debug_u16(context.registers().pc),
 };
 
 pub const LITERAL_8: Indirection = Indirection {
     name: "$FF00+n",
     address: |context| 0xFF00 | context.fetch() as u16,
+    debug_address: |context| 0xFF00 | context.debug_u8(context.registers().pc) as u16,
 };
 
 pub const C: Indirection = Indirection {
     name: "C",
     address: |context| 0xFF00 | context.registers().c as u16,
+    debug_address: |context| 0xFF00 | context.registers().c as u16,
 };
 
 pub const HLD: Indirection = Indirection {
@@ -87,6 +118,7 @@ pub const HLD: Indirection = Indirection {
         context.registers_mut().set_hl(address.wrapping_sub(1));
         address
     },
+    debug_address: |context| context.registers().hl(),
 };
 
 pub const HLI: Indirection = Indirection {
@@ -96,4 +128,5 @@ pub const HLI: Indirection = Indirection {
         context.registers_mut().set_hl(address.wrapping_add(1));
         address
     },
+    debug_address: |context| context.registers().hl(),
 };

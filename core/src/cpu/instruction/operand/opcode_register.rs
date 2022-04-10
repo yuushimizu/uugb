@@ -1,10 +1,9 @@
 use super::{indirection, Indirection, Operand, Read, Register, Write};
 use crate::cpu::instruction::Context;
-use std::fmt;
 
 #[derive(Debug, Clone, Copy)]
 pub enum OpcodeRegister {
-    Register(Register<u8>),
+    Register(Register),
     Indirection(Indirection),
 }
 
@@ -28,15 +27,6 @@ impl From<u8> for OpcodeRegister {
     }
 }
 
-impl fmt::Display for OpcodeRegister {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::Register(register) => register.fmt(f),
-            Self::Indirection(indirection) => indirection.fmt(f),
-        }
-    }
-}
-
 impl Operand for OpcodeRegister {}
 
 impl Read<u8> for OpcodeRegister {
@@ -46,6 +36,13 @@ impl Read<u8> for OpcodeRegister {
             Self::Indirection(indirection) => indirection.read(context),
         }
     }
+
+    fn debug(&self, context: &Context) -> String {
+        match self {
+            Self::Register(register) => Read::<u8>::debug(register, context),
+            Self::Indirection(indirection) => Read::<u8>::debug(indirection, context),
+        }
+    }
 }
 
 impl Write<u8> for OpcodeRegister {
@@ -53,6 +50,13 @@ impl Write<u8> for OpcodeRegister {
         match self {
             Self::Register(register) => register.write(context, value),
             Self::Indirection(indirection) => indirection.write(context, value),
+        }
+    }
+
+    fn debug(&self, context: &Context) -> String {
+        match self {
+            Self::Register(register) => Write::<u8>::debug(register, context),
+            Self::Indirection(indirection) => Write::<u8>::debug(indirection, context),
         }
     }
 }

@@ -9,12 +9,11 @@ pub use condition::Condition;
 pub use indirection::Indirection;
 pub use literal::LITERAL;
 pub use opcode_register::OpcodeRegister;
-pub use register::Register;
+pub use register::{Register, Register16};
 
 use crate::cpu::instruction::Context;
-use std::fmt;
 
-pub trait Operand: 'static + Sync + Send + Copy + fmt::Display + fmt::Debug {}
+pub trait Operand: 'static + Sync + Send + Copy {}
 
 pub trait Value: 'static + Sized + Copy {}
 
@@ -22,8 +21,12 @@ impl<T: 'static + Sized + Copy> Value for T {}
 
 pub trait Read<T: Value>: Operand {
     fn read(&self, context: &mut Context) -> T;
+
+    fn debug(&self, context: &Context) -> String;
 }
 
 pub trait Write<T: Value>: Operand {
     fn write(&self, context: &mut Context, value: T);
+
+    fn debug(&self, context: &Context) -> String;
 }

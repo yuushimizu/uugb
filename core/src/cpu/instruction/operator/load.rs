@@ -10,9 +10,18 @@ fn load<T: Value>(context: &mut Context, destination: impl Write<T>, source: imp
 }
 
 fn ld_generic<T: Value>(destination: impl Write<T>, source: impl Read<T>) -> Operator {
-    Operator::new(format!("LD {}, {}", destination, source), move |context| {
-        load(context, destination, source);
-    })
+    Operator::new(
+        move |context| {
+            load(context, destination, source);
+        },
+        move |context| {
+            format!(
+                "LD {}, {}",
+                destination.debug(context),
+                source.debug(context)
+            )
+        },
+    )
 }
 
 pub fn ld(destination: impl Write<u8>, source: impl Read<u8>) -> Operator {
@@ -24,8 +33,17 @@ pub fn ld16(destination: impl Write<u16>, source: impl Read<u16>) -> Operator {
 }
 
 pub fn ld16_sp_hl() -> Operator {
-    Operator::new("LD SP, HL".into(), |context| {
-        load(context, register::SP, register::HL);
-        context.wait();
-    })
+    Operator::new(
+        |context| {
+            load(context, register::Sp, register::Hl);
+            context.wait();
+        },
+        |context| {
+            format!(
+                "LD {}, {}",
+                Write::<u16>::debug(&register::Sp, context),
+                Read::<u16>::debug(&register::Hl, context)
+            )
+        },
+    )
 }

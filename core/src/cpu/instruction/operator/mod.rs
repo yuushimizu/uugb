@@ -22,33 +22,32 @@ use crate::cpu::instruction::Context;
 use std::fmt;
 
 pub struct Operator {
-    format: String,
     execute: Box<dyn Fn(&mut Context) + Sync + Send>,
+    debug: Box<dyn Fn(&Context) -> String + Sync + Send>,
 }
 
 impl fmt::Debug for Operator {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Operator")
-            .field("format", &self.format)
-            .finish()
-    }
-}
-
-impl fmt::Display for Operator {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.format)
+        f.debug_struct("Operator").finish()
     }
 }
 
 impl Operator {
-    pub fn new(format: String, execute: impl Fn(&mut Context) + Sync + Send + 'static) -> Self {
+    pub fn new(
+        execute: impl Fn(&mut Context) + Sync + Send + 'static,
+        debug: impl Fn(&Context) -> String + Sync + Send + 'static,
+    ) -> Self {
         Self {
-            format,
             execute: Box::new(execute),
+            debug: Box::new(debug),
         }
     }
 
     pub fn execute(&self, context: &mut Context) {
         (self.execute)(context);
+    }
+
+    pub fn debug(&self, context: &Context) -> String {
+        (self.debug)(context)
     }
 }

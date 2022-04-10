@@ -66,11 +66,9 @@ fn print_cartridge_info(header: &cartridge::Header) {
 
 fn boot(cartridge: Cartridge) {
     let mut game_boy = GameBoy::boot(cartridge);
-    let mut buffer = String::new();
-    for _ in 0..600 {
+    for _ in 0..60 {
         for _ in 0..(4194304) {
             game_boy.tick();
-            _ = std::io::stdin().read_line(&mut buffer);
         }
     }
     use std::io::*;

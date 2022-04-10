@@ -7,26 +7,12 @@ pub use context::Context;
 use operator::Operator;
 
 use once_cell::sync::Lazy;
-use std::fmt;
 
 #[derive(Debug)]
 pub struct Instruction {
     opcode: u8,
     sub_opcode: Option<u8>,
     operator: Operator,
-}
-
-impl fmt::Display for Instruction {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "({:02X}{}) {}",
-            self.opcode,
-            self.sub_opcode
-                .map_or("".into(), |sub_opcode| format!(" {:02X}", sub_opcode)),
-            self.operator
-        )
-    }
 }
 
 const NESTED_OPCODE: u8 = 0xCB;
@@ -100,21 +86,21 @@ static INSTRUCTIONS: Lazy<Vec<Instruction>> = Lazy::new(|| {
                     0xE0 => ld(indirection::LITERAL_8, A),
                     0xF0 => ld(A, indirection::LITERAL_8),
                     // 16-Bit Loads
-                    0x01 => ld16(BC, LITERAL),
-                    0x11 => ld16(DE, LITERAL),
-                    0x21 => ld16(HL, LITERAL),
-                    0x31 => ld16(SP, LITERAL),
+                    0x01 => ld16(Bc, LITERAL),
+                    0x11 => ld16(De, LITERAL),
+                    0x21 => ld16(Hl, LITERAL),
+                    0x31 => ld16(Sp, LITERAL),
                     0xF9 => ld16_sp_hl(),
-                    0xF8 => ld16(HL, stack_pointer::ADD_LITERAL_8),
-                    0x08 => ld16(indirection::LITERAL, SP),
-                    0xF5 => push(AF),
-                    0xC5 => push(BC),
-                    0xD5 => push(DE),
-                    0xE5 => push(HL),
-                    0xF1 => pop(AF),
-                    0xC1 => pop(BC),
-                    0xD1 => pop(DE),
-                    0xE1 => pop(HL),
+                    0xF8 => ld16(Hl, stack_pointer::ADD_LITERAL_8),
+                    0x08 => ld16(indirection::LITERAL, Sp),
+                    0xF5 => push(Af),
+                    0xC5 => push(Bc),
+                    0xD5 => push(De),
+                    0xE5 => push(Hl),
+                    0xF1 => pop(Af),
+                    0xC1 => pop(Bc),
+                    0xD1 => pop(De),
+                    0xE1 => pop(Hl),
                     // 8-Bit ALU
                     0x80..=0x87 => add(A, opcode_register),
                     0xC6 => add(A, LITERAL),
@@ -149,19 +135,19 @@ static INSTRUCTIONS: Lazy<Vec<Instruction>> = Lazy::new(|| {
                     0x2D => dec(L),
                     0x35 => dec(indirection::HL),
                     // 16-Bit Arithmetic
-                    0x09 => add16(HL, BC),
-                    0x19 => add16(HL, DE),
-                    0x29 => add16(HL, HL),
-                    0x39 => add16(HL, SP),
+                    0x09 => add16(Hl, Bc),
+                    0x19 => add16(Hl, De),
+                    0x29 => add16(Hl, Hl),
+                    0x39 => add16(Hl, Sp),
                     0xE8 => add_sp(LITERAL),
-                    0x03 => inc16(BC),
-                    0x13 => inc16(DE),
-                    0x23 => inc16(HL),
-                    0x33 => inc16(SP),
-                    0x0B => dec16(BC),
-                    0x1B => dec16(DE),
-                    0x2B => dec16(HL),
-                    0x3B => dec16(SP),
+                    0x03 => inc16(Bc),
+                    0x13 => inc16(De),
+                    0x23 => inc16(Hl),
+                    0x33 => inc16(Sp),
+                    0x0B => dec16(Bc),
+                    0x1B => dec16(De),
+                    0x2B => dec16(Hl),
+                    0x3B => dec16(Sp),
                     // Miscellaneous
                     0x27 => daa(),
                     0x2F => cpl(),
@@ -178,21 +164,21 @@ static INSTRUCTIONS: Lazy<Vec<Instruction>> = Lazy::new(|| {
                     0x1F => rra(),
                     // Jumps
                     0xC3 => jp_nn(),
-                    0xC2 => jp_cc(condition::NZ, LITERAL),
+                    0xC2 => jp_cc(condition::Nz, LITERAL),
                     0xCA => jp_cc(condition::Z, LITERAL),
-                    0xD2 => jp_cc(condition::NC, LITERAL),
+                    0xD2 => jp_cc(condition::Nc, LITERAL),
                     0xDA => jp_cc(condition::C, LITERAL),
                     0xE9 => jp_hl(),
                     0x18 => jr(LITERAL),
-                    0x20 => jr_cc(condition::NZ, LITERAL),
+                    0x20 => jr_cc(condition::Nz, LITERAL),
                     0x28 => jr_cc(condition::Z, LITERAL),
-                    0x30 => jr_cc(condition::NC, LITERAL),
+                    0x30 => jr_cc(condition::Nc, LITERAL),
                     0x38 => jr_cc(condition::C, LITERAL),
                     // Calls
                     0xCD => call(LITERAL),
-                    0xC4 => call_cc(condition::NZ, LITERAL),
+                    0xC4 => call_cc(condition::Nz, LITERAL),
                     0xCC => call_cc(condition::Z, LITERAL),
-                    0xD4 => call_cc(condition::NC, LITERAL),
+                    0xD4 => call_cc(condition::Nc, LITERAL),
                     0xDC => call_cc(condition::C, LITERAL),
                     // Restarts
                     0xC7 => rst(0x00),
@@ -205,9 +191,9 @@ static INSTRUCTIONS: Lazy<Vec<Instruction>> = Lazy::new(|| {
                     0xFF => rst(0x38),
                     // Returns
                     0xC9 => ret(),
-                    0xC0 => ret_cc(condition::NZ),
+                    0xC0 => ret_cc(condition::Nz),
                     0xC8 => ret_cc(condition::Z),
-                    0xD0 => ret_cc(condition::NC),
+                    0xD0 => ret_cc(condition::Nc),
                     0xD8 => ret_cc(condition::C),
                     0xD9 => reti(),
                     // Not Implemented
@@ -234,5 +220,17 @@ impl Instruction {
             NESTED_OPCODE => Self::fetch_nested(context),
             opcode => &INSTRUCTIONS[opcode as usize],
         }
+    }
+
+    pub fn debug(&self, context: &Context) -> String {
+        format!(
+            "({:02X}{}) {}",
+            self.opcode,
+            match self.sub_opcode {
+                Some(sub_opcode) => format!(" {:02X}", sub_opcode),
+                None => "".into(),
+            },
+            self.operator.debug(context)
+        )
     }
 }

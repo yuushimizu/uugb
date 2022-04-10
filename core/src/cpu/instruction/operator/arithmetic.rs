@@ -10,20 +10,30 @@ fn add_u8(
     rhs: impl Read<u8>,
     with_carry: bool,
 ) -> Operator {
-    Operator::new(format!("{} {}, {}", mnemonic, lhs, rhs), move |context| {
-        let current = lhs.read(context);
-        let n = rhs.read(context);
-        let carry = (with_carry && context.flags().c) as u8;
-        let (result, overflow) = current.overflowing_add(n);
-        let (result, carry_overflow) = result.overflowing_add(carry);
-        context.set_flags(Flags {
-            z: result == 0,
-            n: false,
-            h: (current & 0xF) + (n & 0xF) + carry > 0xF,
-            c: overflow || carry_overflow,
-        });
-        lhs.write(context, result);
-    })
+    Operator::new(
+        move |context| {
+            let current = lhs.read(context);
+            let n = rhs.read(context);
+            let carry = (with_carry && context.flags().c) as u8;
+            let (result, overflow) = current.overflowing_add(n);
+            let (result, carry_overflow) = result.overflowing_add(carry);
+            context.set_flags(Flags {
+                z: result == 0,
+                n: false,
+                h: (current & 0xF) + (n & 0xF) + carry > 0xF,
+                c: overflow || carry_overflow,
+            });
+            lhs.write(context, result);
+        },
+        move |context| {
+            format!(
+                "{} {}, {}",
+                mnemonic,
+                Read::<u8>::debug(&lhs, context),
+                rhs.debug(context)
+            )
+        },
+    )
 }
 
 pub fn add(lhs: impl Read<u8> + Write<u8>, rhs: impl Read<u8>) -> Operator {
@@ -35,111 +45,130 @@ pub fn adc(lhs: impl Read<u8> + Write<u8>, rhs: impl Read<u8>) -> Operator {
 }
 
 fn sub_u8(
-    format: String,
+    mnemonic: &'static str,
     lhs: impl Read<u8> + Write<u8>,
     rhs: impl Read<u8>,
     with_carry: bool,
     with_result: bool,
 ) -> Operator {
-    Operator::new(format, move |context| {
-        let current = lhs.read(context);
-        let n = rhs.read(context);
-        let carry = (with_carry && context.flags().c) as u8;
-        let (result, overflow) = current.overflowing_sub(n);
-        let (result, carry_overflow) = result.overflowing_sub(carry);
-        let (half_result, half_overflow) = (current & 0xF).overflowing_sub(n & 0xF);
-        context.set_flags(Flags {
-            z: result == 0,
-            n: true,
-            h: half_overflow || half_result.overflowing_sub(carry).1,
-            c: overflow || carry_overflow,
-        });
-        if with_result {
-            lhs.write(context, result);
-        }
-    })
+    Operator::new(
+        move |context| {
+            let current = lhs.read(context);
+            let n = rhs.read(context);
+            let carry = (with_carry && context.flags().c) as u8;
+            let (result, overflow) = current.overflowing_sub(n);
+            let (result, carry_overflow) = result.overflowing_sub(carry);
+            let (half_result, half_overflow) = (current & 0xF).overflowing_sub(n & 0xF);
+            context.set_flags(Flags {
+                z: result == 0,
+                n: true,
+                h: half_overflow || half_result.overflowing_sub(carry).1,
+                c: overflow || carry_overflow,
+            });
+            if with_result {
+                lhs.write(context, result);
+            }
+        },
+        move |context| {
+            format!(
+                "{} {}, {}",
+                mnemonic,
+                Read::<u8>::debug(&lhs, context),
+                rhs.debug(context)
+            )
+        },
+    )
 }
 
 pub fn sub(operand: impl Read<u8>) -> Operator {
-    sub_u8(
-        format!("SUB {}", operand),
-        register::A,
-        operand,
-        false,
-        true,
-    )
+    sub_u8("SUB", register::A, operand, false, true)
 }
 
 pub fn sbc(lhs: impl Read<u8> + Write<u8>, rhs: impl Read<u8>) -> Operator {
-    sub_u8(format!("SBC {}, {}", lhs, rhs), lhs, rhs, true, true)
+    sub_u8("SBC", lhs, rhs, true, true)
 }
 
 pub fn cp(operand: impl Read<u8>) -> Operator {
-    sub_u8(
-        format!("CP {}", operand),
-        register::A,
-        operand,
-        false,
-        false,
-    )
+    sub_u8("CP", register::A, operand, false, false)
 }
 
 pub fn inc(operand: impl Read<u8> + Write<u8>) -> Operator {
-    Operator::new(format!("INC {}", operand), move |context| {
-        let current = operand.read(context);
-        let result = current.wrapping_add(1);
-        context.set_flags(Flags {
-            z: result == 0,
-            n: false,
-            h: (current & 0xF) + 1 > 0xF,
-            ..*context.flags()
-        });
-        operand.write(context, result);
-    })
+    Operator::new(
+        move |context| {
+            let current = operand.read(context);
+            let result = current.wrapping_add(1);
+            context.set_flags(Flags {
+                z: result == 0,
+                n: false,
+                h: (current & 0xF) + 1 > 0xF,
+                ..*context.flags()
+            });
+            operand.write(context, result);
+        },
+        move |context| format!("INC {}", Read::<u8>::debug(&operand, context)),
+    )
 }
 
 pub fn dec(operand: impl Read<u8> + Write<u8>) -> Operator {
-    Operator::new(format!("DEC {}", operand), move |context| {
-        let current = operand.read(context);
-        let result = current.wrapping_sub(1);
-        context.set_flags(Flags {
-            z: result == 0,
-            n: true,
-            h: (current & 0xF).overflowing_sub(1).1,
-            ..*context.flags()
-        });
-        operand.write(context, result);
-    })
+    Operator::new(
+        move |context| {
+            let current = operand.read(context);
+            let result = current.wrapping_sub(1);
+            context.set_flags(Flags {
+                z: result == 0,
+                n: true,
+                h: (current & 0xF).overflowing_sub(1).1,
+                ..*context.flags()
+            });
+            operand.write(context, result);
+        },
+        move |context| format!("DEC {}", Read::<u8>::debug(&operand, context)),
+    )
 }
 
 pub fn add16(lhs: impl Read<u16> + Write<u16>, rhs: impl Read<u16>) -> Operator {
-    Operator::new(format!("ADD {}, {}", lhs, rhs), move |context| {
-        let current = lhs.read(context);
-        let n = rhs.read(context);
-        let (result, overflow) = current.overflowing_add(n);
-        context.set_flags(Flags {
-            n: false,
-            h: (current & 0x0FFF) + (n & 0x0FFF) > 0x0FFF,
-            c: overflow,
-            ..*context.flags()
-        });
-        lhs.write(context, result);
-        context.wait();
-    })
+    Operator::new(
+        move |context| {
+            let current = lhs.read(context);
+            let n = rhs.read(context);
+            let (result, overflow) = current.overflowing_add(n);
+            context.set_flags(Flags {
+                n: false,
+                h: (current & 0x0FFF) + (n & 0x0FFF) > 0x0FFF,
+                c: overflow,
+                ..*context.flags()
+            });
+            lhs.write(context, result);
+            context.wait();
+        },
+        move |context| {
+            format!(
+                "ADD {}, {}",
+                Read::<u16>::debug(&lhs, context),
+                rhs.debug(context)
+            )
+        },
+    )
 }
 
 pub fn inc16(operand: impl Read<u16> + Write<u16>) -> Operator {
-    Operator::new(format!("INC {}", operand), move |context| {
-        let current = operand.read(context);
-        operand.write(context, current.wrapping_add(1));
-        context.wait();
-    })
+    Operator::new(
+        move |context| {
+            let current = operand.read(context);
+            operand.write(context, current.wrapping_add(1));
+            context.wait();
+        },
+        move |context| format!("INC {}", Read::<u16>::debug(&operand, context)),
+    )
 }
 
 pub fn dec16(operand: impl Read<u16> + Write<u16>) -> Operator {
-    Operator::new(format!("DEC {}", operand), move |context| {
-        let current = operand.read(context);
-        operand.write(context, current.wrapping_sub(1));
-        context.wait();
-    })
+    Operator::new(
+        move |context| {
+            let current = operand.read(context);
+            operand.write(context, current.wrapping_sub(1));
+            context.wait();
+        },
+        move |context| format!("DEC {}", Read::<u16>::debug(&operand, context)),
+    )
 }

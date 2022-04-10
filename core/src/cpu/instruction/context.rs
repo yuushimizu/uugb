@@ -147,4 +147,15 @@ impl<'a> Context<'a> {
         self.jump(address);
         self.wait();
     }
+
+    pub fn debug_u8(&self, address: u16) -> u8 {
+        self.components.read(address)
+    }
+
+    pub fn debug_u16(&self, address: u16) -> u16 {
+        to_u16(
+            self.components.read(address),
+            self.components.read(address + 1),
+        )
+    }
 }

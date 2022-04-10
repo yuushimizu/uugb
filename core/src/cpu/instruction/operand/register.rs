@@ -1,77 +1,120 @@
-use super::{Operand, Read, Value, Write};
+use super::{Operand, Read, Write};
 use crate::cpu::{instruction::Context, Registers};
-use std::fmt;
 
-#[derive(Clone, Copy)]
-pub struct Register<T: Value> {
-    name: &'static str,
-    read: fn(&Registers) -> T,
-    write: fn(&mut Registers, T),
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Register {
+    A,
+    B,
+    C,
+    D,
+    E,
+    H,
+    L,
 }
 
-impl<T: Value> fmt::Display for Register<T> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.name)
+impl Register {}
+
+impl Register {
+    fn value(&self, registers: &Registers) -> u8 {
+        use Register::*;
+        match self {
+            A => registers.a,
+            B => registers.b,
+            C => registers.c,
+            D => registers.d,
+            E => registers.e,
+            H => registers.h,
+            L => registers.l,
+        }
     }
 }
 
-impl<T: Value> fmt::Debug for Register<T> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.debug_struct("Register")
-            .field("name", &self.name)
-            .finish()
+impl Operand for Register {}
+
+impl Read<u8> for Register {
+    fn read(&self, context: &mut Context) -> u8 {
+        self.value(context.registers())
+    }
+
+    fn debug(&self, context: &Context) -> String {
+        format!("{:?}:{:02X}", self, self.value(context.registers()))
     }
 }
 
-impl<T: Value> Operand for Register<T> {}
+impl Write<u8> for Register {
+    fn write(&self, context: &mut Context, value: u8) {
+        use Register::*;
+        let registers = context.registers_mut();
+        match self {
+            A => registers.a = value,
+            B => registers.b = value,
+            C => registers.c = value,
+            D => registers.d = value,
+            E => registers.e = value,
+            H => registers.h = value,
+            L => registers.l = value,
+        }
+    }
 
-impl<T: Value> Read<T> for Register<T> {
-    fn read(&self, context: &mut Context) -> T {
-        (self.read)(context.registers())
+    fn debug(&self, _context: &Context) -> String {
+        format!("{:?}", self)
     }
 }
 
-impl<T: Value> Write<T> for Register<T> {
-    fn write(&self, context: &mut Context, value: T) {
-        (self.write)(context.registers_mut(), value)
+pub use Register::*;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Register16 {
+    Af,
+    Bc,
+    De,
+    Hl,
+    Sp,
+}
+
+impl Register {}
+
+impl Register16 {
+    fn value(&self, registers: &Registers) -> u16 {
+        use Register16::*;
+        match self {
+            Af => registers.af(),
+            Bc => registers.bc(),
+            De => registers.de(),
+            Hl => registers.hl(),
+            Sp => registers.sp,
+        }
     }
 }
 
-macro_rules! register {
-    ($name: ident, $field: ident) => {
-        pub const $name: Register<u8> = Register {
-            name: stringify!($name),
-            read: |registers| registers.$field,
-            write: |registers, value| registers.$field = value,
-        };
-    };
+impl Operand for Register16 {}
+
+impl Read<u16> for Register16 {
+    fn read(&self, context: &mut Context) -> u16 {
+        self.value(context.registers())
+    }
+
+    fn debug(&self, context: &Context) -> String {
+        format!("{:?}:{:04X}", self, self.value(context.registers()))
+    }
 }
 
-register!(A, a);
-register!(B, b);
-register!(C, c);
-register!(D, d);
-register!(E, e);
-register!(H, h);
-register!(L, l);
+impl Write<u16> for Register16 {
+    fn write(&self, context: &mut Context, value: u16) {
+        use Register16::*;
+        let registers = context.registers_mut();
+        match self {
+            Af => registers.set_af(value),
+            Bc => registers.set_bc(value),
+            De => registers.set_de(value),
+            Hl => registers.set_hl(value),
+            Sp => registers.sp = value,
+        }
+    }
 
-macro_rules! register_pair {
-    ($name: ident, $field: ident, $setter: ident) => {
-        pub const $name: Register<u16> = Register {
-            name: stringify!($name),
-            read: |registers| registers.$field(),
-            write: |registers, value| registers.$setter(value),
-        };
-    };
+    fn debug(&self, _context: &Context) -> String {
+        format!("{:?}", self)
+    }
 }
 
-register_pair!(AF, af, set_af);
-register_pair!(BC, bc, set_bc);
-register_pair!(DE, de, set_de);
-register_pair!(HL, hl, set_hl);
-
-pub const SP: Register<u16> = Register {
-    name: "SP",
-    read: |registers| registers.sp,
-    write: |registers, value| registers.sp = value,
-};
+pub use Register16::*;

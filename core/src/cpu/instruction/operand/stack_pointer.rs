@@ -10,11 +10,13 @@ impl Read<u16> for AddLiteral8 {
         let value = context.fetch();
         context.add_sp(value)
     }
-}
 
-impl fmt::Display for AddLiteral8 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "SP+n")
+    fn debug(&self, context: &Context) -> String {
+        format!(
+            "SP:{:04X}+#{:02X}",
+            context.registers().sp,
+            context.debug_u8(context.registers().pc)
+        )
     }
 }
 
