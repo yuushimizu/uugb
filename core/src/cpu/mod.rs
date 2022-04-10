@@ -20,14 +20,12 @@ pub struct Cpu {
     wait_cycles: u64,
 }
 
-struct InstructionContextComponents<'cpu, 'memory> {
-    cpu: &'cpu mut Cpu,
-    memory: &'memory mut Memory<'memory>,
+struct InstructionContextComponents<'a> {
+    cpu: &'a mut Cpu,
+    memory: Memory<'a>,
 }
 
-impl<'cpu, 'memory> instruction::context::Components
-    for InstructionContextComponents<'cpu, 'memory>
-{
+impl<'a> instruction::context::Components for InstructionContextComponents<'a> {
     fn registers(&self) -> &Registers {
         &self.cpu.registers
     }
@@ -68,7 +66,7 @@ impl<'cpu, 'memory> instruction::context::Components
 }
 
 impl Cpu {
-    pub fn tick<'cpu, 'context>(&'cpu mut self, context: &'context mut impl Context) {
+    pub fn tick(&mut self, context: &mut impl Context) {
         if self.wait_cycles > 0 {
             self.wait_cycles -= 1;
             return;
@@ -79,10 +77,9 @@ impl Cpu {
                 self.interrupt_enabled = false;
                 self.interrupt_enabling = false;
                 context.interrupt_controller_mut().clear(interrupt);
-                let mut memory = Memory::new(context);
                 let mut instruction_context_components = InstructionContextComponents {
                     cpu: self,
-                    memory: &mut memory,
+                    memory: Memory::new(context),
                 };
                 let mut instruction_context =
                     instruction::Context::new(&mut instruction_context_components);
@@ -99,10 +96,9 @@ impl Cpu {
         let interrupt_enabling = self.interrupt_enabling;
         self.interrupt_enabling = false;
         {
-            let mut memory = Memory::new(context);
             let mut instruction_context_components = InstructionContextComponents {
                 cpu: self,
-                memory: &mut memory,
+                memory: Memory::new(context),
             };
             let mut instruction_context =
                 instruction::Context::new(&mut instruction_context_components);
