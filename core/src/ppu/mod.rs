@@ -1,12 +1,14 @@
 mod control;
 mod coordinate;
 mod interrupt_source;
+mod palette;
 mod renderer;
 
 pub mod oam;
 pub mod vram;
 
 pub use coordinate::Coordinate;
+pub use palette::Palette;
 pub use renderer::Renderer;
 
 use control::Control;
@@ -25,10 +27,10 @@ const OAM_SEARCH_CYCLES: u64 = 80;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum Mode {
-    HBlank = 0,
-    VBlank = 1,
-    OamSearch = 2,
-    Transfer = 3,
+    HBlank = 0b00,
+    VBlank = 0b01,
+    OamSearch = 0b10,
+    Transfer = 0b11,
 }
 
 impl Default for Mode {
@@ -45,6 +47,9 @@ pub struct Ppu {
     mode: Mode,
     current_y: u8,
     y_compare: u8,
+    background_palette: Palette,
+    object_palette0: Palette,
+    object_palette1: Palette,
     scroll_position: Coordinate,
     window_position: Coordinate,
     cycles: u64,
@@ -66,7 +71,10 @@ impl Ppu {
     }
 
     pub fn set_control_bits(&mut self, value: u8) {
-        self.control.set_bits(value)
+        self.control.set_bits(value);
+        if !self.control.is_enabled() {
+            self.current_y = 0;
+        }
     }
 
     pub fn status_bits(&self) -> u8 {
@@ -79,20 +87,44 @@ impl Ppu {
         self.interrupt_source.set_bits(value >> 3);
     }
 
-    pub fn scroll_position(&self) -> Coordinate {
-        self.scroll_position
-    }
-
-    pub fn scroll_position_mut(&mut self) -> &mut Coordinate {
-        &mut self.scroll_position
-    }
-
     pub fn current_y(&self) -> u8 {
         self.current_y
     }
 
     pub fn y_compare(&self) -> u8 {
         self.y_compare
+    }
+
+    pub fn background_palette(&self) -> &Palette {
+        &self.background_palette
+    }
+
+    pub fn background_palette_mut(&mut self) -> &mut Palette {
+        &mut self.background_palette
+    }
+
+    pub fn object_palette0(&self) -> &Palette {
+        &self.object_palette0
+    }
+
+    pub fn object_palette0_mut(&mut self) -> &mut Palette {
+        &mut self.object_palette0
+    }
+
+    pub fn object_palette1(&self) -> &Palette {
+        &self.object_palette1
+    }
+
+    pub fn object_palette1_mut(&mut self) -> &mut Palette {
+        &mut self.object_palette1
+    }
+
+    pub fn scroll_position(&self) -> Coordinate {
+        self.scroll_position
+    }
+
+    pub fn scroll_position_mut(&mut self) -> &mut Coordinate {
+        &mut self.scroll_position
     }
 
     pub fn set_y_compare(&mut self, value: u8) {
