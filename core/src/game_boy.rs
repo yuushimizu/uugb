@@ -3,7 +3,7 @@ use crate::{
     cpu::{self, Cpu},
     interrupt::InterruptController,
     joypad::Joypad,
-    memory::{self, Hram, Memory, Wram},
+    memory::{self, Hram, Wram},
     ppu::Ppu,
     serial::Serial,
     timer::Timer,
