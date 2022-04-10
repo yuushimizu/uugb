@@ -44,7 +44,6 @@ impl<'a> instruction::context::Components for InstructionContextComponents<'a> {
 
     fn halt(&mut self) {
         self.cpu.is_halting = true;
-        todo!("HALT");
     }
 
     fn stop(&mut self) {

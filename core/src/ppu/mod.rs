@@ -21,11 +21,13 @@ const HEIGHT: u8 = 144;
 
 const CYCLES_PER_LINE: u64 = 456;
 
+const OAM_SEARCH_CYCLES: u64 = 80;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum Mode {
     HBlank = 0,
     VBlank = 1,
-    Oam = 2,
+    OamSearch = 2,
     Transfer = 3,
 }
 
