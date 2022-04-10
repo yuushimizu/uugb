@@ -1,6 +1,6 @@
 use crate::{
     cartridge::Cartridge,
-    cpu::Cpu,
+    cpu::{self, Cpu},
     interrupt::InterruptController,
     joypad::Joypad,
     memory::{self, Hram, Memory, Wram},
@@ -49,6 +49,16 @@ impl memory::Context for MemoryComponents {
     }
 }
 
+impl cpu::Context for MemoryComponents {
+    fn interrupt_controller(&self) -> &InterruptController {
+        &self.interrupt_controller
+    }
+
+    fn interrupt_controller_mut(&mut self) -> &mut InterruptController {
+        &mut self.interrupt_controller
+    }
+}
+
 #[derive(Debug)]
 pub struct GameBoy {
     cpu: Cpu,
@@ -75,7 +85,7 @@ impl GameBoy {
     }
 
     pub fn tick(&mut self) {
-        self.cpu.tick(&mut Memory::new(&mut self.memory_components));
+        self.cpu.tick(&mut self.memory_components);
         self.memory_components
             .timer
             .tick(&mut self.memory_components.interrupt_controller);
