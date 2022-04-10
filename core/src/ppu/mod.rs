@@ -1,5 +1,6 @@
 mod control;
 mod coordinate;
+mod interrupt_source;
 mod renderer;
 
 pub mod oam;
@@ -9,36 +10,16 @@ pub use coordinate::Coordinate;
 pub use renderer::Renderer;
 
 use control::Control;
+use interrupt_source::InterruptSource;
 use vram::Vram;
 
-use crate::{interrupt::InterruptController, util::bits::Bits};
+use crate::interrupt::InterruptController;
 
 const WIDTH: u8 = 160;
 
 const HEIGHT: u8 = 144;
 
 const CYCLES_PER_LINE: u64 = 456;
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
-struct InterruptSource {
-    pub ly: bool,
-    pub oam: bool,
-    pub vblank: bool,
-    pub hblank: bool,
-}
-
-impl InterruptSource {
-    pub fn bits(&self) -> u8 {
-        u8::from_bits(&[self.ly, self.oam, self.vblank, self.hblank])
-    }
-
-    pub fn set_bits(&mut self, value: u8) {
-        self.ly = value.bit(3);
-        self.oam = value.bit(2);
-        self.vblank = value.bit(1);
-        self.hblank = value.bit(0);
-    }
-}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum Mode {
