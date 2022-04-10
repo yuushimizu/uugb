@@ -3,7 +3,7 @@ use crate::{
     cpu::{self, Cpu},
     interrupt::InterruptController,
     joypad::Joypad,
-    memory::{self, Hram, Wram},
+    memory::{self, Hram, Memory, Wram},
     ppu::Ppu,
     serial::Serial,
     timer::Timer,
@@ -100,6 +100,15 @@ impl GameBoy {
             &mut self.dummy_serial_connection,
         );
     }
+
+    pub fn dump(&mut self) -> Vec<u8> {
+        let memory = Memory::new(&mut self.memory_components);
+        let mut buffer = vec![];
+        for address in 0x0000..=0xFFFF {
+            buffer.push(memory.read(address));
+        }
+        buffer
+    }
 }
 
 use std::fs::File;
@@ -112,6 +121,7 @@ struct DummyRenderer {
 
 impl crate::ppu::Renderer for DummyRenderer {
     fn render(&mut self, position: crate::ppu::Coordinate, color: u8) {
+        return;
         if position.x == 0 {
             if position.y == 0 {
                 print!("{}[2J", 27 as char);

@@ -112,7 +112,12 @@ trait MbcContextHelpers: MbcContext {
 
     fn ram_bank_range(&self, number: u8) -> Range<usize> {
         let start = (number & self.ram_bank_mask()) as usize * RAM_BANK_SIZE;
-        start..start + RAM_BANK_SIZE
+        let end = start + RAM_BANK_SIZE;
+        if end >= self.ram().len() {
+            0..0
+        } else {
+            start..end
+        }
     }
 
     fn ram_bank(&self, number: u8) -> &[u8] {
@@ -130,9 +135,18 @@ impl<T: MbcContext + ?Sized> MbcContextHelpers for T {}
 impl Mbc for Mbc1 {
     fn read(&self, context: &dyn MbcContext, address: u16) -> u8 {
         match address {
-            0x0000..=0x3FFF => context.rom_bank(self.first_rom_bank_number())[address as usize],
-            0x4000..=0x7FFF => context.rom_bank(self.rom_bank_number())[address as usize - 0x4000],
-            0xA000..=0xBFFF => context.ram_bank(self.ram_bank_number())[address as usize - 0xA000],
+            0x0000..=0x3FFF => *context
+                .rom_bank(self.first_rom_bank_number())
+                .get(address as usize)
+                .unwrap_or(&0x00),
+            0x4000..=0x7FFF => *context
+                .rom_bank(self.rom_bank_number())
+                .get(address as usize - 0x4000)
+                .unwrap_or(&0x00),
+            0xA000..=0xBFFF => *context
+                .ram_bank(self.ram_bank_number())
+                .get(address as usize - 0xA000)
+                .unwrap_or(&0x00),
             _ => {
                 log::warn!("MBC1: Reading from the address {:04X}", address);
                 0

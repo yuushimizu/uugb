@@ -66,11 +66,14 @@ fn print_cartridge_info(header: &cartridge::Header) {
 
 fn boot(cartridge: Cartridge) {
     let mut game_boy = GameBoy::boot(cartridge);
-    for _ in 0..30 {
+    for _ in 0..60 {
         for _ in 0..(4194304) {
             game_boy.tick();
         }
     }
+    use std::io::*;
+    let mut file = File::create("./log/dump").unwrap();
+    file.write_all(&game_boy.dump()).unwrap();
 }
 
 fn main() {
