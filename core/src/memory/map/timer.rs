@@ -1,4 +1,4 @@
-use super::{Segment, UNKNOWN};
+use super::Segment;
 
 pub const TIMER: Segment = Segment::Nested(|address| match address {
     0xFF04 => &Segment::Leaf(
@@ -17,5 +17,5 @@ pub const TIMER: Segment = Segment::Nested(|address| match address {
         |components, _| components.timer.control_bits(),
         |components, _, value| components.timer.set_control_bits(value),
     ),
-    _ => &UNKNOWN,
+    _ => unreachable!(),
 });

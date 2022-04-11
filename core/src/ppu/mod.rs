@@ -68,7 +68,7 @@ impl Ppu {
         }
     }
 
-    fn background_pixel(&self, position: Coordinate) -> u8 {
+    fn background_pixel(&self) -> u8 {
         if !self.control.background_and_window_enabled() {
             0b00
         } else {
@@ -77,13 +77,13 @@ impl Ppu {
                     self.control.background_tile_map_area(),
                     self.control.background_tile_data_area(),
                 )
-                .pixel(position)
+                .pixel(self.current_position + self.scroll_position)
         }
     }
 
     fn render_pixel(&self, renderer: &mut impl Renderer) {
         let pixel = if self.control.background_and_window_enabled() {
-            self.background_pixel(self.current_position)
+            self.background_pixel()
         } else {
             0b00
         };

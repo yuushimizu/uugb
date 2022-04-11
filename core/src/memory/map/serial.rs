@@ -1,4 +1,4 @@
-use super::{Segment, UNKNOWN};
+use super::Segment;
 
 pub const SERIAL: Segment = Segment::Nested(|address| match address {
     0xFF01 => &Segment::Leaf(
@@ -9,5 +9,5 @@ pub const SERIAL: Segment = Segment::Nested(|address| match address {
         |components, _| components.serial.control_bits(),
         |components, _, value| components.serial.set_control_bits(value),
     ),
-    _ => &UNKNOWN,
+    _ => unreachable!(),
 });

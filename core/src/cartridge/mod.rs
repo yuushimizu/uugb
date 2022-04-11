@@ -45,6 +45,7 @@ pub fn create_mbc(header: &Header) -> Result<Box<dyn Mbc>> {
     use MbcType::*;
     let cartridge_type = &header.cartridge_type;
     match cartridge_type.mbc_type() {
+        RomOnly => Ok(Box::new(mbc::RomOnly::default())),
         Mbc1 => Ok(Box::new(mbc::Mbc1::default())),
         _ => Err(Error::MbcNotImplemented(cartridge_type.clone())),
     }
@@ -65,11 +66,19 @@ impl Cartridge {
         &self.header
     }
 
-    pub fn read(&self, address: u16) -> u8 {
-        self.mbc.read(&self.state, address)
+    pub fn read_rom(&self, address: u16) -> u8 {
+        self.mbc.read_rom(&self.state, address)
     }
 
-    pub fn write(&mut self, address: u16, value: u8) {
-        self.mbc.write(&mut self.state, address, value)
+    pub fn write_rom(&mut self, address: u16, value: u8) {
+        self.mbc.write_rom(&mut self.state, address, value)
+    }
+
+    pub fn read_ram(&self, address: u16) -> u8 {
+        self.mbc.read_ram(&self.state, address)
+    }
+
+    pub fn write_ram(&mut self, address: u16, value: u8) {
+        self.mbc.write_ram(&mut self.state, address, value)
     }
 }

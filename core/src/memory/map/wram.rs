@@ -20,6 +20,6 @@ pub const WRAM: Segment = {
             |components, _| components.wram.bank_switch(),
             |components, _, value| components.wram.set_bank_switch(value),
         ),
-        _ => &UNKNOWN,
+        _ => unreachable!(),
     })
 };
