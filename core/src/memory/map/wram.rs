@@ -1,4 +1,4 @@
-use super::{Segment, UNKNOWN};
+use super::Segment;
 
 const PRIMARY: Segment = Segment::Leaf(
     |components, address| components.wram.read(address),

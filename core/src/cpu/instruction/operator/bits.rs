@@ -51,7 +51,7 @@ fn rl_u8(mnemonic: &'static str, operand: impl Read<u8> + Write<u8>, with_carry:
                 z: result == 0,
                 n: false,
                 h: false,
-                c: current.bit(7).into(),
+                c: current.bit(7),
             });
             operand.write(context, result);
         },
@@ -88,7 +88,7 @@ fn rr_u8(mnemonic: &'static str, operand: impl Read<u8> + Write<u8>, with_carry:
                 z: result == 0,
                 n: false,
                 h: false,
-                c: current.bit(0).into(),
+                c: current.bit(0),
             });
             operand.write(context, result);
         },
@@ -121,7 +121,7 @@ pub fn sla(operand: impl Read<u8> + Write<u8>) -> Operator {
                 z: result == 0,
                 n: false,
                 h: false,
-                c: current.bit(7).into(),
+                c: current.bit(7),
             });
             operand.write(context, result);
         },
@@ -137,12 +137,12 @@ pub fn sr_u8(
     Operator::new(
         move |context| {
             let current = operand.read(context);
-            let result = current >> 1 | ((arithmetic && bool::from(current.bit(7))) as u8) << 7;
+            let result = current >> 1 | ((arithmetic && current.bit(7)) as u8) << 7;
             context.set_flags(Flags {
                 z: result == 0,
                 n: false,
                 h: false,
-                c: current.bit(0).into(),
+                c: current.bit(0),
             });
             operand.write(context, result);
         },

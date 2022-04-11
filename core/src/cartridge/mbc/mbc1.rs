@@ -1,5 +1,4 @@
 use super::{Mbc, MbcContext};
-use log;
 use std::{cmp::max, ops::Range};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

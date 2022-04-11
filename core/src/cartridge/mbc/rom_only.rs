@@ -1,13 +1,7 @@
 use super::{Mbc, MbcContext};
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct RomOnly {}
-
-impl Default for RomOnly {
-    fn default() -> Self {
-        Self {}
-    }
-}
 
 impl Mbc for RomOnly {
     fn read_rom(&self, context: &dyn MbcContext, address: u16) -> u8 {

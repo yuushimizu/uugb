@@ -16,11 +16,11 @@ impl<'vram> TileData<'vram> {
     }
 
     pub fn pixel(&self, position: Coordinate) -> u8 {
-        let index = position.y as usize * 2 % 8;
+        let index = (position.y % 8) as usize * 2;
         [1, 0]
             .iter()
             .map(|offset| self.data[index + offset])
-            .map(|byte| byte >> (7 - position.x as usize % 8))
+            .map(|byte| byte >> (7 - (position.x % 8) as usize) & 0b1)
             .fold(0b00, |acc, bit| acc << 1 | bit)
     }
 }
@@ -35,7 +35,7 @@ impl TileDataArea {
     fn address(&self, id: u8) -> usize {
         use TileDataArea::*;
         match self {
-            Shifted => 0x0800 + id.wrapping_sub(128) as usize,
+            Shifted => 0x0800 + (id.wrapping_sub(128) as usize * TILE_DATA_SIZE),
             Origin => id as usize * TILE_DATA_SIZE,
         }
     }
