@@ -51,8 +51,8 @@ impl Serial {
         interrupt_controller: &mut InterruptController,
         connection: &mut impl SerialConnection,
     ) {
+        self.rest_cycles = self.rest_cycles.saturating_sub(1);
         if self.rest_cycles > 0 {
-            self.rest_cycles -= 1;
             return;
         }
         self.rest_cycles = self.cycles();

@@ -7,7 +7,7 @@ pub struct InputClock {
 
 impl InputClock {
     pub fn bit_mask(&self) -> u16 {
-        self.cycles
+        self.cycles >> 1
     }
 }
 

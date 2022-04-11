@@ -94,13 +94,13 @@ register!(DE, de);
 register!(HL, hl);
 
 pub const LITERAL: Indirection = Indirection {
-    name: "nn",
+    name: "$",
     address: |context| context.fetch16(),
     debug_address: |context| context.debug_u16(context.registers().pc),
 };
 
 pub const LITERAL_8: Indirection = Indirection {
-    name: "$FF00+n",
+    name: "$FF00+$",
     address: |context| 0xFF00 | context.fetch() as u16,
     debug_address: |context| 0xFF00 | context.debug_u8(context.registers().pc) as u16,
 };

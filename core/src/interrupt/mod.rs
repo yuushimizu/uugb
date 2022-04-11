@@ -19,13 +19,12 @@ impl Interrupt {
 
     pub fn address(&self) -> u16 {
         use Interrupt::*;
-        0xFF00
-            | match self {
-                VBlank => 0x40,
-                LcdStat => 0x48,
-                Timer => 0x50,
-                Serial => 0x58,
-                Joypad => 0x60,
-            }
+        match self {
+            VBlank => 0x40,
+            LcdStat => 0x48,
+            Timer => 0x50,
+            Serial => 0x58,
+            Joypad => 0x60,
+        }
     }
 }

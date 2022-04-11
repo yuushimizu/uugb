@@ -13,19 +13,13 @@ pub struct Timer {
     counter: u8,
     modulo: u8,
     previous_output: bool,
-    wait_cycles: u64,
 }
 
 impl Timer {
     pub fn tick(&mut self, interrupt_controller: &mut InterruptController) {
         self.divider.tick();
-        if self.wait_cycles > 0 {
-            self.wait_cycles -= 0;
-            return;
-        }
-        self.wait_cycles = 4;
         let output = self.control.is_enabled()
-            && self.divider.counter() & self.control.input_clock().bit_mask() != 0;
+            && (self.divider.counter() & self.control.input_clock().bit_mask() != 0);
         if self.previous_output && !output {
             if self.counter == 0xFF {
                 self.counter = self.modulo;

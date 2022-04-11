@@ -17,6 +17,8 @@ struct Args {
     info: bool,
     #[clap(long)]
     logo: bool,
+    #[clap(long)]
+    dump: bool,
 }
 
 fn load_header(rom: &[u8]) -> cartridge::Header {
@@ -33,18 +35,20 @@ fn create_cartridge(rom: Vec<u8>) -> Cartridge {
     })
 }
 
-fn boot(cartridge: Cartridge) {
+fn boot(cartridge: Cartridge, dump: bool) {
     let mut renderer = DummyRenderer::default();
     let mut serial_connection = DummySerialConnection::default();
     let mut game_boy = GameBoy::boot(cartridge);
-    for _ in 0..20 {
+    for _ in 0..2 {
         for _ in 0..(4194304) {
             game_boy.tick(&mut renderer, &mut serial_connection);
         }
     }
-    use std::io::*;
-    let mut file = File::create("./log/dump").unwrap();
-    file.write_all(&game_boy.dump()).unwrap();
+    if dump {
+        use std::io::*;
+        let mut file = File::create("./log/dump").unwrap();
+        file.write_all(&game_boy.dump()).unwrap();
+    }
 }
 
 fn main() {
@@ -75,7 +79,7 @@ fn main() {
         println!("{}", load_header(&rom).logo.to_ascii_art());
         return;
     }
-    boot(create_cartridge(rom))
+    boot(create_cartridge(rom), arg.dump);
 }
 
 use std::io::prelude::*;

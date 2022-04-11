@@ -93,8 +93,8 @@ impl Cpu {
     }
 
     pub fn tick(&mut self, context: &mut impl Context) {
+        self.wait_cycles = self.wait_cycles.saturating_sub(1);
         if self.wait_cycles > 0 {
-            self.wait_cycles -= 1;
             return;
         }
         if self.interrupt_enabling {
