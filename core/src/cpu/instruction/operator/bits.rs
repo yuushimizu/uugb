@@ -38,7 +38,12 @@ pub fn cpl() -> Operator {
     )
 }
 
-fn rl_u8(mnemonic: &'static str, operand: impl Read<u8> + Write<u8>, with_carry: bool) -> Operator {
+fn rl_u8(
+    mnemonic: &'static str,
+    operand: impl Read<u8> + Write<u8>,
+    with_carry: bool,
+    reset_zero: bool,
+) -> Operator {
     Operator::new(
         move |context| {
             let current = operand.read(context);
@@ -48,7 +53,7 @@ fn rl_u8(mnemonic: &'static str, operand: impl Read<u8> + Write<u8>, with_carry:
                 current.rotate_left(1)
             };
             context.set_flags(Flags {
-                z: result == 0,
+                z: !reset_zero && result == 0,
                 n: false,
                 h: false,
                 c: current.bit(7),
@@ -60,22 +65,27 @@ fn rl_u8(mnemonic: &'static str, operand: impl Read<u8> + Write<u8>, with_carry:
 }
 
 pub fn rlca() -> Operator {
-    rl_u8("RLCA", register::A, false)
+    rl_u8("RLCA", register::A, false, true)
 }
 
 pub fn rla() -> Operator {
-    rl_u8("RLA", register::A, true)
+    rl_u8("RLA", register::A, true, true)
 }
 
 pub fn rlc(operand: impl Read<u8> + Write<u8>) -> Operator {
-    rl_u8("RLC", operand, false)
+    rl_u8("RLC", operand, false, false)
 }
 
 pub fn rl(operand: impl Read<u8> + Write<u8>) -> Operator {
-    rl_u8("RL", operand, true)
+    rl_u8("RL", operand, true, false)
 }
 
-fn rr_u8(mnemonic: &'static str, operand: impl Read<u8> + Write<u8>, with_carry: bool) -> Operator {
+fn rr_u8(
+    mnemonic: &'static str,
+    operand: impl Read<u8> + Write<u8>,
+    with_carry: bool,
+    reset_zero: bool,
+) -> Operator {
     Operator::new(
         move |context| {
             let current = operand.read(context);
@@ -85,7 +95,7 @@ fn rr_u8(mnemonic: &'static str, operand: impl Read<u8> + Write<u8>, with_carry:
                 current.rotate_right(1)
             };
             context.set_flags(Flags {
-                z: result == 0,
+                z: !reset_zero && result == 0,
                 n: false,
                 h: false,
                 c: current.bit(0),
@@ -97,19 +107,19 @@ fn rr_u8(mnemonic: &'static str, operand: impl Read<u8> + Write<u8>, with_carry:
 }
 
 pub fn rrca() -> Operator {
-    rr_u8("RRCA", register::A, false)
+    rr_u8("RRCA", register::A, false, true)
 }
 
 pub fn rra() -> Operator {
-    rr_u8("RRA", register::A, true)
+    rr_u8("RRA", register::A, true, true)
 }
 
 pub fn rrc(operand: impl Read<u8> + Write<u8>) -> Operator {
-    rr_u8("RRC", operand, false)
+    rr_u8("RRC", operand, false, false)
 }
 
 pub fn rr(operand: impl Read<u8> + Write<u8>) -> Operator {
-    rr_u8("RR", operand, true)
+    rr_u8("RR", operand, true, false)
 }
 
 pub fn sla(operand: impl Read<u8> + Write<u8>) -> Operator {

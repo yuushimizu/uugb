@@ -39,7 +39,7 @@ fn boot(cartridge: Cartridge, dump: bool) {
     let mut renderer = DummyRenderer::default();
     let mut serial_connection = DummySerialConnection::default();
     let mut game_boy = GameBoy::boot(cartridge);
-    for _ in 0..2 {
+    for _ in 0..20 {
         for _ in 0..(4194304) {
             game_boy.tick(&mut renderer, &mut serial_connection);
         }

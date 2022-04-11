@@ -53,7 +53,7 @@ pub struct Registers {
 impl Default for Registers {
     fn default() -> Self {
         Self {
-            a: 0x11,
+            a: 0x01,
             f: Default::default(),
             b: 0x00,
             c: 0x13,
