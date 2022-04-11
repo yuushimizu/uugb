@@ -11,3 +11,5 @@ pub mod timer;
 mod util;
 
 pub use game_boy::GameBoy;
+pub use ppu::{Coordinate, Renderer};
+pub use serial::SerialConnection;

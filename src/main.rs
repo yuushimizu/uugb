@@ -1,3 +1,5 @@
+mod info;
+
 use core::{
     cartridge::{self, Cartridge},
     GameBoy,
@@ -31,44 +33,13 @@ fn create_cartridge(rom: Vec<u8>) -> Cartridge {
     })
 }
 
-fn print_cartridge_info(header: &cartridge::Header) {
-    println!("Title: {}", header.title);
-    println!("Entry Point: {}", header.entry_point);
-    println!("CGB Flag: {}", header.cgb_flag);
-    println!("Licensee: {}", header.licensee);
-    println!("SGB Flag: {}", header.sgb_flag);
-    println!("Cartridge Type: {}", header.cartridge_type);
-    println!("ROM Size: {}", header.rom_size);
-    println!("RAM Size: {}", header.ram_size);
-    println!("Destination: {}", header.destination);
-    println!("Version: {:02X}", header.version);
-    println!(
-        "Header Checksum: {} = {:02X} {}",
-        header.header_checksum,
-        header.header_checksum.calculated_value(),
-        if header.header_checksum.is_matched() {
-            "OK"
-        } else {
-            "NG"
-        }
-    );
-    println!(
-        "Global Checksum: {} = {:04X} {}",
-        header.global_checksum,
-        header.global_checksum.calculated_value(),
-        if header.global_checksum.is_matched() {
-            "OK"
-        } else {
-            "NG"
-        }
-    );
-}
-
 fn boot(cartridge: Cartridge) {
+    let mut renderer = DummyRenderer::default();
+    let mut serial_connection = DummySerialConnection::default();
     let mut game_boy = GameBoy::boot(cartridge);
     for _ in 0..60 {
         for _ in 0..(4194304) {
-            game_boy.tick();
+            game_boy.tick(&mut renderer, &mut serial_connection);
         }
     }
     use std::io::*;
@@ -77,6 +48,7 @@ fn boot(cartridge: Cartridge) {
 }
 
 fn main() {
+    /*
     CombinedLogger::init(vec![TermLogger::new(
         LevelFilter::Debug,
         Config::default(),
@@ -84,6 +56,7 @@ fn main() {
         ColorChoice::Auto,
     )])
     .unwrap();
+    */
     let arg = Args::parse();
     let mut file = File::open(&arg.file).unwrap_or_else(|_err| {
         eprintln!("Could not open the file: {}", arg.file.display());
@@ -95,7 +68,7 @@ fn main() {
         std::process::exit(1);
     });
     if arg.info {
-        print_cartridge_info(&load_header(&rom));
+        info::print_cartridge_info(&load_header(&rom));
         return;
     }
     if arg.logo {
@@ -103,4 +76,71 @@ fn main() {
         return;
     }
     boot(create_cartridge(rom))
+}
+
+use std::io::prelude::*;
+
+#[derive(Debug, Default)]
+struct DummyRenderer {
+    buffer: String,
+}
+
+impl core::Renderer for DummyRenderer {
+    fn render(&mut self, position: core::Coordinate, color: u8) {
+        return;
+        if position.x == 0 {
+            if position.y == 0 {
+                print!("{}[2J", 27 as char);
+                println!("{}", self.buffer);
+                self.buffer.clear();
+            } else {
+                self.buffer.push('\n');
+            }
+        }
+        self.buffer.push_str(match color {
+            0b00 => "  ",
+            0b01 => "__",
+            0b10 => "::",
+            0b11 => "██",
+            _ => "",
+        });
+    }
+}
+
+#[derive(Debug)]
+struct DummySerialConnection {
+    file: File,
+    bits: Vec<bool>,
+}
+
+impl Default for DummySerialConnection {
+    fn default() -> Self {
+        Self {
+            file: File::create("./log/serial").unwrap(),
+            bits: vec![],
+        }
+    }
+}
+
+impl core::SerialConnection for DummySerialConnection {
+    fn send(&mut self, bit: bool) {
+        self.bits.push(bit);
+        if self.bits.len() >= 8 {
+            let byte = self
+                .bits
+                .iter()
+                .fold(0x00, |acc, &bit| acc << 1 | (bit as u8));
+            match self.file.write(&[byte]) {
+                Ok(_) => {}
+                Err(err) => {
+                    eprintln!("Serial output error: {:?}", err);
+                }
+            }
+            self.bits.clear();
+        }
+    }
+
+    fn receive(&self) -> bool {
+        true
+    }
 }

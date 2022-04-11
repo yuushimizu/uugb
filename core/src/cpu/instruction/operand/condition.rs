@@ -29,7 +29,11 @@ impl Read<bool> for Condition {
     }
 
     fn debug(&self, context: &Context) -> String {
-        format!("{:?}:{}", self, self.is_satisfied(context.flags()))
+        format!(
+            "{}:{}",
+            format!("{:?}", self).to_uppercase(),
+            self.is_satisfied(context.flags())
+        )
     }
 }
 

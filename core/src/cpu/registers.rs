@@ -91,7 +91,7 @@ impl Registers {
     }
 
     pub fn set_bc(&mut self, value: u16) {
-        (self.b, self.l) = to_u8s(value);
+        (self.b, self.c) = to_u8s(value);
     }
 
     pub fn de(&self) -> u16 {

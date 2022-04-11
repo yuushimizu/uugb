@@ -95,7 +95,11 @@ impl Read<u16> for Register16 {
     }
 
     fn debug(&self, context: &Context) -> String {
-        format!("{:?}:{:04X}", self, self.value(context.registers()))
+        format!(
+            "{}:{:04X}",
+            format!("{:?}", self).to_uppercase(),
+            self.value(context.registers())
+        )
     }
 }
 
@@ -113,7 +117,7 @@ impl Write<u16> for Register16 {
     }
 
     fn debug(&self, _context: &Context) -> String {
-        format!("{:?}", self)
+        format!("{:?}", self).to_uppercase()
     }
 }
 

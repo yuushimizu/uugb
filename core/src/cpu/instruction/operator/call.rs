@@ -32,7 +32,7 @@ pub fn call_cc(condition: Condition, address: impl Read<u16>) -> Operator {
 pub fn rst(address: u8) -> Operator {
     Operator::new(
         move |context| context.call(address as u16),
-        move |context| format!("RST {:02X}", address),
+        move |_| format!("RST {:02X}", address),
     )
 }
 

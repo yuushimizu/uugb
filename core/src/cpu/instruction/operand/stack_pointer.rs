@@ -1,6 +1,5 @@
 use super::{Operand, Read};
 use crate::cpu::instruction::Context;
-use std::fmt;
 
 #[derive(Debug, Clone, Copy)]
 pub struct AddLiteral8;

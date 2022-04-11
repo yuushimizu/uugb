@@ -4,8 +4,8 @@ use crate::{
     interrupt::InterruptController,
     joypad::Joypad,
     memory::{self, Hram, Memory, Wram},
-    ppu::Ppu,
-    serial::Serial,
+    ppu::{Ppu, Renderer},
+    serial::{Serial, SerialConnection},
     timer::Timer,
 };
 
@@ -63,8 +63,6 @@ impl cpu::Context for MemoryComponents {
 pub struct GameBoy {
     cpu: Cpu,
     memory_components: MemoryComponents,
-    dummy_renderer: DummyRenderer,
-    dummy_serial_connection: DummySerialConnection,
 }
 
 impl GameBoy {
@@ -81,23 +79,24 @@ impl GameBoy {
                 timer: Default::default(),
                 serial: Default::default(),
             },
-            dummy_renderer: Default::default(),
-            dummy_serial_connection: Default::default(),
         }
     }
 
-    pub fn tick(&mut self) {
+    pub fn tick(
+        &mut self,
+        renderer: &mut impl Renderer,
+        serial_connection: &mut impl SerialConnection,
+    ) {
         self.cpu.tick(&mut self.memory_components);
-        self.memory_components.ppu.tick(
-            &mut self.memory_components.interrupt_controller,
-            &mut self.dummy_renderer,
-        );
+        self.memory_components
+            .ppu
+            .tick(&mut self.memory_components.interrupt_controller, renderer);
         self.memory_components
             .timer
             .tick(&mut self.memory_components.interrupt_controller);
         self.memory_components.serial.tick(
             &mut self.memory_components.interrupt_controller,
-            &mut self.dummy_serial_connection,
+            serial_connection,
         );
     }
 
@@ -108,70 +107,5 @@ impl GameBoy {
             buffer.push(memory.read(address));
         }
         buffer
-    }
-}
-
-use std::fs::File;
-use std::io::prelude::*;
-
-#[derive(Debug, Default)]
-struct DummyRenderer {
-    buffer: String,
-}
-
-impl crate::ppu::Renderer for DummyRenderer {
-    fn render(&mut self, position: crate::ppu::Coordinate, color: u8) {
-        return;
-        if position.x == 0 {
-            if position.y == 0 {
-                print!("{}[2J", 27 as char);
-                println!("{}", self.buffer);
-                self.buffer.clear();
-            } else {
-                self.buffer.push_str("\n");
-            }
-        }
-        self.buffer.push_str(match color {
-            0b00 => "  ",
-            0b01 => "__",
-            0b10 => "::",
-            0b11 => "██",
-            _ => "",
-        });
-    }
-}
-
-#[derive(Debug)]
-struct DummySerialConnection {
-    file: File,
-    bits: Vec<bool>,
-}
-
-impl Default for DummySerialConnection {
-    fn default() -> Self {
-        Self {
-            file: File::create("./log/dummy-serial").unwrap(),
-            bits: vec![],
-        }
-    }
-}
-
-impl crate::serial::SerialConnection for DummySerialConnection {
-    fn send(&mut self, bit: bool) {
-        use crate::util::bits::Bits;
-        self.bits.push(bit);
-        if self.bits.len() >= 8 {
-            match self.file.write(&[u8::from_bits(&self.bits)]) {
-                Ok(_) => {}
-                Err(err) => {
-                    eprintln!("Serial output error: {:?}", err);
-                }
-            }
-            self.bits.clear();
-        }
-    }
-
-    fn receive(&self) -> bool {
-        true
     }
 }

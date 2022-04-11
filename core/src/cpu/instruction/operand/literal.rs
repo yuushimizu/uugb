@@ -12,7 +12,7 @@ impl Read<u8> for Literal {
     }
 
     fn debug(&self, context: &Context) -> String {
-        format!("#{:02X}", context.debug_u8(context.registers().pc))
+        format!("${:02X}", context.debug_u8(context.registers().pc))
     }
 }
 
@@ -22,7 +22,7 @@ impl Read<u16> for Literal {
     }
 
     fn debug(&self, context: &Context) -> String {
-        format!("#{:04X}", context.debug_u16(context.registers().pc))
+        format!("${:04X}", context.debug_u16(context.registers().pc))
     }
 }
 
