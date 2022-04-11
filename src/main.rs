@@ -37,7 +37,7 @@ fn boot(cartridge: Cartridge) {
     let mut renderer = DummyRenderer::default();
     let mut serial_connection = DummySerialConnection::default();
     let mut game_boy = GameBoy::boot(cartridge);
-    for _ in 0..60 {
+    for _ in 0..1 {
         for _ in 0..(4194304) {
             game_boy.tick(&mut renderer, &mut serial_connection);
         }
@@ -48,7 +48,6 @@ fn boot(cartridge: Cartridge) {
 }
 
 fn main() {
-    /*
     CombinedLogger::init(vec![TermLogger::new(
         LevelFilter::Debug,
         Config::default(),
@@ -56,7 +55,6 @@ fn main() {
         ColorChoice::Auto,
     )])
     .unwrap();
-    */
     let arg = Args::parse();
     let mut file = File::open(&arg.file).unwrap_or_else(|_err| {
         eprintln!("Could not open the file: {}", arg.file.display());
@@ -90,7 +88,7 @@ impl core::Renderer for DummyRenderer {
         return;
         if position.x == 0 {
             if position.y == 0 {
-                print!("{}[2J", 27 as char);
+                print!("\x1B[2J\x1B[1;1H");
                 println!("{}", self.buffer);
                 self.buffer.clear();
             } else {

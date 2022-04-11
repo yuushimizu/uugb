@@ -89,9 +89,9 @@ macro_rules! register {
 
 register!(BC, bc);
 
-register!(DE, bc);
+register!(DE, de);
 
-register!(HL, bc);
+register!(HL, hl);
 
 pub const LITERAL: Indirection = Indirection {
     name: "nn",
