@@ -20,7 +20,7 @@ pub fn swap(operand: impl Read<u8> + Write<u8>) -> Operator {
             });
             operand.write(context, result);
         },
-        move |context| format!("SWAP {}", Read::<u8>::debug(&operand, context)),
+        move |context| format!("SWAP {}", operand.debug(context)),
     )
 }
 
@@ -60,7 +60,7 @@ fn rl_u8(
             });
             operand.write(context, result);
         },
-        move |context| format!("{} {}", mnemonic, Read::<u8>::debug(&operand, context)),
+        move |context| format!("{} {}", mnemonic, operand.debug(context)),
     )
 }
 
@@ -102,7 +102,7 @@ fn rr_u8(
             });
             operand.write(context, result);
         },
-        move |context| format!("{} {}", mnemonic, Read::<u8>::debug(&operand, context)),
+        move |context| format!("{} {}", mnemonic, operand.debug(context)),
     )
 }
 
@@ -135,7 +135,7 @@ pub fn sla(operand: impl Read<u8> + Write<u8>) -> Operator {
             });
             operand.write(context, result);
         },
-        move |context| format!("SLA {}", Read::<u8>::debug(&operand, context)),
+        move |context| format!("SLA {}", operand.debug(context)),
     )
 }
 
@@ -156,7 +156,7 @@ pub fn sr_u8(
             });
             operand.write(context, result);
         },
-        move |context| format!("{} {}", mnemonic, Read::<u8>::debug(&operand, context)),
+        move |context| format!("{} {}", mnemonic, operand.debug(context)),
     )
 }
 
@@ -189,7 +189,7 @@ pub fn set(bit: u8, rhs: impl Read<u8> + Write<u8>) -> Operator {
             let current = rhs.read(context);
             rhs.write(context, current.set_bit(bit as u32));
         },
-        move |context| format!("SET {}, {}", bit, Read::<u8>::debug(&rhs, context)),
+        move |context| format!("SET {}, {}", bit, rhs.debug(context)),
     )
 }
 
@@ -199,6 +199,6 @@ pub fn res(bit: u8, rhs: impl Read<u8> + Write<u8>) -> Operator {
             let current = rhs.read(context);
             rhs.write(context, current.reset_bit(bit as u32));
         },
-        move |context| format!("RES {}, {}", bit, Read::<u8>::debug(&rhs, context)),
+        move |context| format!("RES {}, {}", bit, rhs.debug(context)),
     )
 }

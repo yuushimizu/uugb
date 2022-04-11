@@ -19,14 +19,14 @@ pub trait Value: 'static + Sized + Copy {}
 
 impl<T: 'static + Sized + Copy> Value for T {}
 
-pub trait Read<T: Value>: Operand {
-    fn read(&self, context: &mut Context) -> T;
-
+pub trait DebugOperand<T: Value> {
     fn debug(&self, context: &Context) -> String;
 }
 
-pub trait Write<T: Value>: Operand {
-    fn write(&self, context: &mut Context, value: T);
+pub trait Read<T: Value>: Operand + DebugOperand<T> {
+    fn read(&self, context: &mut Context) -> T;
+}
 
-    fn debug(&self, context: &Context) -> String;
+pub trait Write<T: Value>: Operand + DebugOperand<T> {
+    fn write(&self, context: &mut Context, value: T);
 }

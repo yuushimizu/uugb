@@ -1,4 +1,4 @@
-use super::{indirection, Indirection, Operand, Read, Register, Write};
+use super::{indirection, DebugOperand, Indirection, Operand, Read, Register, Write};
 use crate::cpu::instruction::Context;
 
 #[derive(Debug, Clone, Copy)]
@@ -36,13 +36,6 @@ impl Read<u8> for OpcodeRegister {
             Self::Indirection(indirection) => indirection.read(context),
         }
     }
-
-    fn debug(&self, context: &Context) -> String {
-        match self {
-            Self::Register(register) => Read::<u8>::debug(register, context),
-            Self::Indirection(indirection) => Read::<u8>::debug(indirection, context),
-        }
-    }
 }
 
 impl Write<u8> for OpcodeRegister {
@@ -52,11 +45,13 @@ impl Write<u8> for OpcodeRegister {
             Self::Indirection(indirection) => indirection.write(context, value),
         }
     }
+}
 
+impl DebugOperand<u8> for OpcodeRegister {
     fn debug(&self, context: &Context) -> String {
         match self {
-            Self::Register(register) => Write::<u8>::debug(register, context),
-            Self::Indirection(indirection) => Write::<u8>::debug(indirection, context),
+            Self::Register(register) => DebugOperand::<u8>::debug(register, context),
+            Self::Indirection(indirection) => DebugOperand::<u8>::debug(indirection, context),
         }
     }
 }

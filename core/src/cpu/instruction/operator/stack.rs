@@ -1,5 +1,5 @@
 use super::Operator;
-use crate::cpu::instruction::operand::{register, Read, Write};
+use crate::cpu::instruction::operand::{register, DebugOperand, Read, Write};
 
 pub fn push(source: impl Read<u16>) -> Operator {
     Operator::new(
@@ -32,7 +32,7 @@ pub fn add_sp(rhs: impl Read<u8>) -> Operator {
         move |context| {
             format!(
                 "ADD {}, {}",
-                Read::<u16>::debug(&register::Sp, context),
+                register::Sp.debug(context),
                 rhs.debug(context)
             )
         },

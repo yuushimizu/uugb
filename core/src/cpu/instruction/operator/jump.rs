@@ -1,6 +1,6 @@
 use super::Operator;
 use crate::cpu::instruction::{
-    operand::{self, register, Condition, Read},
+    operand::{self, register, Condition, DebugOperand, Read},
     Context,
 };
 
@@ -11,7 +11,12 @@ pub fn jp_nn() -> Operator {
             context.jump(address);
             context.wait();
         },
-        |context| format!("JP {}", Read::<u16>::debug(&operand::LITERAL, context)),
+        |context| {
+            format!(
+                "JP {}",
+                DebugOperand::<u16>::debug(&operand::LITERAL, context)
+            )
+        },
     )
 }
 
@@ -20,7 +25,7 @@ pub fn jp_hl() -> Operator {
         move |context| {
             context.jump(context.registers().hl());
         },
-        |context| format!("JP {}", Read::<u16>::debug(&register::Hl, context)),
+        |context| format!("JP {}", register::Hl.debug(context)),
     )
 }
 

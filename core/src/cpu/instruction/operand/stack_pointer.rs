@@ -1,4 +1,4 @@
-use super::{Operand, Read};
+use super::{DebugOperand, Operand, Read};
 use crate::cpu::instruction::Context;
 
 #[derive(Debug, Clone, Copy)]
@@ -9,10 +9,12 @@ impl Read<u16> for AddLiteral8 {
         let value = context.fetch();
         context.add_sp(value)
     }
+}
 
+impl DebugOperand<u16> for AddLiteral8 {
     fn debug(&self, context: &Context) -> String {
         format!(
-            "SP:{:04X}+#{:02X}",
+            "SP={:04X}+#{:02X}",
             context.registers().sp,
             context.debug_u8(context.registers().pc)
         )

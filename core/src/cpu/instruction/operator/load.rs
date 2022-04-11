@@ -1,6 +1,6 @@
 use super::Operator;
 use crate::cpu::instruction::{
-    operand::{register, Read, Value, Write},
+    operand::{register, DebugOperand, Read, Value, Write},
     Context,
 };
 
@@ -41,8 +41,8 @@ pub fn ld16_sp_hl() -> Operator {
         |context| {
             format!(
                 "LD {}, {}",
-                Write::<u16>::debug(&register::Sp, context),
-                Read::<u16>::debug(&register::Hl, context)
+                register::Sp.debug(context),
+                register::Hl.debug(context)
             )
         },
     )

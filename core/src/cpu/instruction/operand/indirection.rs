@@ -1,4 +1,4 @@
-use super::{Operand, Read, Write};
+use super::{DebugOperand, Operand, Read, Write};
 use crate::cpu::instruction::Context;
 use std::fmt;
 
@@ -24,16 +24,6 @@ impl Read<u8> for Indirection {
         let address = (self.address)(context);
         context.read(address)
     }
-
-    fn debug(&self, context: &Context) -> String {
-        let address = (self.debug_address)(context);
-        format!(
-            "({}:{:04X}):{:02X}",
-            self.name,
-            address,
-            context.debug_u8(address)
-        )
-    }
 }
 
 impl Write<u8> for Indirection {
@@ -41,10 +31,17 @@ impl Write<u8> for Indirection {
         let address = (self.address)(context);
         context.write(address, value);
     }
+}
 
+impl DebugOperand<u8> for Indirection {
     fn debug(&self, context: &Context) -> String {
         let address = (self.debug_address)(context);
-        format!("({}:{:04X})", self.name, address,)
+        format!(
+            "({}={:04X})={:02X}",
+            self.name,
+            address,
+            context.debug_u8(address)
+        )
     }
 }
 
@@ -53,16 +50,6 @@ impl Read<u16> for Indirection {
         let address = (self.address)(context);
         context.read16(address)
     }
-
-    fn debug(&self, context: &Context) -> String {
-        let address = (self.debug_address)(context);
-        format!(
-            "({}:{:04X}):{:04X}",
-            self.name,
-            address,
-            context.debug_u16(address)
-        )
-    }
 }
 
 impl Write<u16> for Indirection {
@@ -70,10 +57,17 @@ impl Write<u16> for Indirection {
         let address = (self.address)(context);
         context.write16(address, value);
     }
+}
 
+impl DebugOperand<u16> for Indirection {
     fn debug(&self, context: &Context) -> String {
         let address = (self.debug_address)(context);
-        format!("({}:{:04X})", self.name, address,)
+        format!(
+            "({}={:04X})={:04X}",
+            self.name,
+            address,
+            context.debug_u16(address)
+        )
     }
 }
 

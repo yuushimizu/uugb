@@ -1,5 +1,5 @@
 use super::Operator;
-use crate::cpu::instruction::operand::{Condition, Read};
+use crate::cpu::instruction::operand::{Condition, DebugOperand, Read};
 
 pub fn call(address: impl Read<u16>) -> Operator {
     Operator::new(
@@ -7,7 +7,13 @@ pub fn call(address: impl Read<u16>) -> Operator {
             let address = address.read(context);
             context.call(address);
         },
-        move |context| format!("CALL {}", address.debug(context)),
+        move |context| {
+            format!(
+                "CALL {} [PC={:04X}]",
+                address.debug(context),
+                context.registers().pc + 2
+            )
+        },
     )
 }
 
@@ -21,9 +27,10 @@ pub fn call_cc(condition: Condition, address: impl Read<u16>) -> Operator {
         },
         move |context| {
             format!(
-                "CALL {}, {}",
+                "CALL {}, {} [PC={:04X}]",
                 condition.debug(context),
                 address.debug(context),
+                context.registers().pc + 2
             )
         },
     )
@@ -39,7 +46,12 @@ pub fn rst(address: u8) -> Operator {
 pub fn ret() -> Operator {
     Operator::new(
         |context| context.ret(),
-        |context| format!("RET:{:04X}", context.debug_u16(context.registers().sp)),
+        |context| {
+            format!(
+                "RET [(SP)={:04X}]",
+                context.debug_u16(context.registers().sp)
+            )
+        },
     )
 }
 
@@ -53,9 +65,9 @@ pub fn ret_cc(condition: Condition) -> Operator {
         },
         move |context| {
             format!(
-                "RET:{:04X} {}",
+                "RET {} [(SP)={:04X}]",
+                condition.debug(context),
                 context.debug_u16(context.registers().sp),
-                condition.debug(context)
             )
         },
     )
@@ -67,6 +79,11 @@ pub fn reti() -> Operator {
             context.enable_interrupts();
             context.ret();
         },
-        |context| format!("RETI:{:04X}", context.debug_u16(context.registers().sp),),
+        |context| {
+            format!(
+                "RETI [(SP)={:04X}]",
+                context.debug_u16(context.registers().sp),
+            )
+        },
     )
 }

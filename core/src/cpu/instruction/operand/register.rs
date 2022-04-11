@@ -1,4 +1,4 @@
-use super::{Operand, Read, Write};
+use super::{DebugOperand, Operand, Read, Write};
 use crate::cpu::{instruction::Context, Registers};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -35,10 +35,6 @@ impl Read<u8> for Register {
     fn read(&self, context: &mut Context) -> u8 {
         self.value(context.registers())
     }
-
-    fn debug(&self, context: &Context) -> String {
-        format!("{:?}:{:02X}", self, self.value(context.registers()))
-    }
 }
 
 impl Write<u8> for Register {
@@ -55,9 +51,11 @@ impl Write<u8> for Register {
             L => registers.l = value,
         }
     }
+}
 
-    fn debug(&self, _context: &Context) -> String {
-        format!("{:?}", self)
+impl DebugOperand<u8> for Register {
+    fn debug(&self, context: &Context) -> String {
+        format!("{:?}={:02X}", self, self.value(context.registers()))
     }
 }
 
@@ -93,14 +91,6 @@ impl Read<u16> for Register16 {
     fn read(&self, context: &mut Context) -> u16 {
         self.value(context.registers())
     }
-
-    fn debug(&self, context: &Context) -> String {
-        format!(
-            "{}:{:04X}",
-            format!("{:?}", self).to_uppercase(),
-            self.value(context.registers())
-        )
-    }
 }
 
 impl Write<u16> for Register16 {
@@ -115,9 +105,15 @@ impl Write<u16> for Register16 {
             Sp => registers.sp = value,
         }
     }
+}
 
-    fn debug(&self, _context: &Context) -> String {
-        format!("{:?}", self).to_uppercase()
+impl DebugOperand<u16> for Register16 {
+    fn debug(&self, context: &Context) -> String {
+        format!(
+            "{}={:04X}",
+            format!("{:?}", self).to_uppercase(),
+            self.value(context.registers())
+        )
     }
 }
 

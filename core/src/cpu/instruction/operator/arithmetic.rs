@@ -29,7 +29,7 @@ fn add_u8(
             format!(
                 "{} {}, {}",
                 mnemonic,
-                Read::<u8>::debug(&lhs, context),
+                lhs.debug(context),
                 rhs.debug(context)
             )
         },
@@ -73,7 +73,7 @@ fn sub_u8(
             format!(
                 "{} {}, {}",
                 mnemonic,
-                Read::<u8>::debug(&lhs, context),
+                lhs.debug(context),
                 rhs.debug(context)
             )
         },
@@ -105,7 +105,7 @@ pub fn inc(operand: impl Read<u8> + Write<u8>) -> Operator {
             });
             operand.write(context, result);
         },
-        move |context| format!("INC {}", Read::<u8>::debug(&operand, context)),
+        move |context| format!("INC {}", operand.debug(context)),
     )
 }
 
@@ -122,7 +122,7 @@ pub fn dec(operand: impl Read<u8> + Write<u8>) -> Operator {
             });
             operand.write(context, result);
         },
-        move |context| format!("DEC {}", Read::<u8>::debug(&operand, context)),
+        move |context| format!("DEC {}", operand.debug(context)),
     )
 }
 
@@ -141,13 +141,7 @@ pub fn add16(lhs: impl Read<u16> + Write<u16>, rhs: impl Read<u16>) -> Operator 
             lhs.write(context, result);
             context.wait();
         },
-        move |context| {
-            format!(
-                "ADD {}, {}",
-                Read::<u16>::debug(&lhs, context),
-                rhs.debug(context)
-            )
-        },
+        move |context| format!("ADD {}, {}", lhs.debug(context), rhs.debug(context)),
     )
 }
 
@@ -158,7 +152,7 @@ pub fn inc16(operand: impl Read<u16> + Write<u16>) -> Operator {
             operand.write(context, current.wrapping_add(1));
             context.wait();
         },
-        move |context| format!("INC {}", Read::<u16>::debug(&operand, context)),
+        move |context| format!("INC {}", operand.debug(context)),
     )
 }
 
@@ -169,6 +163,6 @@ pub fn dec16(operand: impl Read<u16> + Write<u16>) -> Operator {
             operand.write(context, current.wrapping_sub(1));
             context.wait();
         },
-        move |context| format!("DEC {}", Read::<u16>::debug(&operand, context)),
+        move |context| format!("DEC {}", operand.debug(context)),
     )
 }

@@ -1,4 +1,4 @@
-use super::{Operand, Read};
+use super::{DebugOperand, Operand, Read};
 use crate::cpu::instruction::Context;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash)]
@@ -10,7 +10,9 @@ impl Read<u8> for Literal {
     fn read(&self, context: &mut Context) -> u8 {
         context.fetch()
     }
+}
 
+impl DebugOperand<u8> for Literal {
     fn debug(&self, context: &Context) -> String {
         format!("${:02X}", context.debug_u8(context.registers().pc))
     }
@@ -20,7 +22,9 @@ impl Read<u16> for Literal {
     fn read(&self, context: &mut Context) -> u16 {
         context.fetch16()
     }
+}
 
+impl DebugOperand<u16> for Literal {
     fn debug(&self, context: &Context) -> String {
         format!("${:04X}", context.debug_u16(context.registers().pc))
     }
