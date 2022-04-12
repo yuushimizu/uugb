@@ -74,7 +74,7 @@ impl CategoryState {
     pub fn new(category: ButtonCategory) -> Self {
         Self {
             category,
-            is_selected: false,
+            is_selected: true,
         }
     }
 }

@@ -10,7 +10,7 @@ pub trait SerialConnection {
 pub struct NoSerialConnection;
 
 impl SerialConnection for NoSerialConnection {
-    fn receive(&mut self, _bit: bool) {}
+    fn receive(&mut self, _: bool) {}
 
     fn send(&mut self) -> bool {
         true

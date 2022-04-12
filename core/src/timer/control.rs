@@ -34,7 +34,7 @@ impl Control {
     }
 
     pub fn bits(&self) -> u8 {
-        (self.is_enabled as u8) << 2 | self.input_clock_index & 0b11
+        0b1111_1000 | (self.is_enabled as u8) << 2 | self.input_clock_index & 0b11
     }
 
     pub fn set_bits(&mut self, value: u8) {

@@ -7,7 +7,7 @@ use crate::{
     util::bits::Bits,
 };
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Serial {
     buffer: u8,
     is_started: bool,
@@ -18,12 +18,27 @@ pub struct Serial {
     rest_cycles: u64,
 }
 
+impl Default for Serial {
+    fn default() -> Self {
+        Self {
+            buffer: 0,
+            is_started: false,
+            is_completed: false,
+            is_fast: true,
+            uses_internal_clock: false,
+            transfered_bits: 0,
+            rest_cycles: 0,
+        }
+    }
+}
+
 impl Serial {
     fn cycles(&self) -> u64 {
         if self.is_fast {
             16
         } else {
-            512
+            //512
+            16
         }
     }
 
@@ -74,7 +89,10 @@ impl Serial {
     }
 
     pub fn control_bits(&self) -> u8 {
-        (self.is_started as u8) << 7 | (self.is_fast as u8) << 1 | self.uses_internal_clock as u8
+        0b0111_1100
+            | (self.is_started as u8) << 7
+            | (self.is_fast as u8) << 1
+            | self.uses_internal_clock as u8
     }
 
     pub fn set_control_bits(&mut self, value: u8) {

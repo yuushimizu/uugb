@@ -1,6 +1,12 @@
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Divider {
     counter: u16,
+}
+
+impl Default for Divider {
+    fn default() -> Self {
+        Self { counter: 0xAB00 }
+    }
 }
 
 impl Divider {

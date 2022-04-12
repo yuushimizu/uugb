@@ -71,5 +71,10 @@ fn main() {
         )),
         ..Default::default()
     };
+    let mut rom = Vec::new();
+    File::open(args.file)
+        .unwrap()
+        .read_to_end(&mut rom)
+        .unwrap();
     eframe::run_native(Box::new(app), native_options);
 }

@@ -8,7 +8,7 @@ pub mod oam;
 pub mod vram;
 
 pub use palette::{Color, Palette};
-pub use renderer::Renderer;
+pub use renderer::{NoRenderer, Renderer};
 pub use vec2::Vec2;
 
 use control::Control;
@@ -23,7 +23,7 @@ const CYCLES_PER_LINE: u64 = 456;
 
 const OAM_SEARCH_CYCLES: u64 = 80;
 
-const TRANSFER_CYCLES: u64 = 168;
+const TRANSFER_CYCLES: u64 = 172;
 
 pub fn display_size() -> Vec2 {
     Vec2::new(160, 144)
@@ -72,12 +72,14 @@ impl Ppu {
         if !self.control.background_and_window_enabled() {
             0b00
         } else {
-            self.vram
-                .tile_map(
-                    self.control.background_tile_map_area(),
-                    self.control.background_tile_data_area(),
-                )
-                .pixel(self.current_position.wrapping_add(self.scroll_position))
+            self.background_palette.apply(
+                self.vram
+                    .tile_map(
+                        self.control.background_tile_map_area(),
+                        self.control.background_tile_data_area(),
+                    )
+                    .pixel(self.current_position.wrapping_add(self.scroll_position)),
+            )
         }
     }
 
@@ -136,8 +138,8 @@ impl Ppu {
         if current_mode == Mode::Transfer {
             if self.current_position.x < display_size().x {
                 self.render_pixel(renderer);
+                self.current_position.x += 1;
             }
-            self.current_position.x += 1;
         }
         self.advance_cycle();
         self.request_interrupt(current_mode, interrupt_controller);
@@ -163,7 +165,8 @@ impl Ppu {
     }
 
     pub fn status_bits(&self) -> u8 {
-        self.interrupt_source.bits() << 3
+        0b1 << 7
+            | self.interrupt_source.bits() << 3
             | ((self.current_position.y == self.y_compare) as u8) << 2
             | (self.mode() as u8)
     }
