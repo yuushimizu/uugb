@@ -3,7 +3,7 @@ use crate::{
     cpu::{self, Cpu},
     interrupt::InterruptController,
     joypad::Joypad,
-    memory::{self, Hram, Memory, Wram},
+    memory::{self, Dma, Hram, Memory, Wram},
     ppu::{Ppu, Renderer},
     serial::{Serial, SerialConnection},
     timer::Timer,
@@ -19,6 +19,7 @@ struct MemoryComponents {
     joypad: Joypad,
     timer: Timer,
     serial: Serial,
+    dma: Dma,
 }
 
 impl memory::Context for MemoryComponents {
@@ -32,6 +33,7 @@ impl memory::Context for MemoryComponents {
             joypad: &self.joypad,
             timer: &self.timer,
             serial: &self.serial,
+            dma: &self.dma,
         }
     }
 
@@ -45,6 +47,7 @@ impl memory::Context for MemoryComponents {
             joypad: &mut self.joypad,
             timer: &mut self.timer,
             serial: &mut self.serial,
+            dma: &mut self.dma,
         }
     }
 }
@@ -78,6 +81,7 @@ impl GameBoy {
                 joypad: Default::default(),
                 timer: Default::default(),
                 serial: Default::default(),
+                dma: Default::default(),
             },
         }
     }
@@ -98,6 +102,7 @@ impl GameBoy {
             &mut self.memory_components.interrupt_controller,
             serial_connection,
         );
+        Memory::new(&mut self.memory_components).tick();
     }
 
     pub fn dump(&mut self) -> Vec<u8> {

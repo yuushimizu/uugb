@@ -2,7 +2,7 @@ use crate::{
     cartridge::Cartridge,
     interrupt::InterruptController,
     joypad::Joypad,
-    memory::{Hram, Wram},
+    memory::{Dma, Hram, Wram},
     ppu::Ppu,
     serial::Serial,
     timer::Timer,
@@ -18,6 +18,7 @@ pub struct ComponentsRefs<'a> {
     pub joypad: &'a Joypad,
     pub timer: &'a Timer,
     pub serial: &'a Serial,
+    pub dma: &'a Dma,
 }
 
 #[derive(Debug)]
@@ -30,6 +31,7 @@ pub struct ComponentsRefsMut<'a> {
     pub joypad: &'a mut Joypad,
     pub timer: &'a mut Timer,
     pub serial: &'a mut Serial,
+    pub dma: &'a mut Dma,
 }
 
 pub trait Context {

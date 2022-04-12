@@ -13,7 +13,8 @@ pub use vec2::Vec2;
 
 use control::Control;
 use interrupt_source::InterruptSource;
-use vram::Vram;
+use oam::{Oam, Object};
+use vram::{TileDataArea, TileMapArea, Vram};
 
 use crate::interrupt::{Interrupt, InterruptController};
 
@@ -42,6 +43,7 @@ enum Mode {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Ppu {
     vram: Vram,
+    oam: Oam,
     control: Control,
     interrupt_source: InterruptSource,
     current_position: Vec2,
@@ -58,6 +60,7 @@ impl Default for Ppu {
     fn default() -> Self {
         Self {
             vram: Default::default(),
+            oam: Oam::default(),
             control: Default::default(),
             interrupt_source: Default::default(),
             current_position: Vec2::new(0, 0x91),
@@ -88,14 +91,56 @@ impl Ppu {
         }
     }
 
-    fn background_pixel(&self) -> u8 {
+    fn object_pixel_color(&self, object: &Object) -> Option<Color> {
+        let position_in_object =
+            object.position_in_object(self.current_position, self.control.uses_large_object());
+        let tile_id = if self.control.uses_large_object() {
+            if position_in_object.y >= 8 {
+                object.tile_id | 0b1
+            } else {
+                object.tile_id & !0b1
+            }
+        } else {
+            object.tile_id
+        };
+        let color_id = self
+            .vram
+            .tile_data(TileDataArea::Origin, tile_id)
+            .color_id(position_in_object);
+        if color_id == 0b00 {
+            None
+        } else {
+            let palette = if object.palette_number == 0 {
+                &self.object_palette0
+            } else {
+                &self.object_palette1
+            };
+            Some(palette.apply(color_id))
+        }
+    }
+
+    fn drawn_object(&self) -> Option<(Object, Color)> {
+        self.oam
+            .objects_at_position(self.current_position, self.control.uses_large_object())
+            .filter_map(|object| {
+                self.object_pixel_color(&object)
+                    .map(|color| (object, color))
+            })
+            .min_by_key(|(object, _)| object.position.x)
+    }
+
+    fn pixel_color_from_tile_map(&self, tile_map: TileMapArea, position: Vec2) -> Color {
         self.background_palette.apply(
             self.vram
-                .tile_map(
-                    self.control.background_tile_map_area(),
-                    self.control.background_tile_data_area(),
-                )
-                .pixel(self.current_position.wrapping_add(self.scroll_position)),
+                .tile_map(tile_map, self.control.background_tile_data_area())
+                .color_id(position),
+        )
+    }
+
+    fn background_pixel_color(&self) -> Color {
+        self.pixel_color_from_tile_map(
+            self.control.background_tile_map_area(),
+            self.current_position.wrapping_add(self.scroll_position),
         )
     }
 
@@ -105,32 +150,38 @@ impl Ppu {
             && self.current_position.x >= self.window_position.x.wrapping_sub(WINDOW_OFFSET)
     }
 
-    fn window_pixel(&self) -> u8 {
-        self.background_palette.apply(
-            self.vram
-                .tile_map(
-                    self.control.window_tile_map_area(),
-                    self.control.background_tile_data_area(),
-                )
-                .pixel(
-                    self.current_position
-                        .wrapping_sub(self.window_position)
-                        .wrapping_add(Vec2::new(WINDOW_OFFSET, 0)),
-                ),
+    fn window_pixel_color(&self) -> Color {
+        self.pixel_color_from_tile_map(
+            self.control.window_tile_map_area(),
+            self.current_position
+                .wrapping_sub(self.window_position)
+                .wrapping_add(Vec2::new(WINDOW_OFFSET, 0)),
         )
     }
 
     fn render_pixel(&self, renderer: &mut impl Renderer) {
-        let pixel = if self.control.background_and_window_enabled() {
+        let background_pixel_color = if self.control.background_and_window_enabled() {
             if self.is_in_window() {
-                self.window_pixel()
+                self.window_pixel_color()
             } else {
-                self.background_pixel()
+                self.background_pixel_color()
             }
         } else {
-            0b00
+            Color::White
         };
-        renderer.render(self.current_position, pixel.into())
+        let color = if self.control.object_enabled() {
+            self.drawn_object()
+                .map_or(background_pixel_color, |(object, object_pixel)| {
+                    if object.is_under_background {
+                        background_pixel_color
+                    } else {
+                        object_pixel
+                    }
+                })
+        } else {
+            background_pixel_color
+        };
+        renderer.render(self.current_position, color)
     }
 
     fn advance_cycle(&mut self) {
@@ -190,6 +241,14 @@ impl Ppu {
 
     pub fn vram_mut(&mut self) -> &mut Vram {
         &mut self.vram
+    }
+
+    pub fn oam(&self) -> &Oam {
+        &self.oam
+    }
+
+    pub fn oam_mut(&mut self) -> &mut Oam {
+        &mut self.oam
     }
 
     pub fn control_bits(&self) -> u8 {

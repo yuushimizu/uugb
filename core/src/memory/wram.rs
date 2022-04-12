@@ -19,7 +19,7 @@ impl Wram {
     pub fn read(&self, address: u16) -> u8 {
         *self.primary.get(address as usize).unwrap_or_else(|| {
             log::warn!("WRAM: Attempt to read from out of bounds: {:04X}", address);
-            &0x00
+            &0xFF
         })
     }
 
@@ -36,7 +36,7 @@ impl Wram {
                 "WRAM: (Bank) Attempt to read from out of bounds: {:04X}",
                 address
             );
-            &0x00
+            &0xFF
         })
     }
 

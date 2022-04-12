@@ -11,7 +11,13 @@ pub const VRAM: Segment = Offset(
     ),
 );
 
-pub const OAM: Segment = Leaf(|_, _| 0, |_, _, _| {});
+pub const OAM: Segment = Offset(
+    0xFE00,
+    &Leaf(
+        |components, address| components.ppu.oam().read(address),
+        |components, address, value| components.ppu.oam_mut().write(address, value),
+    ),
+);
 
 pub const PPU: Segment = Nested(|address| match address {
     0xFF40 => &Leaf(
@@ -35,7 +41,10 @@ pub const PPU: Segment = Nested(|address| match address {
         |components, _| components.ppu.y_compare(),
         |components, _, value| components.ppu.set_y_compare(value),
     ),
-    0xFF46 => &Leaf(|_, _| 0, |_, _, _| {}), // DMA
+    0xFF46 => &Leaf(
+        |components, _| components.ppu.oam().dma_source_address_upper(),
+        |components, _, value| components.ppu.oam_mut().request_dma(value, components.dma),
+    ), // DMA
     0xFF47 => &Leaf(
         |components, _| components.ppu.background_palette().bits(),
         |components, _, value| components.ppu.background_palette_mut().set_bits(value),

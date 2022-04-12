@@ -15,7 +15,7 @@ impl<'vram> TileData<'vram> {
         Self { data }
     }
 
-    pub fn pixel(&self, position: Vec2) -> u8 {
+    pub fn color_id(&self, position: Vec2) -> u8 {
         let index = (position.y % 8) as usize * 2;
         [1, 0]
             .iter()
@@ -95,9 +95,9 @@ impl<'vram> TileMap<'vram> {
         self.data.tile_data(self.data_area, id)
     }
 
-    pub fn pixel(&self, position: Vec2) -> u8 {
+    pub fn color_id(&self, position: Vec2) -> u8 {
         self.tile_data(Vec2::new(position.x / 8, position.y / 8))
-            .pixel(position)
+            .color_id(position)
     }
 }
 
@@ -114,10 +114,15 @@ impl Vram {
             data_area,
         }
     }
+
+    pub fn tile_data(&self, area: TileDataArea, id: u8) -> TileData {
+        self.data.tile_data(area, id)
+    }
+
     pub fn read(&self, address: u16) -> u8 {
         *self.data.data.get(address as usize).unwrap_or_else(|| {
             log::warn!("VRAM: Attempt to read from out of bounds: {:04X}", address);
-            &0x00
+            &0xFF
         })
     }
 

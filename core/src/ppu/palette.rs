@@ -1,3 +1,4 @@
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Color {
     White,
     LightGray,
@@ -36,7 +37,7 @@ impl Palette {
         self.bits = value;
     }
 
-    pub fn apply(&self, data: u8) -> u8 {
-        self.bits >> (data * 2) & 0b11
+    pub fn apply(&self, color_id: u8) -> Color {
+        (self.bits >> (color_id * 2) & 0b11).into()
     }
 }

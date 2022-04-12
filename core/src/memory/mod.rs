@@ -1,3 +1,4 @@
+pub mod dma;
 pub mod hram;
 pub mod wram;
 
@@ -5,6 +6,7 @@ mod context;
 mod map;
 
 pub use context::{ComponentsRefs, ComponentsRefsMut, Context};
+pub use dma::Dma;
 pub use hram::Hram;
 pub use map::ROOT;
 pub use wram::Wram;
@@ -32,5 +34,14 @@ impl<'a> Memory<'a> {
     pub fn write(&mut self, address: u16, value: u8) {
         let mut components = self.0.components_mut();
         ROOT.write(&mut components, address, value)
+    }
+
+    pub fn tick(&mut self) {
+        if let Some(dma_request) = self.0.components_mut().dma.pop_request() {
+            for offset in 0..dma_request.length {
+                let value = self.read(dma_request.source + offset as u16);
+                self.write(dma_request.destination + offset as u16, value)
+            }
+        }
     }
 }
