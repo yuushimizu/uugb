@@ -103,8 +103,8 @@ impl core::Renderer for DummyRenderer {
         }
         self.buffer.push_str(match color {
             0b00 => "  ",
-            0b01 => "__",
-            0b10 => "::",
+            0b01 => "░░",
+            0b10 => "▒▒",
             0b11 => "██",
             _ => "",
         });
