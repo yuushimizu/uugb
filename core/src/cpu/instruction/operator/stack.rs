@@ -18,7 +18,13 @@ pub fn pop(destination: impl Write<u16>) -> Operator {
             let value = context.pop16();
             destination.write(context, value);
         },
-        move |context| format!("POP {}", destination.debug(context)),
+        move |context| {
+            format!(
+                "POP {} [(SP)={:04X}]",
+                destination.debug(context),
+                context.debug_u16(context.registers().sp)
+            )
+        },
     )
 }
 

@@ -112,8 +112,9 @@ impl Cpu {
             return;
         }
         self.with_instruction_context(context, |instruction_context| {
+            let pc = instruction_context.registers().pc;
             let instruction = Instruction::fetch(instruction_context);
-            log::info!(target: "cpu_event", "Instruction: {}", instruction.debug(instruction_context));
+            log::info!(target: "cpu_event", "Instruction: {:04X} {}", pc, instruction.debug(instruction_context));
             instruction.execute(instruction_context);
         });
         if self.is_stopped {

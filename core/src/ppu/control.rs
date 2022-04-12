@@ -8,7 +8,7 @@ pub struct Control {
 
 impl Default for Control {
     fn default() -> Self {
-        Self { bits: 0x83 }
+        Self { bits: 0x91 }
     }
 }
 

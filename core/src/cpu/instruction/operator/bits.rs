@@ -1,7 +1,7 @@
 use super::Operator;
 use crate::{
     cpu::{
-        instruction::operand::{register, Read, Write},
+        instruction::operand::{register, DebugOperand, Read, Write},
         registers::Flags,
     },
     util::bits::Bits,
@@ -34,7 +34,7 @@ pub fn cpl() -> Operator {
                 ..*context.flags()
             });
         },
-        |context| format!("CPL {:02X}", context.registers().a),
+        |context| format!("CPL {}", register::A.debug(context)),
     )
 }
 

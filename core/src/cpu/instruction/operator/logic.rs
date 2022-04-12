@@ -1,5 +1,8 @@
 use super::Operator;
-use crate::cpu::{instruction::operand::Read, registers::Flags};
+use crate::cpu::{
+    instruction::operand::{register, DebugOperand, Read},
+    registers::Flags,
+};
 
 pub fn and(operand: impl Read<u8>) -> Operator {
     Operator::new(
@@ -14,7 +17,13 @@ pub fn and(operand: impl Read<u8>) -> Operator {
             });
             context.registers_mut().a = result;
         },
-        move |context| format!("AND {}", operand.debug(context)),
+        move |context| {
+            format!(
+                "AND {}, {}",
+                register::A.debug(context),
+                operand.debug(context)
+            )
+        },
     )
 }
 
@@ -31,7 +40,13 @@ pub fn or(operand: impl Read<u8>) -> Operator {
             });
             context.registers_mut().a = result;
         },
-        move |context| format!("OR {}", operand.debug(context)),
+        move |context| {
+            format!(
+                "OR {}, {}",
+                register::A.debug(context),
+                operand.debug(context)
+            )
+        },
     )
 }
 
@@ -48,6 +63,12 @@ pub fn xor(operand: impl Read<u8>) -> Operator {
             });
             context.registers_mut().a = result;
         },
-        move |context| format!("XOR {}", operand.debug(context)),
+        move |context| {
+            format!(
+                "XOR {}, {}",
+                register::A.debug(context),
+                operand.debug(context)
+            )
+        },
     )
 }

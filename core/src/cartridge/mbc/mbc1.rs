@@ -78,7 +78,7 @@ const ROM_BANK_SIZE: usize = 0x4000;
 
 const RAM_BANK_SIZE: usize = 0x2000;
 
-fn bin_digits(n: u8) -> u8 {
+fn binary_digits(n: u8) -> u8 {
     let mut rest = n | 0b1;
     let mut result = 0;
     while rest != 0 {
@@ -89,7 +89,7 @@ fn bin_digits(n: u8) -> u8 {
 }
 
 fn bit_mask(n: u8) -> u8 {
-    0b1 << (bin_digits(n) - 0b1)
+    (0b1 << binary_digits(n)) - 0b1
 }
 
 trait MbcContextHelpers: MbcContext {
