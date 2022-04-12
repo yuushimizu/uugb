@@ -1,3 +1,21 @@
+pub enum Color {
+    White,
+    LightGray,
+    DarkGray,
+    Black,
+}
+
+impl From<u8> for Color {
+    fn from(bits: u8) -> Self {
+        match bits & 0b11 {
+            0b11 => Self::Black,
+            0b10 => Self::DarkGray,
+            0b01 => Self::LightGray,
+            _ => Self::White,
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct Palette {
     bits: u8,

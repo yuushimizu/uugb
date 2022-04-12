@@ -10,6 +10,9 @@ pub mod timer;
 
 mod util;
 
+pub use cartridge::Cartridge;
 pub use game_boy::GameBoy;
-pub use ppu::{Coordinate, Renderer};
+pub use ppu::{display_size, Color, Renderer, Vec2};
 pub use serial::SerialConnection;
+
+pub const CLOCK_CYCLE: u64 = 4194304;

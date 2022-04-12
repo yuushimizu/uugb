@@ -1,13 +1,15 @@
+#![forbid(unsafe_code)]
+#![cfg_attr(not(debug_assertions), deny(warnings))]
+#![warn(clippy::all, rust_2018_idioms)]
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
+mod app;
 mod info;
 
-use core::{
-    cartridge::{self, Cartridge},
-    GameBoy, SerialConnection,
-};
-
 use clap::Parser;
+use core::cartridge;
 use simplelog::*;
-use std::{fs::File, io::Read, path::PathBuf};
+use std::{fs::File, io::Read, path::Path, path::PathBuf};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
@@ -18,9 +20,20 @@ struct Args {
     #[clap(long)]
     logo: bool,
     #[clap(long)]
-    dump: Option<String>,
-    #[clap(long)]
-    serial_out: Option<String>,
+    debug: bool,
+}
+
+fn read_rom(filepath: &Path) -> Vec<u8> {
+    let mut file = File::open(filepath).unwrap_or_else(|_err| {
+        eprintln!("Could not open the file: {}", filepath.display());
+        std::process::exit(1);
+    });
+    let mut rom = Vec::new();
+    file.read_to_end(&mut rom).unwrap_or_else(|_err| {
+        eprintln!("Could not read the file: {}", filepath.display());
+        std::process::exit(1);
+    });
+    rom
 }
 
 fn load_header(rom: &[u8]) -> cartridge::Header {
@@ -30,13 +43,7 @@ fn load_header(rom: &[u8]) -> cartridge::Header {
     })
 }
 
-fn create_cartridge(rom: Vec<u8>) -> Cartridge {
-    Cartridge::new(rom.into()).unwrap_or_else(|err| {
-        eprintln!("Could not load cartridge: {:?}", err);
-        std::process::exit(1);
-    })
-}
-
+/*
 fn boot(cartridge: Cartridge, args: &Args) {
     let mut renderer = DummyRenderer::default();
     let mut serial_connection = core::serial::NoSerialConnection;
@@ -52,63 +59,36 @@ fn boot(cartridge: Cartridge, args: &Args) {
         file.write_all(&game_boy.dump()).unwrap();
     }
 }
+*/
 
 fn main() {
-    /*
-    CombinedLogger::init(vec![TermLogger::new(
-        LevelFilter::Debug,
-        Config::default(),
-        TerminalMode::Mixed,
-        ColorChoice::Auto,
-    )])
-    .unwrap();
-    */
-    let arg = Args::parse();
-    let mut file = File::open(&arg.file).unwrap_or_else(|_err| {
-        eprintln!("Could not open the file: {}", arg.file.display());
-        std::process::exit(1);
-    });
-    let mut rom = Vec::new();
-    file.read_to_end(&mut rom).unwrap_or_else(|_err| {
-        eprintln!("Could not read the file: {}", arg.file.display());
-        std::process::exit(1);
-    });
-    if arg.info {
+    let args = Args::parse();
+    if args.debug {
+        CombinedLogger::init(vec![TermLogger::new(
+            LevelFilter::Debug,
+            Config::default(),
+            TerminalMode::Mixed,
+            ColorChoice::Auto,
+        )])
+        .unwrap();
+    }
+    if args.info {
+        let rom = read_rom(&args.file);
         info::print_cartridge_info(&load_header(&rom));
         return;
     }
-    if arg.logo {
+    if args.logo {
+        let rom = read_rom(&args.file);
         println!("{}", load_header(&rom).logo.to_ascii_art());
         return;
     }
-    boot(create_cartridge(rom), &arg);
-}
-
-use std::io::prelude::*;
-
-#[derive(Debug, Default)]
-struct DummyRenderer {
-    buffer: String,
-}
-
-impl core::Renderer for DummyRenderer {
-    fn render(&mut self, position: core::Coordinate, color: u8) {
-        //return;
-        if position.x == 0 {
-            if position.y == 0 {
-                print!("\x1B[2J\x1B[1;1H");
-                println!("{}", self.buffer);
-                self.buffer.clear();
-            } else {
-                self.buffer.push('\n');
-            }
-        }
-        self.buffer.push_str(match color {
-            0b00 => "  ",
-            0b01 => "░░",
-            0b10 => "▒▒",
-            0b11 => "██",
-            _ => "",
-        });
-    }
+    let app = app::App::new(&args.file);
+    let native_options = eframe::NativeOptions {
+        initial_window_size: Some(eframe::egui::Vec2::new(
+            core::display_size().x as f32 * 2.0,
+            core::display_size().y as f32 * 2.0,
+        )),
+        ..Default::default()
+    };
+    eframe::run_native(Box::new(app), native_options);
 }

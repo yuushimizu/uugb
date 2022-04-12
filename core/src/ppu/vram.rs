@@ -1,4 +1,4 @@
-use super::Coordinate;
+use super::Vec2;
 use std::ops::RangeInclusive;
 
 const TILE_DATA_SIZE: usize = 16;
@@ -15,7 +15,7 @@ impl<'vram> TileData<'vram> {
         Self { data }
     }
 
-    pub fn pixel(&self, position: Coordinate) -> u8 {
+    pub fn pixel(&self, position: Vec2) -> u8 {
         let index = (position.y % 8) as usize * 2;
         [1, 0]
             .iter()
@@ -89,18 +89,15 @@ pub struct TileMap<'vram> {
 }
 
 impl<'vram> TileMap<'vram> {
-    pub fn tile_data(&self, position: Coordinate) -> TileData {
+    pub fn tile_data(&self, position: Vec2) -> TileData {
         let id = self.data.tile_map_data(self.map_area)
             [position.y as usize * TILE_MAP_SIZE + position.x as usize];
         self.data.tile_data(self.data_area, id)
     }
 
-    pub fn pixel(&self, position: Coordinate) -> u8 {
-        self.tile_data(Coordinate {
-            x: position.x / 8,
-            y: position.y / 8,
-        })
-        .pixel(position)
+    pub fn pixel(&self, position: Vec2) -> u8 {
+        self.tile_data(Vec2::new(position.x / 8, position.y / 8))
+            .pixel(position)
     }
 }
 

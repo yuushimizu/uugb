@@ -1,25 +1,21 @@
 mod control;
-mod coordinate;
 mod interrupt_source;
 mod palette;
 mod renderer;
+mod vec2;
 
 pub mod oam;
 pub mod vram;
 
-pub use coordinate::Coordinate;
-pub use palette::Palette;
+pub use palette::{Color, Palette};
 pub use renderer::Renderer;
+pub use vec2::Vec2;
 
 use control::Control;
 use interrupt_source::InterruptSource;
 use vram::Vram;
 
 use crate::interrupt::{Interrupt, InterruptController};
-
-const WIDTH: u8 = 160;
-
-const HEIGHT: u8 = 144;
 
 const LINES_PER_FRAME: u8 = 154;
 
@@ -28,6 +24,10 @@ const CYCLES_PER_LINE: u64 = 456;
 const OAM_SEARCH_CYCLES: u64 = 80;
 
 const TRANSFER_CYCLES: u64 = 168;
+
+pub fn display_size() -> Vec2 {
+    Vec2::new(160, 144)
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 enum Mode {
@@ -42,13 +42,13 @@ pub struct Ppu {
     vram: Vram,
     control: Control,
     interrupt_source: InterruptSource,
-    current_position: Coordinate,
+    current_position: Vec2,
     y_compare: u8,
     background_palette: Palette,
     object_palette0: Palette,
     object_palette1: Palette,
-    scroll_position: Coordinate,
-    window_position: Coordinate,
+    scroll_position: Vec2,
+    window_position: Vec2,
     cycles_in_line: u64,
 }
 
@@ -57,7 +57,7 @@ impl Ppu {
         use Mode::*;
         if !self.control.is_enabled() {
             HBlank
-        } else if self.current_position.y >= HEIGHT {
+        } else if self.current_position.y >= display_size().y {
             VBlank
         } else if self.cycles_in_line < OAM_SEARCH_CYCLES {
             OamSearch
@@ -77,7 +77,7 @@ impl Ppu {
                     self.control.background_tile_map_area(),
                     self.control.background_tile_data_area(),
                 )
-                .pixel(self.current_position + self.scroll_position)
+                .pixel(self.current_position.wrapping_add(self.scroll_position))
         }
     }
 
@@ -87,7 +87,7 @@ impl Ppu {
         } else {
             0b00
         };
-        renderer.render(self.current_position, pixel)
+        renderer.render(self.current_position, pixel.into())
     }
 
     fn advance_cycle(&mut self) {
@@ -134,7 +134,7 @@ impl Ppu {
         }
         let current_mode = self.mode();
         if current_mode == Mode::Transfer {
-            if self.current_position.x < WIDTH {
+            if self.current_position.x < display_size().x {
                 self.render_pixel(renderer);
             }
             self.current_position.x += 1;
@@ -204,11 +204,11 @@ impl Ppu {
         &mut self.object_palette1
     }
 
-    pub fn scroll_position(&self) -> Coordinate {
+    pub fn scroll_position(&self) -> Vec2 {
         self.scroll_position
     }
 
-    pub fn scroll_position_mut(&mut self) -> &mut Coordinate {
+    pub fn scroll_position_mut(&mut self) -> &mut Vec2 {
         &mut self.scroll_position
     }
 
@@ -216,11 +216,11 @@ impl Ppu {
         self.y_compare = value;
     }
 
-    pub fn window_position(&self) -> Coordinate {
+    pub fn window_position(&self) -> Vec2 {
         self.window_position
     }
 
-    pub fn window_position_mut(&mut self) -> &mut Coordinate {
+    pub fn window_position_mut(&mut self) -> &mut Vec2 {
         &mut self.window_position
     }
 }
