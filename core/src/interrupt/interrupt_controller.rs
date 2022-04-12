@@ -65,10 +65,12 @@ impl InterruptController {
     }
 
     fn bits(&self, f: impl Fn(&State) -> bool) -> u8 {
-        self.states
-            .iter()
-            .enumerate()
-            .fold(0x00, |acc, (bit, state)| acc | (f(state) as u8) << bit)
+        0xFF << self.states.len()
+            | self
+                .states
+                .iter()
+                .enumerate()
+                .fold(0x00, |acc, (bit, state)| acc | (f(state) as u8) << bit)
     }
 
     fn set_bits(&mut self, f: impl Fn(&mut State, bool), bits: u8) {
