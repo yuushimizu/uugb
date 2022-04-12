@@ -25,6 +25,8 @@ const OAM_SEARCH_CYCLES: u64 = 80;
 
 const TRANSFER_CYCLES: u64 = 172;
 
+const WINDOW_OFFSET: u8 = 7;
+
 pub fn display_size() -> Vec2 {
     Vec2::new(160, 144)
 }
@@ -69,23 +71,44 @@ impl Ppu {
     }
 
     fn background_pixel(&self) -> u8 {
-        if !self.control.background_and_window_enabled() {
-            0b00
-        } else {
-            self.background_palette.apply(
-                self.vram
-                    .tile_map(
-                        self.control.background_tile_map_area(),
-                        self.control.background_tile_data_area(),
-                    )
-                    .pixel(self.current_position.wrapping_add(self.scroll_position)),
-            )
-        }
+        self.background_palette.apply(
+            self.vram
+                .tile_map(
+                    self.control.background_tile_map_area(),
+                    self.control.background_tile_data_area(),
+                )
+                .pixel(self.current_position.wrapping_add(self.scroll_position)),
+        )
+    }
+
+    fn is_in_window(&self) -> bool {
+        self.control.window_enabled()
+            && self.current_position.y >= self.window_position.y
+            && self.current_position.x >= self.window_position.x.wrapping_sub(WINDOW_OFFSET)
+    }
+
+    fn window_pixel(&self) -> u8 {
+        self.background_palette.apply(
+            self.vram
+                .tile_map(
+                    self.control.window_tile_map_area(),
+                    self.control.background_tile_data_area(),
+                )
+                .pixel(
+                    self.current_position
+                        .wrapping_sub(self.window_position)
+                        .wrapping_add(Vec2::new(WINDOW_OFFSET, 0)),
+                ),
+        )
     }
 
     fn render_pixel(&self, renderer: &mut impl Renderer) {
         let pixel = if self.control.background_and_window_enabled() {
-            self.background_pixel()
+            if self.is_in_window() {
+                self.window_pixel()
+            } else {
+                self.background_pixel()
+            }
         } else {
             0b00
         };

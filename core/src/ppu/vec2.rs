@@ -12,4 +12,8 @@ impl Vec2 {
     pub fn wrapping_add(&self, other: Self) -> Self {
         Self::new(self.x.wrapping_add(other.x), self.y.wrapping_add(other.y))
     }
+
+    pub fn wrapping_sub(&self, other: Self) -> Self {
+        Self::new(self.x.wrapping_sub(other.x), self.y.wrapping_sub(other.y))
+    }
 }
