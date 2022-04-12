@@ -39,7 +39,7 @@ enum Mode {
     Transfer = 0b11,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Ppu {
     vram: Vram,
     control: Control,
@@ -52,6 +52,24 @@ pub struct Ppu {
     scroll_position: Vec2,
     window_position: Vec2,
     cycles_in_line: u64,
+}
+
+impl Default for Ppu {
+    fn default() -> Self {
+        Self {
+            vram: Default::default(),
+            control: Default::default(),
+            interrupt_source: Default::default(),
+            current_position: Vec2::new(0, 0x91),
+            y_compare: 0,
+            background_palette: 0xFC.into(),
+            object_palette0: Default::default(),
+            object_palette1: Default::default(),
+            scroll_position: Default::default(),
+            window_position: Default::default(),
+            cycles_in_line: 0x91 * CYCLES_PER_LINE,
+        }
+    }
 }
 
 impl Ppu {

@@ -76,5 +76,13 @@ fn main() {
         .unwrap()
         .read_to_end(&mut rom)
         .unwrap();
+    use std::io::prelude::*;
+    let mut gb = core::GameBoy::boot(core::Cartridge::new(rom.into()).unwrap());
+    let dump = gb.dump();
+    File::create("./log/dump")
+        .unwrap()
+        .write_all(&dump)
+        .unwrap();
+    //    return;
     eframe::run_native(Box::new(app), native_options);
 }

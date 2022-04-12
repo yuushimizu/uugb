@@ -13,9 +13,19 @@ impl State {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct InterruptController {
     states: [State; Interrupt::ORDERED.len()],
+}
+
+impl Default for InterruptController {
+    fn default() -> Self {
+        let mut result = Self {
+            states: Default::default(),
+        };
+        result.request(Interrupt::VBlank);
+        result
+    }
 }
 
 impl Interrupt {

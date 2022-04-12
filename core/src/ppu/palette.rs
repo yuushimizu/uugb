@@ -21,6 +21,12 @@ pub struct Palette {
     bits: u8,
 }
 
+impl From<u8> for Palette {
+    fn from(bits: u8) -> Self {
+        Self { bits }
+    }
+}
+
 impl Palette {
     pub fn bits(&self) -> u8 {
         self.bits
