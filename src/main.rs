@@ -2,7 +2,7 @@ mod info;
 
 use core::{
     cartridge::{self, Cartridge},
-    GameBoy,
+    GameBoy, SerialConnection,
 };
 
 use clap::Parser;
@@ -19,6 +19,8 @@ struct Args {
     logo: bool,
     #[clap(long)]
     dump: Option<String>,
+    #[clap(long)]
+    serial_out: Option<String>,
 }
 
 fn load_header(rom: &[u8]) -> cartridge::Header {
@@ -35,16 +37,16 @@ fn create_cartridge(rom: Vec<u8>) -> Cartridge {
     })
 }
 
-fn boot(cartridge: Cartridge, dump: Option<String>) {
+fn boot(cartridge: Cartridge, args: &Args) {
     let mut renderer = DummyRenderer::default();
-    let mut serial_connection = DummySerialConnection::default();
+    let mut serial_connection = core::serial::NoSerialConnection;
     let mut game_boy = GameBoy::boot(cartridge);
     for _ in 0..120 {
         for _ in 0..(4194304) {
             game_boy.tick(&mut renderer, &mut serial_connection);
         }
     }
-    if let Some(dump_filepath) = dump {
+    if let Some(ref dump_filepath) = args.dump {
         use std::io::*;
         let mut file = File::create(dump_filepath).unwrap();
         file.write_all(&game_boy.dump()).unwrap();
@@ -79,7 +81,7 @@ fn main() {
         println!("{}", load_header(&rom).logo.to_ascii_art());
         return;
     }
-    boot(create_cartridge(rom), arg.dump);
+    boot(create_cartridge(rom), &arg);
 }
 
 use std::io::prelude::*;
@@ -108,43 +110,5 @@ impl core::Renderer for DummyRenderer {
             0b11 => "██",
             _ => "",
         });
-    }
-}
-
-#[derive(Debug)]
-struct DummySerialConnection {
-    file: File,
-    bits: Vec<bool>,
-}
-
-impl Default for DummySerialConnection {
-    fn default() -> Self {
-        Self {
-            file: File::create("./log/serial").unwrap(),
-            bits: vec![],
-        }
-    }
-}
-
-impl core::SerialConnection for DummySerialConnection {
-    fn send(&mut self, bit: bool) {
-        self.bits.push(bit);
-        if self.bits.len() >= 8 {
-            let byte = self
-                .bits
-                .iter()
-                .fold(0x00, |acc, &bit| acc << 1 | (bit as u8));
-            match self.file.write(&[byte]) {
-                Ok(_) => {}
-                Err(err) => {
-                    eprintln!("Serial output error: {:?}", err);
-                }
-            }
-            self.bits.clear();
-        }
-    }
-
-    fn receive(&self) -> bool {
-        true
     }
 }

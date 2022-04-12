@@ -35,10 +35,10 @@ impl Serial {
     }
 
     fn transfer(&mut self, connection: &mut impl SerialConnection) {
-        let input = connection.receive();
+        let input = connection.send();
         let output = self.buffer.bit(7);
         self.buffer = self.buffer << 1 | (input as u8);
-        connection.send(output);
+        connection.receive(output);
         self.transfered_bits += 1;
         if self.transfered_bits >= 8 {
             self.is_started = false;
