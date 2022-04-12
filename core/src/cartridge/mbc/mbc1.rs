@@ -112,7 +112,7 @@ trait MbcContextHelpers: MbcContext {
     fn ram_bank_range(&self, number: u8) -> Range<usize> {
         let start = (number & self.ram_bank_mask()) as usize * RAM_BANK_SIZE;
         let end = start + RAM_BANK_SIZE;
-        if end >= self.ram().len() {
+        if end > self.ram().len() {
             0..0
         } else {
             start..end
@@ -137,11 +137,11 @@ impl Mbc for Mbc1 {
             0x0000..=0x3FFF => *context
                 .rom_bank(self.first_rom_bank_number())
                 .get(address as usize)
-                .unwrap_or(&0x00),
+                .unwrap_or(&0xFF),
             0x4000..=0x7FFF => *context
                 .rom_bank(self.rom_bank_number())
                 .get(address as usize - 0x4000)
-                .unwrap_or(&0x00),
+                .unwrap_or(&0xFF),
             _ => unreachable!(),
         }
     }
@@ -160,7 +160,7 @@ impl Mbc for Mbc1 {
         *context
             .ram_bank(self.ram_bank_number())
             .get(address as usize)
-            .unwrap_or(&0x00)
+            .unwrap_or(&0xFF)
     }
 
     fn write_ram(&mut self, context: &mut dyn MbcContext, address: u16, value: u8) {

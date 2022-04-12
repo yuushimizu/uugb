@@ -56,7 +56,7 @@ impl Cartridge {
         let header = Header::load(&rom).map_err(Error::HeaderError)?;
         let state = State {
             rom,
-            ram: vec![0x00u8; header.ram_size.amount()],
+            ram: vec![0xFFu8; header.ram_size.amount()],
         };
         let mbc = create_mbc(&header)?;
         Ok(Self { header, state, mbc })
