@@ -1,6 +1,11 @@
 use core::{Cartridge, GameBoy};
 use eframe::{egui, epi};
-use std::{fs::File, io::Read, path::Path};
+use std::{
+    fs::File,
+    io::Read,
+    path::Path,
+    time::{Duration, SystemTime},
+};
 
 #[derive(Debug)]
 struct Renderer {
@@ -44,10 +49,13 @@ impl core::Renderer for Renderer {
     }
 }
 
+const NANOS_PER_FRAME: u128 = (1_000_000_000f64 / 59.7f64) as u128;
+
 pub struct App {
     game_boy: Option<GameBoy>,
     renderer: Renderer,
     texture: Option<egui::TextureHandle>,
+    last_frame_time: SystemTime,
 }
 
 impl App {
@@ -58,14 +66,26 @@ impl App {
             game_boy: Some(GameBoy::boot(Cartridge::new(rom.into()).unwrap())),
             renderer: Default::default(),
             texture: None,
+            last_frame_time: SystemTime::now(),
         }
     }
 
     fn advance_frame(&mut self) {
-        if let Some(ref mut game_boy) = self.game_boy {
-            for _ in 0..core::CLOCK_CYCLE {
-                game_boy.tick(&mut self.renderer, &mut core::serial::NoSerialConnection);
+        loop {
+            let current_time = SystemTime::now();
+            let duration = current_time
+                .duration_since(self.last_frame_time)
+                .map(|duration| duration.as_nanos())
+                .unwrap_or(0);
+            if duration < NANOS_PER_FRAME {
+                break;
             }
+            if let Some(ref mut game_boy) = self.game_boy {
+                for _ in 0..core::CYCLES_PER_FRAME {
+                    game_boy.tick(&mut self.renderer, &mut core::serial::NoSerialConnection);
+                }
+            }
+            self.last_frame_time += Duration::from_nanos(NANOS_PER_FRAME as u64);
         }
     }
 }
@@ -85,7 +105,6 @@ impl epi::App for App {
 
     fn update(&mut self, context: &egui::Context, _frame: &epi::Frame) {
         self.advance_frame();
-        context.request_repaint();
         egui::CentralPanel::default()
             .frame(egui::Frame {
                 margin: egui::style::Margin::symmetric(24f32, 16f32),
@@ -93,11 +112,18 @@ impl epi::App for App {
                 ..Default::default()
             })
             .show(context, |ui| {
-                let texture = self.texture.get_or_insert_with(|| {
-                    ui.ctx().load_texture("game-frame", self.renderer.image())
+                egui::Frame {
+                    stroke: egui::Stroke::new(4f32, egui::Color32::DARK_GRAY),
+                    ..Default::default()
+                }
+                .show(ui, |ui| {
+                    let texture = self.texture.get_or_insert_with(|| {
+                        ui.ctx().load_texture("game-frame", self.renderer.image())
+                    });
+                    texture.set(self.renderer.image());
+                    ui.image(texture, ui.max_rect().max - ui.max_rect().min);
                 });
-                texture.set(self.renderer.image());
-                ui.image(texture, ui.max_rect().max - ui.max_rect().min);
             });
+        context.request_repaint();
     }
 }

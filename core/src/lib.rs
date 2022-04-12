@@ -16,3 +16,4 @@ pub use ppu::{display_size, Color, Renderer, Vec2};
 pub use serial::SerialConnection;
 
 pub const CLOCK_CYCLE: u64 = 4194304;
+pub const CYCLES_PER_FRAME: u64 = 70224;
