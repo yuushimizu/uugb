@@ -43,24 +43,6 @@ fn load_header(rom: &[u8]) -> cartridge::Header {
     })
 }
 
-/*
-fn boot(cartridge: Cartridge, args: &Args) {
-    let mut renderer = DummyRenderer::default();
-    let mut serial_connection = core::serial::NoSerialConnection;
-    let mut game_boy = GameBoy::boot(cartridge);
-    for _ in 0..120 {
-        for _ in 0..(4194304) {
-            game_boy.tick(&mut renderer, &mut serial_connection);
-        }
-    }
-    if let Some(ref dump_filepath) = args.dump {
-        use std::io::*;
-        let mut file = File::create(dump_filepath).unwrap();
-        file.write_all(&game_boy.dump()).unwrap();
-    }
-}
-*/
-
 fn main() {
     let args = Args::parse();
     if args.debug {
