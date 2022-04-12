@@ -1,5 +1,6 @@
 mod apu;
 mod cartridge;
+mod cgb;
 mod hram;
 mod interrupt;
 mod ir;
@@ -14,6 +15,7 @@ mod wram;
 
 use apu::APU;
 use cartridge::CARTRIDGE;
+use cgb::CGB_REGISTERS;
 use hram::HRAM;
 use interrupt::{INTERRUPT_ENABLED, INTERRUPT_REQUESTED};
 use ir::IR;
@@ -41,7 +43,9 @@ pub const ROOT: Segment = Segment::Nested(|address| {
         0xFF08..=0xFF0E => &UNKNOWN,
         0xFF0F => &INTERRUPT_REQUESTED,
         0xFF10..=0xFF3F => &APU,
-        0xFF40..=0xFF55 => &PPU,
+        0xFF40..=0xFF4C => &PPU,
+        0xFF4D => &CGB_REGISTERS,
+        0xFF4E..=0xFF55 => &PPU,
         0xFF56 => &IR,
         0xFF57..=0xFF67 => &UNKNOWN,
         0xFF68..=0xFF6C => &PPU,
