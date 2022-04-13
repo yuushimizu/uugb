@@ -71,15 +71,12 @@ impl App {
     }
 
     fn advance_frame(&mut self) {
-        loop {
-            let current_time = SystemTime::now();
-            let duration = current_time
-                .duration_since(self.last_frame_time)
-                .map(|duration| duration.as_nanos())
-                .unwrap_or(0);
-            if duration < NANOS_PER_FRAME {
-                break;
-            }
+        let current_time = SystemTime::now();
+        let duration = current_time
+            .duration_since(self.last_frame_time)
+            .map(|duration| duration.as_nanos())
+            .unwrap_or(0);
+        if duration >= NANOS_PER_FRAME {
             if let Some(ref mut game_boy) = self.game_boy {
                 for _ in 0..core::M_CYCLES_PER_FRAME {
                     game_boy.tick(&mut self.renderer, &mut core::serial::NoSerialConnection);
