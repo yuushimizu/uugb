@@ -23,7 +23,7 @@ impl Default for Oam {
     fn default() -> Self {
         Self {
             dma_source_address_upper: 0x00,
-            data: vec![0x00u8; TOTAL_SIZE as usize],
+            data: vec![0x00u8; TOTAL_SIZE],
         }
     }
 }
@@ -38,7 +38,7 @@ impl Oam {
         dma.request(
             (source_address_upper as u16) << 8,
             DMA_DESTINATION,
-            TOTAL_SIZE,
+            TOTAL_SIZE as u16,
         )
     }
 

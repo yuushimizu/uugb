@@ -37,11 +37,10 @@ impl<'a> Memory<'a> {
     }
 
     pub fn tick(&mut self) {
-        if let Some(dma_request) = self.0.components_mut().dma.pop_request() {
-            for offset in 0..dma_request.length {
-                let value = self.read(dma_request.source + offset as u16);
-                self.write(dma_request.destination + offset as u16, value)
-            }
+        if let Some(dma_request) = self.0.components_mut().dma.running_request() {
+            let value = self.read(dma_request.next_source());
+            self.write(dma_request.next_destination(), value);
+            self.0.components_mut().dma.advance_running_request()
         }
     }
 }

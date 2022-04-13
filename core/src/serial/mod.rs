@@ -91,7 +91,7 @@ impl Serial {
     pub fn control_bits(&self) -> u8 {
         0b0111_1100
             | (self.is_started as u8) << 7
-            | (self.is_fast as u8) << 1
+            | /* CGB: (self.is_fast as u8) */ 0b1 << 1
             | self.uses_internal_clock as u8
     }
 

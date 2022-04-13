@@ -1,3 +1,3 @@
 use super::Segment;
 
-pub const APU: Segment = Segment::Leaf(|_, _| 0, |_, _, _| {});
+pub const APU: Segment = Segment::Leaf(|_, _| 0xFF, |_, _, _| {});
