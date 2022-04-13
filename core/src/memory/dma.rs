@@ -1,12 +1,12 @@
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
-pub struct Request {
+pub struct Process {
     source: u16,
     destination: u16,
     length: u16,
     transfered: u16,
 }
 
-impl Request {
+impl Process {
     pub fn next_source(&self) -> u16 {
         self.source.saturating_add(self.transfered)
     }
@@ -14,16 +14,21 @@ impl Request {
     pub fn next_destination(&self) -> u16 {
         self.destination.saturating_add(self.transfered)
     }
+
+    pub fn is_finished(&self) -> bool {
+        self.transfered >= self.length
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct Dma {
-    running_requests: Vec<Request>,
+    running_process: Option<Process>,
+    queued_process: Option<Process>,
 }
 
 impl Dma {
     pub fn request(&mut self, source: u16, destination: u16, length: u16) {
-        self.running_requests.push(Request {
+        self.queued_process = Some(Process {
             source,
             destination,
             length: length,
@@ -31,15 +36,23 @@ impl Dma {
         });
     }
 
-    pub fn running_requests(&self) -> &[Request] {
-        &self.running_requests
+    pub fn is_running(&self) -> bool {
+        self.running_process().is_some()
     }
 
-    pub fn advance_running_requests(&mut self) {
-        for request in self.running_requests.iter_mut() {
-            request.transfered = request.transfered.saturating_add(1);
+    pub fn running_process(&self) -> &Option<Process> {
+        &self.running_process
+    }
+
+    pub fn tick(&mut self) {
+        if let Some(ref mut process) = self.running_process {
+            process.transfered = process.transfered.saturating_add(1);
+            if process.is_finished() {
+                self.running_process = None;
+            }
         }
-        self.running_requests
-            .retain(|request| request.transfered < request.length);
+        if self.queued_process.is_some() {
+            self.running_process = self.queued_process.take();
+        }
     }
 }
