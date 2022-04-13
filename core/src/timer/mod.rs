@@ -13,20 +13,21 @@ pub struct Timer {
     counter: u8,
     modulo: u8,
     previous_output: bool,
+    overflow: bool,
 }
 
 impl Timer {
     pub fn tick(&mut self, interrupt_controller: &mut InterruptController) {
         self.divider.tick();
+        if self.overflow {
+            self.overflow = false;
+            self.counter = self.modulo;
+            interrupt_controller.request(Interrupt::Timer);
+        }
         let output = self.control.is_enabled()
             && (self.divider.counter() & self.control.input_clock().bit_mask() != 0);
         if self.previous_output && !output {
-            if self.counter == 0xFF {
-                self.counter = self.modulo;
-                interrupt_controller.request(Interrupt::Timer);
-            } else {
-                self.counter = self.counter.wrapping_add(1);
-            }
+            (self.counter, self.overflow) = self.counter.overflowing_add(1);
         }
         self.previous_output = output;
     }
