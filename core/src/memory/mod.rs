@@ -37,10 +37,18 @@ impl<'a> Memory<'a> {
     }
 
     pub fn tick(&mut self) {
-        if let Some(dma_request) = self.0.components_mut().dma.running_request() {
+        let dma_requests = self
+            .0
+            .components_mut()
+            .dma
+            .running_requests()
+            .iter()
+            .map(|request| request.clone())
+            .collect::<Vec<_>>();
+        for dma_request in dma_requests {
             let value = self.read(dma_request.next_source());
             self.write(dma_request.next_destination(), value);
-            self.0.components_mut().dma.advance_running_request()
         }
+        self.0.components_mut().dma.advance_running_requests()
     }
 }

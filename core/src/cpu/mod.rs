@@ -18,7 +18,7 @@ pub struct Cpu {
     is_stopped: bool,
     interrupt_enabled: bool,
     interrupt_enabling: bool,
-    wait_cycles: u64,
+    wait_m_cycles: u64,
 }
 
 struct InstructionContextComponents<'a> {
@@ -61,7 +61,7 @@ impl<'a> instruction::context::Components for InstructionContextComponents<'a> {
     }
 
     fn wait(&mut self) {
-        self.cpu.wait_cycles += 4;
+        self.cpu.wait_m_cycles += 1;
     }
 }
 
@@ -93,8 +93,8 @@ impl Cpu {
     }
 
     pub fn tick(&mut self, context: &mut impl Context) {
-        self.wait_cycles = self.wait_cycles.saturating_sub(1);
-        if self.wait_cycles > 0 {
+        self.wait_m_cycles = self.wait_m_cycles.saturating_sub(1);
+        if self.wait_m_cycles > 0 {
             return;
         }
         if self.interrupt_enabling {

@@ -81,7 +81,7 @@ impl App {
                 break;
             }
             if let Some(ref mut game_boy) = self.game_boy {
-                for _ in 0..core::CYCLES_PER_FRAME {
+                for _ in 0..core::M_CYCLES_PER_FRAME {
                     game_boy.tick(&mut self.renderer, &mut core::serial::NoSerialConnection);
                 }
             }

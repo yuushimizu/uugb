@@ -18,15 +18,12 @@ impl Request {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct Dma {
-    running_request: Option<Request>,
+    running_requests: Vec<Request>,
 }
 
 impl Dma {
     pub fn request(&mut self, source: u16, destination: u16, length: u16) {
-        if self.running_request.is_some() {
-            return;
-        }
-        self.running_request = Some(Request {
+        self.running_requests.push(Request {
             source,
             destination,
             length: length,
@@ -34,16 +31,15 @@ impl Dma {
         });
     }
 
-    pub fn running_request(&self) -> Option<Request> {
-        self.running_request.clone()
+    pub fn running_requests(&self) -> &[Request] {
+        &self.running_requests
     }
 
-    pub fn advance_running_request(&mut self) {
-        if let Some(ref mut request) = self.running_request {
+    pub fn advance_running_requests(&mut self) {
+        for request in self.running_requests.iter_mut() {
             request.transfered = request.transfered.saturating_add(1);
-            if request.transfered >= request.length {
-                self.running_request = None
-            }
         }
+        self.running_requests
+            .retain(|request| request.transfered < request.length);
     }
 }

@@ -35,10 +35,9 @@ impl Default for Serial {
 impl Serial {
     fn cycles(&self) -> u64 {
         if self.is_fast {
-            16
+            128 // CGB: 4
         } else {
-            //512
-            16
+            128
         }
     }
 

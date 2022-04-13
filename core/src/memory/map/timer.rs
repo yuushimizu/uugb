@@ -2,8 +2,8 @@ use super::Segment;
 
 pub const TIMER: Segment = Segment::Nested(|address| match address {
     0xFF04 => &Segment::Leaf(
-        |components, _| components.timer.divider_register(),
-        |components, _, _| components.timer.reset_divider(),
+        |components, _| components.divider.register(),
+        |components, _, _| components.divider.reset(),
     ),
     0xFF05 => &Segment::Leaf(
         |components, _| components.timer.counter(),

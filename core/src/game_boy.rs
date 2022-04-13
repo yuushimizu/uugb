@@ -6,7 +6,7 @@ use crate::{
     memory::{self, Dma, Hram, Memory, Wram},
     ppu::{Ppu, Renderer},
     serial::{Serial, SerialConnection},
-    timer::Timer,
+    timer::{Divider, Timer},
 };
 
 #[derive(Debug)]
@@ -17,6 +17,7 @@ struct MemoryComponents {
     hram: Hram,
     interrupt_controller: InterruptController,
     joypad: Joypad,
+    divider: Divider,
     timer: Timer,
     serial: Serial,
     dma: Dma,
@@ -31,6 +32,7 @@ impl memory::Context for MemoryComponents {
             hram: &self.hram,
             interrupt_controller: &self.interrupt_controller,
             joypad: &self.joypad,
+            divider: &self.divider,
             timer: &self.timer,
             serial: &self.serial,
             dma: &self.dma,
@@ -45,6 +47,7 @@ impl memory::Context for MemoryComponents {
             hram: &mut self.hram,
             interrupt_controller: &mut self.interrupt_controller,
             joypad: &mut self.joypad,
+            divider: &mut self.divider,
             timer: &mut self.timer,
             serial: &mut self.serial,
             dma: &mut self.dma,
@@ -79,6 +82,7 @@ impl GameBoy {
                 hram: Default::default(),
                 interrupt_controller: Default::default(),
                 joypad: Default::default(),
+                divider: Default::default(),
                 timer: Default::default(),
                 serial: Default::default(),
                 dma: Default::default(),
@@ -91,13 +95,17 @@ impl GameBoy {
         renderer: &mut impl Renderer,
         serial_connection: &mut impl SerialConnection,
     ) {
+        for _ in 0..4 {
+            self.memory_components.divider.tick();
+            self.memory_components
+                .ppu
+                .tick(&mut self.memory_components.interrupt_controller, renderer);
+        }
         self.cpu.tick(&mut self.memory_components);
-        self.memory_components
-            .ppu
-            .tick(&mut self.memory_components.interrupt_controller, renderer);
-        self.memory_components
-            .timer
-            .tick(&mut self.memory_components.interrupt_controller);
+        self.memory_components.timer.tick(
+            &self.memory_components.divider,
+            &mut self.memory_components.interrupt_controller,
+        );
         self.memory_components.serial.tick(
             &mut self.memory_components.interrupt_controller,
             serial_connection,

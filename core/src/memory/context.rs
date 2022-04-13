@@ -5,7 +5,7 @@ use crate::{
     memory::{Dma, Hram, Wram},
     ppu::Ppu,
     serial::Serial,
-    timer::Timer,
+    timer::{Divider, Timer},
 };
 
 #[derive(Debug)]
@@ -16,6 +16,7 @@ pub struct ComponentsRefs<'a> {
     pub hram: &'a Hram,
     pub interrupt_controller: &'a InterruptController,
     pub joypad: &'a Joypad,
+    pub divider: &'a Divider,
     pub timer: &'a Timer,
     pub serial: &'a Serial,
     pub dma: &'a Dma,
@@ -29,6 +30,7 @@ pub struct ComponentsRefsMut<'a> {
     pub hram: &'a mut Hram,
     pub interrupt_controller: &'a mut InterruptController,
     pub joypad: &'a mut Joypad,
+    pub divider: &'a mut Divider,
     pub timer: &'a mut Timer,
     pub serial: &'a mut Serial,
     pub dma: &'a mut Dma,
