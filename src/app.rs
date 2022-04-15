@@ -7,30 +7,26 @@ use std::{
     time::{Duration, SystemTime},
 };
 
-#[derive(Debug)]
 struct Renderer {
-    buffer: Vec<u8>,
+    rendered_image: egui::ColorImage,
+    rendering_image: egui::ColorImage,
 }
 
 impl Renderer {
     fn image(&self) -> egui::ColorImage {
-        egui::ColorImage::from_rgba_unmultiplied(
-            [
-                core::display_size().x as usize,
-                core::display_size().y as usize,
-            ],
-            &self.buffer,
-        )
+        self.rendered_image.clone()
     }
 }
 
 impl Default for Renderer {
     fn default() -> Self {
+        let size = [
+            core::display_size().x as usize,
+            core::display_size().y as usize,
+        ];
         Self {
-            buffer: vec![
-                0u8;
-                core::display_size().y as usize * core::display_size().x as usize * 4
-            ],
+            rendered_image: egui::ColorImage::new(size, egui::Color32::BLACK),
+            rendering_image: egui::ColorImage::new(size, egui::Color32::BLACK),
         }
     }
 }
@@ -38,14 +34,17 @@ impl Default for Renderer {
 impl core::Renderer for Renderer {
     fn render(&mut self, position: core::Vec2, color: core::Color) {
         use core::Color::*;
-        let start =
-            position.y as usize * core::display_size().x as usize * 4 + position.x as usize * 4;
-        self.buffer[start..start + 4].copy_from_slice(match color {
-            White => &[134, 163, 90, 255],
-            LightGray => &[111, 137, 79, 255],
-            DarkGray => &[88, 117, 79, 255],
-            Black => &[50, 84, 79, 255],
-        });
+        self.rendering_image.pixels
+            [position.y as usize * core::display_size().x as usize + position.x as usize] =
+            match color {
+                White => egui::Color32::from_rgb(134, 163, 90),
+                LightGray => egui::Color32::from_rgb(111, 137, 79),
+                DarkGray => egui::Color32::from_rgb(88, 117, 79),
+                Black => egui::Color32::from_rgb(50, 84, 79),
+            };
+        if position.x == core::display_size().x - 1 && position.y == core::display_size().y - 1 {
+            std::mem::swap(&mut self.rendered_image, &mut self.rendering_image);
+        }
     }
 }
 
