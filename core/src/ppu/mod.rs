@@ -46,6 +46,7 @@ pub struct Ppu {
     oam: Oam,
     control: Control,
     interrupt_source: InterruptSource,
+    interrupt_requested: bool,
     current_position: Vec2,
     y_compare: u8,
     background_palette: Palette,
@@ -63,6 +64,7 @@ impl Default for Ppu {
             oam: Oam::default(),
             control: Default::default(),
             interrupt_source: Default::default(),
+            interrupt_requested: false,
             current_position: Vec2::new(0, 0x91),
             y_compare: 0,
             background_palette: 0xFC.into(),
@@ -196,26 +198,19 @@ impl Ppu {
         }
     }
 
-    fn request_interrupt(
-        &self,
-        previous_mode: Mode,
-        interrupt_controller: &mut InterruptController,
-    ) {
+    fn request_lcd_stat_interrupt(&mut self, interrupt_controller: &mut InterruptController) {
         use Mode::*;
-        if previous_mode != self.mode() && self.mode() == VBlank {
-            interrupt_controller.request(Interrupt::VBlank);
-        }
-        if self.current_position.y == self.y_compare && self.interrupt_source.ly()
-            || (previous_mode != self.mode()
-                && match self.mode() {
-                    HBlank => self.interrupt_source.hblank(),
-                    VBlank => self.interrupt_source.vblank(),
-                    OamSearch => self.interrupt_source.oam(),
-                    _ => false,
-                })
-        {
+        let occurred = self.current_position.y == self.y_compare && self.interrupt_source.ly()
+            || match self.mode() {
+                HBlank => self.interrupt_source.hblank(),
+                VBlank => self.interrupt_source.vblank(),
+                OamSearch => self.interrupt_source.oam(),
+                _ => false,
+            };
+        if occurred && !self.interrupt_requested {
             interrupt_controller.request(Interrupt::LcdStat);
         }
+        self.interrupt_requested = occurred;
     }
 
     pub fn tick(
@@ -232,7 +227,10 @@ impl Ppu {
             self.current_position.x += 1;
         }
         self.advance_cycle();
-        self.request_interrupt(current_mode, interrupt_controller);
+        if current_mode != self.mode() && self.mode() == Mode::VBlank {
+            interrupt_controller.request(Interrupt::VBlank);
+        }
+        self.request_lcd_stat_interrupt(interrupt_controller);
     }
 
     pub fn vram(&self) -> &Vram {
