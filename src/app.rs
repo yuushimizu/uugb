@@ -62,7 +62,7 @@ impl App {
         let mut rom = Vec::new();
         File::open(filepath).unwrap().read_to_end(&mut rom).unwrap();
         Self {
-            game_boy: Some(GameBoy::boot(Cartridge::new(rom.into()).unwrap())),
+            game_boy: Some(GameBoy::new(Cartridge::new(rom.into()).unwrap())),
             renderer: Default::default(),
             texture: None,
             last_frame_time: SystemTime::now(),

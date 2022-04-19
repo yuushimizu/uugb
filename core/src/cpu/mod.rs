@@ -1,9 +1,7 @@
 pub mod registers;
 
-mod context;
 mod instruction;
 
-pub use context::Context;
 pub use registers::Registers;
 
 use instruction::Instruction;
@@ -21,12 +19,12 @@ pub struct Cpu {
     wait_m_cycles: u64,
 }
 
-struct InstructionContextComponents<'a> {
+struct InstructionContextComponents<'a, 'memory> {
     cpu: &'a mut Cpu,
-    memory: Memory<'a>,
+    memory: &'a mut Memory<'memory>,
 }
 
-impl<'a> instruction::context::Components for InstructionContextComponents<'a> {
+impl<'a, 'memory> instruction::context::Components for InstructionContextComponents<'a, 'memory> {
     fn registers(&self) -> &Registers {
         &self.cpu.registers
     }
@@ -66,25 +64,25 @@ impl<'a> instruction::context::Components for InstructionContextComponents<'a> {
 }
 
 impl Cpu {
-    fn with_instruction_context(
+    fn with_instruction_context<'memory>(
         &mut self,
-        context: &mut impl Context,
+        memory: &mut Memory<'memory>,
         f: impl FnOnce(&mut instruction::Context),
     ) {
-        let mut instruction_context_components = InstructionContextComponents {
-            cpu: self,
-            memory: Memory::new(context),
-        };
+        let mut instruction_context_components = InstructionContextComponents { cpu: self, memory };
         let mut instruction_context =
             instruction::Context::new(&mut instruction_context_components);
         f(&mut instruction_context);
     }
 
-    fn perform_interrupt(&mut self, context: &mut impl Context, interrupt: Interrupt) {
+    fn perform_interrupt<'memory>(&mut self, memory: &mut Memory<'memory>, interrupt: Interrupt) {
         self.interrupt_enabled = false;
         self.interrupt_enabling = false;
-        context.interrupt_controller_mut().clear(interrupt);
-        self.with_instruction_context(context, |instruction_context| {
+        memory
+            .components_mut()
+            .interrupt_controller
+            .clear(interrupt);
+        self.with_instruction_context(memory, |instruction_context| {
             log::info!(target: "cpu_event", "Handle interrupt: {:?}", interrupt);
             instruction_context.wait();
             instruction_context.wait();
@@ -92,7 +90,7 @@ impl Cpu {
         });
     }
 
-    pub fn tick(&mut self, context: &mut impl Context) {
+    pub fn tick<'cpu, 'memory>(&'cpu mut self, memory: &'memory mut Memory<'memory>) {
         self.wait_m_cycles = self.wait_m_cycles.saturating_sub(1);
         if self.wait_m_cycles > 0 {
             return;
@@ -101,24 +99,24 @@ impl Cpu {
             self.interrupt_enabled = true;
             self.interrupt_enabling = false;
         }
-        if let Some(interrupt) = context.interrupt_controller().pending_interrupt() {
+        if let Some(interrupt) = memory.components().interrupt_controller.pending_interrupt() {
             self.is_halted = false;
             if self.interrupt_enabled {
-                self.perform_interrupt(context, interrupt);
+                self.perform_interrupt(memory, interrupt);
                 return;
             }
         }
         if self.is_halted {
             return;
         }
-        self.with_instruction_context(context, |instruction_context| {
+        self.with_instruction_context(memory, |instruction_context| {
             let pc = instruction_context.registers().pc;
             let instruction = Instruction::fetch(instruction_context);
             log::info!(target: "cpu_event", "Instruction: {:04X} {}", pc, instruction.debug(instruction_context));
             instruction.execute(instruction_context);
         });
         if self.is_stopped {
-            context.interrupt_controller_mut().clear_all();
+            memory.components_mut().interrupt_controller.clear_all();
         }
     }
 }

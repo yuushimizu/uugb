@@ -2,10 +2,10 @@ pub mod dma;
 pub mod hram;
 pub mod wram;
 
-mod context;
+mod components;
 mod map;
 
-pub use context::{ComponentsRefs, ComponentsRefsMut, Context};
+pub use components::Components;
 pub use dma::Dma;
 pub use hram::Hram;
 pub use map::ROOT;
@@ -13,7 +13,7 @@ pub use wram::Wram;
 
 use std::fmt;
 
-pub struct Memory<'a>(&'a mut dyn Context);
+pub struct Memory<'a>(Components<'a>);
 
 impl<'a> fmt::Debug for Memory<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -22,25 +22,31 @@ impl<'a> fmt::Debug for Memory<'a> {
 }
 
 impl<'a> Memory<'a> {
-    pub fn new(components: &'a mut impl Context) -> Self {
+    pub fn new(components: Components<'a>) -> Self {
         Self(components)
     }
 
+    pub fn components(&self) -> &Components {
+        &self.0
+    }
+
+    pub fn components_mut(&mut self) -> &mut Components<'a> {
+        &mut self.0
+    }
+
     pub fn read(&self, address: u16) -> u8 {
-        let components = self.0.components();
-        ROOT.read(&components, address)
+        ROOT.read(&self.0, address)
     }
 
     pub fn write(&mut self, address: u16, value: u8) {
-        let mut components = self.0.components_mut();
-        ROOT.write(&mut components, address, value)
+        ROOT.write(&mut self.0, address, value)
     }
 
     pub fn tick(&mut self) {
-        if let Some(dma_process) = self.0.components_mut().dma.running_process().clone() {
+        if let Some(dma_process) = self.0.dma.running_process().clone() {
             let value = self.read(dma_process.next_source());
             self.write(dma_process.next_destination(), value);
         }
-        self.0.components_mut().dma.tick()
+        self.0.dma.tick()
     }
 }
