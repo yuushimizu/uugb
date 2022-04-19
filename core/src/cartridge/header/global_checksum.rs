@@ -22,7 +22,7 @@ impl GlobalChecksum {
 
     pub fn load(rom: &[u8]) -> Self {
         Self {
-            value: (rom[UPPER_ADDRESS] as u16) << 8 | rom[LOWER_ADDRESS] as u16,
+            value: u16::from_be_bytes([rom[UPPER_ADDRESS], rom[LOWER_ADDRESS]]),
             calculated_value: Self::calculate(rom),
         }
     }

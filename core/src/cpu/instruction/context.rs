@@ -21,7 +21,11 @@ pub trait Components {
 }
 
 fn to_u16(lower: u8, upper: u8) -> u16 {
-    (upper as u16) << 8 | lower as u16
+    u16::from_le_bytes([lower, upper])
+}
+
+fn to_bytes(value: u16) -> [u8; 2] {
+    value.to_le_bytes()
 }
 
 pub struct Context<'a> {
@@ -84,8 +88,9 @@ impl<'a> Context<'a> {
     }
 
     pub fn write16(&mut self, address: u16, value: u16) {
-        self.write(address, value as u8);
-        self.write(address + 1, (value >> 8) as u8);
+        let bytes = to_bytes(value);
+        self.write(address, bytes[0]);
+        self.write(address.wrapping_add(1), bytes[1]);
     }
 
     pub fn fetch(&mut self) -> u8 {
@@ -128,8 +133,9 @@ impl<'a> Context<'a> {
     }
 
     pub fn push16(&mut self, value: u16) {
-        self.push((value >> 8) as u8);
-        self.push(value as u8);
+        let bytes = to_bytes(value);
+        self.push(bytes[1]);
+        self.push(bytes[0]);
     }
 
     pub fn pop16(&mut self) -> u16 {
@@ -155,7 +161,7 @@ impl<'a> Context<'a> {
     pub fn debug_u16(&self, address: u16) -> u16 {
         to_u16(
             self.components.read(address),
-            self.components.read(address + 1),
+            self.components.read(address.wrapping_add(1)),
         )
     }
 }

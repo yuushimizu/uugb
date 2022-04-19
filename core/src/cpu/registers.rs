@@ -68,11 +68,11 @@ impl Default for Registers {
 }
 
 fn to_u16(n: u8, m: u8) -> u16 {
-    (n as u16) << 8 | m as u16
+    u16::from_be_bytes([n, m])
 }
 
-fn to_u8s(n: u16) -> (u8, u8) {
-    ((n >> 8) as u8, n as u8)
+fn to_bytes(n: u16) -> [u8; 2] {
+    n.to_be_bytes()
 }
 
 impl Registers {
@@ -81,7 +81,7 @@ impl Registers {
     }
 
     pub fn set_af(&mut self, value: u16) {
-        let (a, f) = to_u8s(value);
+        let [a, f] = to_bytes(value);
         self.a = a;
         self.f = f.into();
     }
@@ -91,7 +91,7 @@ impl Registers {
     }
 
     pub fn set_bc(&mut self, value: u16) {
-        (self.b, self.c) = to_u8s(value);
+        [self.b, self.c] = to_bytes(value);
     }
 
     pub fn de(&self) -> u16 {
@@ -99,7 +99,7 @@ impl Registers {
     }
 
     pub fn set_de(&mut self, value: u16) {
-        (self.d, self.e) = to_u8s(value);
+        [self.d, self.e] = to_bytes(value);
     }
 
     pub fn hl(&self) -> u16 {
@@ -107,6 +107,6 @@ impl Registers {
     }
 
     pub fn set_hl(&mut self, value: u16) {
-        (self.h, self.l) = to_u8s(value);
+        [self.h, self.l] = to_bytes(value);
     }
 }
