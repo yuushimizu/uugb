@@ -31,7 +31,7 @@ impl Dma {
         self.queued_process = Some(Process {
             source,
             destination,
-            length: length,
+            length,
             transfered: 0,
         });
     }
