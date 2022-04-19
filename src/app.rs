@@ -48,7 +48,7 @@ impl core::Renderer for Renderer {
     }
 }
 
-const NANOS_PER_FRAME: u128 = (1_000_000_000f64 / 59.7f64) as u128;
+const NANOS_PER_FRAME: u128 = (1_000_000_000f64 / core::FRAME_RATE) as u128;
 
 pub struct App {
     game_boy: Option<GameBoy>,
