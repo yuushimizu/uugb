@@ -2,7 +2,7 @@ use crate::{
     cartridge::Cartridge,
     cpu::Cpu,
     interrupt::InterruptController,
-    joypad::Joypad,
+    joypad::{ButtonState, Joypad},
     memory::{self, Dma, Hram, Memory, Wram},
     ppu::{Ppu, Renderer},
     serial::{Serial, SerialConnection},
@@ -76,6 +76,11 @@ impl GameBoy {
             .tick(&mut self.interrupt_controller, serial_connection);
         let (_, mut memory) = self.separate_components();
         memory.tick();
+    }
+
+    pub fn set_button_state(&mut self, button_state: ButtonState) {
+        self.joypad
+            .set_button_state(button_state, &mut self.interrupt_controller);
     }
 
     pub fn dump(&mut self) -> Vec<u8> {

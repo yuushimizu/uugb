@@ -69,20 +69,36 @@ impl App {
         }
     }
 
-    fn advance_frame(&mut self) {
-        let current_time = SystemTime::now();
-        let duration = current_time
-            .duration_since(self.last_frame_time)
-            .map(|duration| duration.as_nanos())
-            .unwrap_or(0);
-        if duration >= NANOS_PER_FRAME {
-            if let Some(ref mut game_boy) = self.game_boy {
+    fn advance_frame(&mut self, button_state: core::ButtonState) {
+        if let Some(ref mut game_boy) = self.game_boy {
+            game_boy.set_button_state(button_state);
+            let current_time = SystemTime::now();
+            let duration = current_time
+                .duration_since(self.last_frame_time)
+                .map(|duration| duration.as_nanos())
+                .unwrap_or(0);
+            if duration >= NANOS_PER_FRAME {
                 for _ in 0..core::M_CYCLES_PER_FRAME {
                     game_boy.tick(&mut self.renderer, &mut core::serial::NoSerialConnection);
                 }
+                self.last_frame_time += Duration::from_nanos(NANOS_PER_FRAME as u64);
             }
-            self.last_frame_time += Duration::from_nanos(NANOS_PER_FRAME as u64);
         }
+    }
+}
+
+fn button_state(context: &egui::Context) -> core::ButtonState {
+    use egui::Key::*;
+    let keys = &context.input().keys_down;
+    core::ButtonState {
+        up: keys.contains(&ArrowUp),
+        down: keys.contains(&ArrowDown),
+        left: keys.contains(&ArrowLeft),
+        right: keys.contains(&ArrowRight),
+        a: keys.contains(&X),
+        b: keys.contains(&Z),
+        start: keys.contains(&Enter),
+        select: keys.contains(&Space),
     }
 }
 
@@ -100,7 +116,7 @@ impl epi::App for App {
     }
 
     fn update(&mut self, context: &egui::Context, _frame: &epi::Frame) {
-        self.advance_frame();
+        self.advance_frame(button_state(context));
         egui::CentralPanel::default()
             .frame(egui::Frame {
                 margin: egui::style::Margin::symmetric(24f32, 16f32),
@@ -117,7 +133,8 @@ impl epi::App for App {
                         ui.ctx().load_texture("game-frame", self.renderer.image())
                     });
                     texture.set(self.renderer.image());
-                    ui.image(texture, ui.max_rect().max - ui.max_rect().min);
+                    ui.image(texture, ui.max_rect().max - ui.max_rect().min)
+                        .request_focus();
                 });
             });
         context.request_repaint();

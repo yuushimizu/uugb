@@ -12,6 +12,7 @@ mod util;
 
 pub use cartridge::Cartridge;
 pub use game_boy::GameBoy;
+pub use joypad::ButtonState;
 pub use ppu::{display_size, Color, Renderer, Vec2};
 pub use serial::SerialConnection;
 

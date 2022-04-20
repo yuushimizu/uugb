@@ -5,14 +5,14 @@ use crate::{
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash, Default)]
 pub struct ButtonState {
-    up: bool,
-    down: bool,
-    left: bool,
-    right: bool,
-    a: bool,
-    b: bool,
-    start: bool,
-    select: bool,
+    pub up: bool,
+    pub down: bool,
+    pub left: bool,
+    pub right: bool,
+    pub a: bool,
+    pub b: bool,
+    pub start: bool,
+    pub select: bool,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -73,8 +73,8 @@ impl Joypad {
 
     pub fn set_bits(&mut self, value: u8, interrupt_controller: &mut InterruptController) {
         self.with_interrupt(interrupt_controller, |joypad| {
-            joypad.action_is_selected = value.bit(5);
-            joypad.direction_is_selected = value.bit(4);
+            joypad.action_is_selected = !value.bit(5);
+            joypad.direction_is_selected = !value.bit(4);
         });
     }
 
