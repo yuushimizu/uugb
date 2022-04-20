@@ -39,6 +39,12 @@ pub enum Error {
     MbcNotImplemented(CartridgeType),
 }
 
+impl From<header::Error> for Error {
+    fn from(error: header::Error) -> Self {
+        Self::HeaderError(error)
+    }
+}
+
 pub type Result<T> = result::Result<T, Error>;
 
 pub fn create_mbc(header: &Header) -> Result<Box<dyn Mbc>> {
@@ -53,7 +59,7 @@ pub fn create_mbc(header: &Header) -> Result<Box<dyn Mbc>> {
 
 impl Cartridge {
     pub fn new(rom: Rc<Vec<u8>>) -> Result<Self> {
-        let header = Header::load(&rom).map_err(Error::HeaderError)?;
+        let header = Header::load(&rom)?;
         let state = State {
             rom,
             ram: vec![0xFFu8; header.ram_size.amount()],
