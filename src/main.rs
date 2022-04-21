@@ -63,13 +63,5 @@ fn main() {
         println!("{}", load_header(&rom).logo.to_ascii_art());
         return;
     }
-    let app = app::App::new(&args.file);
-    let native_options = eframe::NativeOptions {
-        initial_window_size: Some(eframe::egui::Vec2::new(
-            core::display_size().x as f32 * 2.0,
-            core::display_size().y as f32 * 2.0,
-        )),
-        ..Default::default()
-    };
-    eframe::run_native(Box::new(app), native_options);
+    app::App::run(&args.file);
 }

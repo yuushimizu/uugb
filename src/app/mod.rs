@@ -36,6 +36,18 @@ impl App {
         }
     }
 
+    pub fn run(filepath: &Path) {
+        let app = Self::new(filepath);
+        let native_options = eframe::NativeOptions {
+            initial_window_size: Some(eframe::egui::Vec2::new(
+                core::display_size().x as f32 * 2.0,
+                core::display_size().y as f32 * 2.0,
+            )),
+            ..Default::default()
+        };
+        eframe::run_native(Box::new(app), native_options);
+    }
+
     fn advance_frame(&mut self, button_state: core::ButtonState) {
         if let Some(ref mut game_boy) = self.game_boy {
             game_boy.set_button_state(button_state);
