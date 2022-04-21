@@ -1,4 +1,5 @@
 use crate::{
+    apu::{Apu, AudioTerminal},
     cartridge::Cartridge,
     cpu::Cpu,
     interrupt::InterruptController,
@@ -15,6 +16,7 @@ pub struct GameBoy {
     cpu: Cpu,
     wram: Wram,
     ppu: Ppu,
+    apu: Apu,
     hram: Hram,
     interrupt_controller: InterruptController,
     joypad: Joypad,
@@ -31,6 +33,7 @@ impl GameBoy {
             cpu: Default::default(),
             wram: Default::default(),
             ppu: Default::default(),
+            apu: Default::default(),
             hram: Default::default(),
             interrupt_controller: Default::default(),
             joypad: Default::default(),
@@ -48,6 +51,7 @@ impl GameBoy {
                 cartridge: &mut self.cartridge,
                 wram: &mut self.wram,
                 ppu: &mut self.ppu,
+                apu: &mut self.apu,
                 hram: &mut self.hram,
                 interrupt_controller: &mut self.interrupt_controller,
                 joypad: &mut self.joypad,
@@ -62,12 +66,14 @@ impl GameBoy {
     pub fn tick(
         &mut self,
         renderer: &mut impl Renderer,
+        autio_terminal: &mut impl AudioTerminal,
         serial_connection: &mut impl SerialConnection,
     ) {
         for _ in 0..4 {
             self.divider.tick();
             self.ppu.tick(&mut self.interrupt_controller, renderer);
         }
+        self.apu.tick(autio_terminal);
         let (cpu, mut memory) = self.separate_components();
         cpu.tick(&mut memory);
         self.timer

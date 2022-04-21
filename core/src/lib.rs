@@ -1,3 +1,4 @@
+pub mod apu;
 pub mod cartridge;
 pub mod cpu;
 pub mod game_boy;
@@ -10,6 +11,7 @@ pub mod timer;
 
 mod util;
 
+pub use apu::AudioTerminal;
 pub use cartridge::Cartridge;
 pub use game_boy::GameBoy;
 pub use joypad::ButtonState;

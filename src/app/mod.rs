@@ -1,3 +1,9 @@
+mod audio;
+mod renderer;
+
+use audio::AudioOutput;
+use renderer::Renderer;
+
 use core::{Cartridge, GameBoy};
 use eframe::{egui, epi};
 use std::{
@@ -7,53 +13,13 @@ use std::{
     time::{Duration, SystemTime},
 };
 
-struct Renderer {
-    rendered_image: egui::ColorImage,
-    rendering_image: egui::ColorImage,
-}
-
-impl Renderer {
-    fn image(&self) -> egui::ColorImage {
-        self.rendered_image.clone()
-    }
-}
-
-impl Default for Renderer {
-    fn default() -> Self {
-        let size = [
-            core::display_size().x as usize,
-            core::display_size().y as usize,
-        ];
-        Self {
-            rendered_image: egui::ColorImage::new(size, egui::Color32::BLACK),
-            rendering_image: egui::ColorImage::new(size, egui::Color32::BLACK),
-        }
-    }
-}
-
-impl core::Renderer for Renderer {
-    fn render(&mut self, position: core::Vec2, color: core::Color) {
-        use core::Color::*;
-        self.rendering_image.pixels
-            [position.y as usize * core::display_size().x as usize + position.x as usize] =
-            match color {
-                White => egui::Color32::from_rgb(134, 163, 90),
-                LightGray => egui::Color32::from_rgb(111, 137, 79),
-                DarkGray => egui::Color32::from_rgb(88, 117, 79),
-                Black => egui::Color32::from_rgb(50, 84, 79),
-            };
-        if position.x == core::display_size().x - 1 && position.y == core::display_size().y - 1 {
-            std::mem::swap(&mut self.rendered_image, &mut self.rendering_image);
-        }
-    }
-}
-
 const NANOS_PER_FRAME: u128 = (1_000_000_000f64 / core::FRAME_RATE) as u128;
 
 pub struct App {
     game_boy: Option<GameBoy>,
     renderer: Renderer,
     texture: Option<egui::TextureHandle>,
+    audio_output: AudioOutput,
     last_frame_time: SystemTime,
 }
 
@@ -65,6 +31,7 @@ impl App {
             game_boy: Some(GameBoy::new(Cartridge::new(rom.into()).unwrap())),
             renderer: Default::default(),
             texture: None,
+            audio_output: Default::default(),
             last_frame_time: SystemTime::now(),
         }
     }
@@ -79,7 +46,11 @@ impl App {
                 .unwrap_or(0);
             if duration >= NANOS_PER_FRAME {
                 for _ in 0..core::M_CYCLES_PER_FRAME {
-                    game_boy.tick(&mut self.renderer, &mut core::serial::NoSerialConnection);
+                    game_boy.tick(
+                        &mut self.renderer,
+                        &mut self.audio_output,
+                        &mut core::serial::NoSerialConnection,
+                    );
                 }
                 self.last_frame_time += Duration::from_nanos(NANOS_PER_FRAME as u64);
             }

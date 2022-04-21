@@ -1,4 +1,5 @@
 use crate::{
+    apu::Apu,
     cartridge::Cartridge,
     interrupt::InterruptController,
     joypad::Joypad,
@@ -13,6 +14,7 @@ pub struct Components<'a> {
     pub cartridge: &'a mut Cartridge,
     pub wram: &'a mut Wram,
     pub ppu: &'a mut Ppu,
+    pub apu: &'a mut Apu,
     pub hram: &'a mut Hram,
     pub interrupt_controller: &'a mut InterruptController,
     pub joypad: &'a mut Joypad,
