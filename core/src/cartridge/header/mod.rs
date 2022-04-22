@@ -49,12 +49,10 @@ pub enum Error {
     TooSmall,
 }
 
-pub type Result<T> = result::Result<T, Error>;
-
 const MIN_HEADER_LENGTH: usize = 0x014F + 1;
 
 impl Header {
-    pub fn load(rom: &[u8]) -> Result<Self> {
+    pub fn load(rom: &[u8]) -> Result<Self, Error> {
         if rom.len() < MIN_HEADER_LENGTH {
             return Err(Error::TooSmall);
         }

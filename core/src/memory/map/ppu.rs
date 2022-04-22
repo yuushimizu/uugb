@@ -66,12 +66,11 @@ pub const PPU: Segment = Nested(|address| match address {
         |components, _, value| components.ppu.window_position_mut().x = value,
     ),
     0xFF4C => &Leaf(|_, _| 0, |_, _, _| {}),
-    0xFF4D => &Leaf(|_, _| 0, |_, _, _| {}), // CGB: Prepare Speed Switch
     0xFF4E => &Leaf(|_, _| 0, |_, _, _| {}),
     0xFF4F => &Leaf(|_, _| 0, |_, _, _| {}), // CGB: VRAM Bank
     0xFF50 => &UNKNOWN,
     0xFF51..=0xFF55 => &Leaf(|_, _| 0, |_, _, _| {}), // CGB: DMA
     0xFF68..=0xFF6B => &Leaf(|_, _| 0, |_, _, _| {}), // CGB: Color Palettes
     0xFF6C => &Leaf(|_, _| 0, |_, _, _| {}),          // CGB: Object Priority Mode
-    _ => &UNKNOWN,
+    _ => unreachable!(),
 });

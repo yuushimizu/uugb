@@ -45,9 +45,7 @@ impl From<header::Error> for Error {
     }
 }
 
-pub type Result<T> = result::Result<T, Error>;
-
-pub fn create_mbc(header: &Header) -> Result<Box<dyn Mbc>> {
+pub fn create_mbc(header: &Header) -> Result<Box<dyn Mbc>, Error> {
     use MbcType::*;
     let cartridge_type = &header.cartridge_type;
     match cartridge_type.mbc_type() {
@@ -58,7 +56,7 @@ pub fn create_mbc(header: &Header) -> Result<Box<dyn Mbc>> {
 }
 
 impl Cartridge {
-    pub fn new(rom: Rc<Vec<u8>>) -> Result<Self> {
+    pub fn new(rom: Rc<Vec<u8>>) -> Result<Self, Error> {
         let header = Header::load(&rom)?;
         let state = State {
             rom,

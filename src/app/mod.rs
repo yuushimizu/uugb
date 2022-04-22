@@ -31,7 +31,7 @@ impl App {
             game_boy: Some(GameBoy::new(Cartridge::new(rom.into()).unwrap())),
             renderer: Default::default(),
             texture: None,
-            audio_output: Default::default(),
+            audio_output: AudioOutput::new().unwrap(),
             last_frame_time: SystemTime::now(),
         }
     }
@@ -61,7 +61,7 @@ impl App {
                     game_boy.tick(
                         &mut self.renderer,
                         &mut self.audio_output,
-                        &mut core::serial::NoSerialConnection,
+                        &mut core::NoSerialConnection,
                     );
                 }
                 self.last_frame_time += Duration::from_nanos(NANOS_PER_FRAME as u64);

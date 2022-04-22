@@ -6,7 +6,6 @@ mod app;
 mod info;
 
 use clap::Parser;
-use core::cartridge;
 use simplelog::*;
 use std::{fs::File, io::Read, path::Path, path::PathBuf};
 
@@ -35,8 +34,8 @@ fn read_rom(filepath: &Path) -> Vec<u8> {
     rom
 }
 
-fn load_header(rom: &[u8]) -> cartridge::Header {
-    cartridge::Header::load(rom).unwrap_or_else(|err| {
+fn load_header(rom: &[u8]) -> core::Header {
+    core::Header::load(rom).unwrap_or_else(|err| {
         eprintln!("Could not load cartridge header: {:?}", err);
         std::process::exit(1);
     })

@@ -1,22 +1,22 @@
-pub mod apu;
-pub mod cartridge;
-pub mod cpu;
-pub mod game_boy;
-pub mod interrupt;
-pub mod joypad;
-pub mod memory;
-pub mod ppu;
-pub mod serial;
-pub mod timer;
+mod apu;
+mod cartridge;
+mod cpu;
+mod game_boy;
+mod interrupt;
+mod joypad;
+mod memory;
+mod ppu;
+mod serial;
+mod timer;
 
 mod util;
 
-pub use apu::AudioTerminal;
-pub use cartridge::Cartridge;
+pub use apu::{AudioTerminal, SAMPLE_RATE as AUDIO_SAMPLE_RATE};
+pub use cartridge::{Cartridge, Header};
 pub use game_boy::GameBoy;
 pub use joypad::ButtonState;
 pub use ppu::{display_size, Color, Renderer, Vec2};
-pub use serial::SerialConnection;
+pub use serial::{NoSerialConnection, SerialConnection};
 
 pub const CLOCK_CYCLE: u64 = 4194304;
 

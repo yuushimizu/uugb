@@ -1,6 +1,4 @@
-use core::cartridge;
-
-pub fn print_cartridge_info(header: &cartridge::Header) {
+pub fn print_cartridge_info(header: &core::Header) {
     println!("Title: {}", header.title);
     println!("Entry Point: {}", header.entry_point);
     println!("CGB Flag: {}", header.cgb_flag);

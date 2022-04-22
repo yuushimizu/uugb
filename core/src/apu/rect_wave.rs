@@ -1,4 +1,5 @@
 use super::length::Length;
+use crate::util::bits::Bits;
 
 const DUTY_CYCLE_LENGTH: usize = 8;
 
@@ -9,9 +10,15 @@ const MAX_FREQUENCY: u16 = 2048;
 pub const SAMPLE_RATE: u64 =
     DUTY_CYCLE_LENGTH as u64 * MAX_FREQUENCY as u64 * FREQUENCY_UNIT_CYCLES;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct DutyCycle {
     bits: u8,
+}
+
+impl Default for DutyCycle {
+    fn default() -> Self {
+        Self { bits: 0b10 }
+    }
 }
 
 impl From<u8> for DutyCycle {
@@ -42,9 +49,8 @@ impl DutyCycle {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct RectWave {
-    supports_sweep: bool,
     duty_cycle: DutyCycle,
     duty_cycle_step: usize,
     length: Length,
@@ -53,40 +59,7 @@ pub struct RectWave {
 }
 
 impl RectWave {
-    pub fn new(supports_sweep: bool) -> Self {
-        Self {
-            supports_sweep,
-            duty_cycle: Default::default(),
-            duty_cycle_step: 0,
-            length: Default::default(),
-            frequency: 0,
-            cycles: 0,
-        }
-    }
-
-    pub fn duty_cycle(&self) -> DutyCycle {
-        self.duty_cycle
-    }
-
-    pub fn set_duty_cycle(&mut self, duty_cycle: DutyCycle) {
-        self.duty_cycle = duty_cycle;
-    }
-
-    pub fn set_length(&mut self, value: u8) {
-        self.length.set(value)
-    }
-
-    pub fn frequency(&self) -> u16 {
-        self.frequency
-    }
-
-    pub fn set_frequency(&mut self, value: u16) {
-        self.frequency = value & (MAX_FREQUENCY - 1);
-    }
-
-    fn step_length_cycles(&self) -> u16 {
-        MAX_FREQUENCY - self.frequency
-    }
+    fn initialize(&mut self) {}
 
     pub fn tick(&mut self) {
         self.cycles = self.cycles + 1;
@@ -97,14 +70,52 @@ impl RectWave {
         self.length.tick();
     }
 
-    pub fn output(&self) -> (u8, u8) {
+    pub fn output(&self) -> u8 {
         if self.length.is_expired() {
-            (0, 0)
+            0
         } else {
-            (
-                0,
-                (self.duty_cycle.pattern()[self.duty_cycle_step] as u8) * 128,
-            )
+            (self.duty_cycle.pattern()[self.duty_cycle_step] as u8) * 64
+        }
+    }
+
+    fn step_length_cycles(&self) -> u16 {
+        MAX_FREQUENCY - self.frequency
+    }
+
+    pub fn sweep_bits(&self) -> u8 {
+        0xFF
+    }
+
+    pub fn set_sweep_bits(&mut self, value: u8) {}
+
+    pub fn length_wave_bits(&self) -> u8 {
+        self.duty_cycle.bits() << 6 | 0b0011_1111
+    }
+
+    pub fn set_length_wave_bits(&mut self, value: u8) {
+        self.duty_cycle = (value >> 6).into();
+        self.length.set(value);
+    }
+
+    pub fn envelop_bits(&self) -> u8 {
+        0xFF
+    }
+
+    pub fn set_envelop_bits(&mut self, value: u8) {}
+
+    pub fn set_frequency_lower_bits(&mut self, value: u8) {
+        self.frequency = (self.frequency & 0xFF00) | value as u16;
+    }
+
+    pub fn frequency_upper_bits(&self) -> u8 {
+        0b1011_1111 | (self.length.is_enabled() as u8) << 6
+    }
+
+    pub fn set_frequency_upper_bits(&mut self, value: u8) {
+        self.frequency = (self.frequency & 0xFF) | (value as u16 & 0b111) << 8;
+        self.length.set_is_enabled(value.bit(6));
+        if value.bit(7) {
+            self.initialize();
         }
     }
 }

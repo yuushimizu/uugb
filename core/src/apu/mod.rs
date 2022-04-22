@@ -5,13 +5,44 @@ pub use rect_wave::SAMPLE_RATE;
 
 use rect_wave::RectWave;
 
+use crate::util::bits::Bits;
+
 pub trait AudioTerminal {
     fn output(&mut self, volume: (u8, u8));
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+struct TerminalControl {
+    pub is_enabled: bool,
+    pub level: u8,
+}
+
+impl Default for TerminalControl {
+    fn default() -> Self {
+        Self {
+            is_enabled: false,
+            level: 0b111,
+        }
+    }
+}
+
+impl TerminalControl {
+    pub fn bits(&self) -> u8 {
+        (self.is_enabled as u8) << 3 | self.level
+    }
+
+    pub fn set_bits(&mut self, value: u8) {
+        self.is_enabled = value.bit(3);
+        self.level = value & 0b111;
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Apu {
     is_enabled: bool,
+    left_control: TerminalControl,
+    right_control: TerminalControl,
+    output_terminal_selection: u8,
     rect_wave1: RectWave,
     rect_wave2: RectWave,
 }
@@ -20,8 +51,11 @@ impl Default for Apu {
     fn default() -> Self {
         Self {
             is_enabled: true,
-            rect_wave1: RectWave::new(true),
-            rect_wave2: RectWave::new(false),
+            left_control: Default::default(),
+            right_control: Default::default(),
+            output_terminal_selection: 0xF3,
+            rect_wave1: Default::default(),
+            rect_wave2: Default::default(),
         }
     }
 }
@@ -30,5 +64,67 @@ impl Apu {
     pub fn tick(&mut self, terminal: &mut impl AudioTerminal) {
         self.rect_wave1.tick();
         self.rect_wave2.tick();
+        terminal.output(self.output());
+    }
+
+    fn output(&self) -> (u8, u8) {
+        let outputs = [self.rect_wave1.output(), self.rect_wave2.output(), 0, 0];
+        let mix = |offset: u32| {
+            outputs
+                .iter()
+                .enumerate()
+                .fold(0u8, |acc, (index, &output)| {
+                    acc.saturating_add(
+                        if self.output_terminal_selection.bit(index as u32 + offset) {
+                            output
+                        } else {
+                            0
+                        },
+                    )
+                })
+                / 4
+        };
+        (mix(4), mix(0))
+    }
+
+    pub fn rect_wave1(&self) -> &RectWave {
+        &self.rect_wave1
+    }
+
+    pub fn rect_wave1_mut(&mut self) -> &mut RectWave {
+        &mut self.rect_wave1
+    }
+
+    pub fn rect_wave2(&self) -> &RectWave {
+        &self.rect_wave2
+    }
+
+    pub fn rect_wave2_mut(&mut self) -> &mut RectWave {
+        &mut self.rect_wave2
+    }
+
+    pub fn channel_control_bits(&self) -> u8 {
+        self.left_control.bits() << 4 | self.right_control.bits()
+    }
+
+    pub fn set_channel_control_bits(&mut self, value: u8) {
+        self.left_control.set_bits(value >> 4);
+        self.right_control.set_bits(value);
+    }
+
+    pub fn output_terminal_selection_bits(&self) -> u8 {
+        self.output_terminal_selection
+    }
+
+    pub fn set_output_terminal_selection_bits(&mut self, value: u8) {
+        self.output_terminal_selection = value;
+    }
+
+    pub fn enabled_bits(&self) -> u8 {
+        (self.is_enabled as u8) << 7 | 0b0111_0000
+    }
+
+    pub fn set_enabled_bits(&mut self, value: u8) {
+        self.is_enabled = value.bit(7);
     }
 }
