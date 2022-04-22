@@ -1,4 +1,4 @@
-use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+use cpal::traits::{DeviceTrait, HostTrait};
 use std::sync::mpsc::{Receiver, Sender};
 
 pub struct AudioOutput {

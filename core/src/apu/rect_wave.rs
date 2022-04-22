@@ -1,3 +1,4 @@
+use super::envelope::Envelop;
 use super::length::Length;
 use crate::util::bits::Bits;
 
@@ -10,15 +11,9 @@ const MAX_FREQUENCY: u16 = 2048;
 pub const SAMPLE_RATE: u64 =
     DUTY_CYCLE_LENGTH as u64 * MAX_FREQUENCY as u64 * FREQUENCY_UNIT_CYCLES;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct DutyCycle {
     bits: u8,
-}
-
-impl Default for DutyCycle {
-    fn default() -> Self {
-        Self { bits: 0b10 }
-    }
 }
 
 impl From<u8> for DutyCycle {
@@ -51,31 +46,53 @@ impl DutyCycle {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct RectWave {
+    is_started: bool,
     duty_cycle: DutyCycle,
     duty_cycle_step: usize,
     length: Length,
     frequency: u16,
+    envelop: Envelop,
     cycles: u16,
 }
 
 impl RectWave {
-    fn initialize(&mut self) {}
+    fn initialize(&mut self) {
+        self.is_started = true;
+        self.envelop.restart();
+    }
+
+    pub fn is_started(&self) -> bool {
+        self.is_started
+    }
 
     pub fn tick(&mut self) {
+        if !self.is_started {
+            return;
+        }
         self.cycles = self.cycles + 1;
         if self.cycles >= self.step_length_cycles() {
             self.cycles = 0;
             self.duty_cycle_step = (self.duty_cycle_step + 1) % DUTY_CYCLE_LENGTH;
         }
         self.length.tick();
+        self.envelop.tick();
+        if self.length.is_expired() {
+            self.is_started = false;
+        }
     }
 
     pub fn output(&self) -> u8 {
         if self.length.is_expired() {
             0
         } else {
-            (self.duty_cycle.pattern()[self.duty_cycle_step] as u8) * 64
+            (self.duty_cycle.pattern()[self.duty_cycle_step] as u8) * self.envelop.volume()
         }
+    }
+
+    pub fn reset(&mut self) {
+        self.is_started = false;
+        self.cycles = 0;
+        self.duty_cycle_step = 0;
     }
 
     fn step_length_cycles(&self) -> u16 {
@@ -98,10 +115,12 @@ impl RectWave {
     }
 
     pub fn envelop_bits(&self) -> u8 {
-        0xFF
+        self.envelop.bits()
     }
 
-    pub fn set_envelop_bits(&mut self, value: u8) {}
+    pub fn set_envelop_bits(&mut self, value: u8) {
+        self.envelop.set_bits(value)
+    }
 
     pub fn set_frequency_lower_bits(&mut self, value: u8) {
         self.frequency = (self.frequency & 0xFF00) | value as u16;

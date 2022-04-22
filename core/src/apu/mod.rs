@@ -1,3 +1,4 @@
+mod envelope;
 mod length;
 mod rect_wave;
 
@@ -49,12 +50,15 @@ pub struct Apu {
 
 impl Default for Apu {
     fn default() -> Self {
+        let mut rect_wave1 = RectWave::default();
+        rect_wave1.set_length_wave_bits(0xBF);
+        rect_wave1.set_envelop_bits(0xF3);
         Self {
             is_enabled: true,
             left_control: Default::default(),
             right_control: Default::default(),
             output_terminal_selection: 0xF3,
-            rect_wave1: Default::default(),
+            rect_wave1,
             rect_wave2: Default::default(),
         }
     }
@@ -121,10 +125,24 @@ impl Apu {
     }
 
     pub fn enabled_bits(&self) -> u8 {
-        (self.is_enabled as u8) << 7 | 0b0111_0000
+        u8::from_bits(&[
+            self.is_enabled,
+            true,
+            true,
+            true,
+            false, // sound 4,
+            false, // sound 3,
+            self.rect_wave2.is_started(),
+            self.rect_wave1.is_started(),
+        ])
     }
 
     pub fn set_enabled_bits(&mut self, value: u8) {
+        let current_enabled = self.is_enabled;
         self.is_enabled = value.bit(7);
+        if !current_enabled && self.is_enabled {
+            self.rect_wave1.reset();
+            self.rect_wave2.reset();
+        }
     }
 }
