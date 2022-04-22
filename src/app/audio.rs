@@ -59,7 +59,7 @@ impl AudioOutput {
 }
 
 fn sample_frame<T: cpal::Sample>(source: u16) -> T {
-    cpal::Sample::from::<f32>(&((source as f32) / (65536f32 / 2f32)))
+    cpal::Sample::from::<u16>(&source)
 }
 
 fn create_stream<T: cpal::Sample>(

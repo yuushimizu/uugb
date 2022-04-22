@@ -39,7 +39,7 @@ impl Noise {
     fn start(&mut self) {
         self.is_started = true;
         self.random = 0xFFFF;
-        self.output = false;
+        self.output = true;
         self.cycles = 0;
         self.envelope.restart();
     }
@@ -69,11 +69,11 @@ impl Noise {
             if self.random == 0 {
                 self.random = 1;
             }
-            self.random = self.random
-                + self.random
-                + (((self.random >> (self.step_width() - 1))
+            self.random = self.random.wrapping_add(self.random.wrapping_add(
+                ((self.random >> (self.step_width() - 1))
                     ^ (self.random >> (self.step_width() - 2)))
-                    & 1);
+                    & 1,
+            ));
             self.output ^= (self.random & 0b1) == 0b1;
         }
         self.length.tick();
