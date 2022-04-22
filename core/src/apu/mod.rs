@@ -1,10 +1,12 @@
 mod envelope;
 mod length;
+mod noise;
 mod rect_wave;
 mod sweep;
 
 pub use rect_wave::SAMPLE_RATE;
 
+use noise::Noise;
 use rect_wave::RectWave;
 
 use crate::util::bits::Bits;
@@ -47,13 +49,14 @@ pub struct Apu {
     output_terminal_selection: u8,
     rect_wave1: RectWave,
     rect_wave2: RectWave,
+    noise: Noise,
 }
 
 impl Default for Apu {
     fn default() -> Self {
         let mut rect_wave1 = RectWave::default();
         rect_wave1.set_length_wave_bits(0xBF);
-        rect_wave1.set_envelop_bits(0xF3);
+        rect_wave1.set_envelope_bits(0xF3);
         Self {
             is_enabled: true,
             left_control: Default::default(),
@@ -61,19 +64,30 @@ impl Default for Apu {
             output_terminal_selection: 0xF3,
             rect_wave1,
             rect_wave2: Default::default(),
+            noise: Default::default(),
         }
     }
 }
 
 impl Apu {
     pub fn tick(&mut self, terminal: &mut impl AudioTerminal) {
-        self.rect_wave1.tick();
-        self.rect_wave2.tick();
-        terminal.output(self.output());
+        if self.is_enabled {
+            self.rect_wave1.tick();
+            self.rect_wave2.tick();
+            self.noise.tick();
+            terminal.output(self.output());
+        } else {
+            terminal.output((0, 0));
+        }
     }
 
     fn output(&self) -> (u8, u8) {
-        let outputs = [self.rect_wave1.output(), self.rect_wave2.output(), 0, 0];
+        let outputs = [
+            self.rect_wave1.output(),
+            self.rect_wave2.output(),
+            0,
+            self.noise.output(),
+        ];
         let mix = |offset: u32| {
             outputs
                 .iter()
@@ -81,13 +95,12 @@ impl Apu {
                 .fold(0u8, |acc, (index, &output)| {
                     acc.saturating_add(
                         if self.output_terminal_selection.bit(index as u32 + offset) {
-                            output
+                            output / 4
                         } else {
                             0
                         },
                     )
                 })
-                / 4
         };
         (mix(4), mix(0))
     }
@@ -106,6 +119,14 @@ impl Apu {
 
     pub fn rect_wave2_mut(&mut self) -> &mut RectWave {
         &mut self.rect_wave2
+    }
+
+    pub fn noise(&self) -> &Noise {
+        &self.noise
+    }
+
+    pub fn noise_mut(&mut self) -> &mut Noise {
+        &mut self.noise
     }
 
     pub fn channel_control_bits(&self) -> u8 {
@@ -131,7 +152,7 @@ impl Apu {
             true,
             true,
             true,
-            false, // sound 4,
+            self.noise.is_started(),
             false, // sound 3,
             self.rect_wave2.is_started(),
             self.rect_wave1.is_started(),

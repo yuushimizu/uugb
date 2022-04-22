@@ -10,8 +10,8 @@ pub const APU: Segment = Segment::Nested(|address| match address {
         |components, _, value| components.apu.rect_wave1_mut().set_length_wave_bits(value),
     ),
     0xFF12 => &Segment::Leaf(
-        |components, _| components.apu.rect_wave1().envelop_bits(),
-        |components, _, value| components.apu.rect_wave1_mut().set_envelop_bits(value),
+        |components, _| components.apu.rect_wave1().envelope_bits(),
+        |components, _, value| components.apu.rect_wave1_mut().set_envelope_bits(value),
     ),
     0xFF13 => &Segment::Leaf(
         |_, _| 0xFF,
@@ -36,8 +36,8 @@ pub const APU: Segment = Segment::Nested(|address| match address {
         |components, _, value| components.apu.rect_wave2_mut().set_length_wave_bits(value),
     ),
     0xFF17 => &Segment::Leaf(
-        |components, _| components.apu.rect_wave2().envelop_bits(),
-        |components, _, value| components.apu.rect_wave2_mut().set_envelop_bits(value),
+        |components, _| components.apu.rect_wave2().envelope_bits(),
+        |components, _, value| components.apu.rect_wave2_mut().set_envelope_bits(value),
     ),
     0xFF18 => &Segment::Leaf(
         |_, _| 0xFF,
@@ -56,6 +56,22 @@ pub const APU: Segment = Segment::Nested(|address| match address {
                 .rect_wave2_mut()
                 .set_frequency_upper_bits(value)
         },
+    ),
+    0xFF20 => &Segment::Leaf(
+        |_, _| 0xFF,
+        |components, _, value| components.apu.noise_mut().set_length(value),
+    ),
+    0xFF21 => &Segment::Leaf(
+        |components, _| components.apu.noise().envelope_bits(),
+        |components, _, value| components.apu.noise_mut().set_envelope_bits(value),
+    ),
+    0xFF22 => &Segment::Leaf(
+        |components, _| components.apu.noise().frequency_bits(),
+        |components, _, value| components.apu.noise_mut().set_frequency_bits(value),
+    ),
+    0xFF23 => &Segment::Leaf(
+        |components, _| components.apu.noise().control_bits(),
+        |components, _, value| components.apu.noise_mut().set_control_bits(value),
     ),
     0xFF24 => &Segment::Leaf(
         |components, _| components.apu.channel_control_bits(),

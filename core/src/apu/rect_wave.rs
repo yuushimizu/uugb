@@ -52,19 +52,23 @@ pub struct RectWave {
     length: Length,
     frequency: u16,
     sweep: Sweep,
-    envelop: Envelop,
+    envelope: Envelop,
     cycles: u16,
 }
 
 impl RectWave {
-    fn initialize(&mut self) {
+    fn start(&mut self) {
         self.is_started = true;
         self.sweep.restart();
-        self.envelop.restart();
+        self.envelope.restart();
     }
 
     pub fn is_started(&self) -> bool {
         self.is_started
+    }
+
+    fn step_length_cycles(&self) -> u16 {
+        MAX_LIMIT - self.frequency
     }
 
     pub fn tick(&mut self) {
@@ -78,7 +82,7 @@ impl RectWave {
         }
         self.length.tick();
         self.frequency = self.sweep.tick(self.frequency);
-        self.envelop.tick();
+        self.envelope.tick();
         if self.length.is_expired() || self.frequency >= MAX_LIMIT {
             self.is_started = false;
         }
@@ -89,7 +93,7 @@ impl RectWave {
 
     pub fn output(&self) -> u8 {
         if self.is_started {
-            (self.duty_cycle.pattern()[self.duty_cycle_step] as u8) * self.envelop.volume()
+            (self.duty_cycle.pattern()[self.duty_cycle_step] as u8) * self.envelope.volume()
         } else {
             0
         }
@@ -99,10 +103,6 @@ impl RectWave {
         self.is_started = false;
         self.cycles = 0;
         self.duty_cycle_step = 0;
-    }
-
-    fn step_length_cycles(&self) -> u16 {
-        MAX_LIMIT - self.frequency
     }
 
     pub fn sweep_bits(&self) -> u8 {
@@ -122,12 +122,12 @@ impl RectWave {
         self.length.set(value);
     }
 
-    pub fn envelop_bits(&self) -> u8 {
-        self.envelop.bits()
+    pub fn envelope_bits(&self) -> u8 {
+        self.envelope.bits()
     }
 
-    pub fn set_envelop_bits(&mut self, value: u8) {
-        self.envelop.set_bits(value)
+    pub fn set_envelope_bits(&mut self, value: u8) {
+        self.envelope.set_bits(value)
     }
 
     pub fn set_frequency_lower_bits(&mut self, value: u8) {
@@ -142,7 +142,7 @@ impl RectWave {
         self.frequency = (self.frequency & 0xFF) | (value as u16 & 0b111) << 8;
         self.length.set_is_enabled(value.bit(6));
         if value.bit(7) {
-            self.initialize();
+            self.start();
         }
     }
 }

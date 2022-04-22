@@ -1,4 +1,4 @@
-const UNIT_CYCLES: u64 = 4096;
+const UNIT_CYCLES: u64 = 1024 * 1024 / 256;
 
 const MAX: u8 = 0b0100_0000;
 
