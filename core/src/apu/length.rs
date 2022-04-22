@@ -1,4 +1,4 @@
-const UNIT_CYCLES: u64 = 1024 * 1024 / 256;
+const UNIT_CYCLES: u64 = super::SAMPLE_RATE / 256;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Length {

@@ -5,7 +5,7 @@ mod rect_wave;
 mod sweep;
 mod wave;
 
-pub use rect_wave::SAMPLE_RATE;
+pub const SAMPLE_RATE: u64 = 2 * 1024 * 1024;
 
 use noise::Noise;
 use rect_wave::RectWave;

@@ -46,8 +46,8 @@ impl Noise {
 
     fn step_length(&self) -> u64 {
         (match self.division_ratio {
-            0 => 1,
-            n => 2 * n as u64,
+            0 => 2,
+            n => 4 * n as u64,
         }) << (1 + self.frequency_shift)
     }
 

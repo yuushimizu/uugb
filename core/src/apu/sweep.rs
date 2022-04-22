@@ -1,6 +1,6 @@
 use crate::util::bits::Bits;
 
-const STEP_UNIT_CYCLES: u64 = 1024 * 1024 / 128;
+const STEP_UNIT_CYCLES: u64 = super::SAMPLE_RATE / 128;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct Sweep {

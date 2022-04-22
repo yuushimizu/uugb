@@ -5,11 +5,12 @@ use crate::util::bits::Bits;
 
 const DUTY_CYCLE_LENGTH: usize = 8;
 
-const FREQUENCY_UNIT_CYCLES: u64 = 64;
+const MAX_FREQUENCY: u16 = 2048;
 
-const MAX_LIMIT: u16 = 2048;
+const FREQUENCY_UNIT: u64 = 64;
 
-pub const SAMPLE_RATE: u64 = DUTY_CYCLE_LENGTH as u64 * MAX_LIMIT as u64 * FREQUENCY_UNIT_CYCLES;
+const STEP_LENGTH_UNIT: u64 =
+    super::SAMPLE_RATE / (MAX_FREQUENCY as u64 * FREQUENCY_UNIT * DUTY_CYCLE_LENGTH as u64);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct DutyCycle {
@@ -53,7 +54,7 @@ pub struct RectWave {
     frequency: u16,
     sweep: Sweep,
     envelope: Envelop,
-    cycles: u16,
+    cycles: u64,
 }
 
 impl Default for RectWave {
@@ -82,8 +83,8 @@ impl RectWave {
         self.is_started
     }
 
-    fn step_length_cycles(&self) -> u16 {
-        MAX_LIMIT - self.frequency
+    fn step_length_cycles(&self) -> u64 {
+        ((MAX_FREQUENCY - self.frequency) as u64) * STEP_LENGTH_UNIT
     }
 
     pub fn tick(&mut self) {
@@ -98,11 +99,11 @@ impl RectWave {
         self.length.tick();
         self.frequency = self.sweep.tick(self.frequency);
         self.envelope.tick();
-        if self.length.is_expired() || self.frequency >= MAX_LIMIT {
+        if self.length.is_expired() || self.frequency >= MAX_FREQUENCY {
             self.is_started = false;
         }
-        if self.frequency >= MAX_LIMIT {
-            self.frequency = MAX_LIMIT - 1;
+        if self.frequency >= MAX_FREQUENCY {
+            self.frequency = MAX_FREQUENCY - 1;
         }
     }
 

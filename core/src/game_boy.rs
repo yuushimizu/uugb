@@ -73,7 +73,9 @@ impl GameBoy {
             self.divider.tick();
             self.ppu.tick(&mut self.interrupt_controller, renderer);
         }
-        self.apu.tick(autio_terminal);
+        for _ in 0..2 {
+            self.apu.tick(autio_terminal);
+        }
         let (cpu, mut memory) = self.separate_components();
         cpu.tick(&mut memory);
         self.timer
