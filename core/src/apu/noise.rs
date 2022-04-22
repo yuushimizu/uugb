@@ -69,7 +69,8 @@ impl Noise {
             if self.random == 0 {
                 self.random = 1;
             }
-            self.random += self.random
+            self.random = self.random
+                + self.random
                 + (((self.random >> (self.step_width() - 1))
                     ^ (self.random >> (self.step_width() - 2)))
                     & 1);

@@ -7,7 +7,6 @@ pub use registers::Registers;
 use instruction::Instruction;
 
 use crate::{interrupt::Interrupt, memory::Memory};
-use log;
 
 #[derive(Debug, Default)]
 pub struct Cpu {

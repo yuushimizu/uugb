@@ -90,7 +90,7 @@ impl RectWave {
         if !self.is_started {
             return;
         }
-        self.cycles = self.cycles + 1;
+        self.cycles += 1;
         if self.cycles >= self.step_length_cycles() {
             self.cycles = 0;
             self.duty_cycle_step = (self.duty_cycle_step + 1) % DUTY_CYCLE_LENGTH;
