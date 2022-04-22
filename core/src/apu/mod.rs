@@ -57,6 +57,7 @@ pub struct Apu {
     output_terminal_selection: u8,
     rect_wave1: RectWave,
     rect_wave2: RectWave,
+    wave: Wave,
     noise: Noise,
 }
 
@@ -72,6 +73,7 @@ impl Default for Apu {
             output_terminal_selection: 0xF3,
             rect_wave1,
             rect_wave2: Default::default(),
+            wave: Default::default(),
             noise: Default::default(),
         }
     }
@@ -82,6 +84,7 @@ impl Apu {
         if self.is_enabled {
             self.rect_wave1.tick();
             self.rect_wave2.tick();
+            self.wave.tick();
             self.noise.tick();
             terminal.output(self.frame());
         } else {
@@ -93,7 +96,7 @@ impl Apu {
         let outputs = [
             self.rect_wave1.output(),
             self.rect_wave2.output(),
-            0,
+            self.wave.output(),
             self.noise.output(),
         ];
         let mix = |offset: u32| {
@@ -132,6 +135,14 @@ impl Apu {
         &mut self.rect_wave2
     }
 
+    pub fn wave(&self) -> &Wave {
+        &self.wave
+    }
+
+    pub fn wave_mut(&mut self) -> &mut Wave {
+        &mut self.wave
+    }
+
     pub fn noise(&self) -> &Noise {
         &self.noise
     }
@@ -164,7 +175,7 @@ impl Apu {
             true,
             true,
             self.noise.is_started(),
-            false, // sound 3,
+            self.wave.is_started(),
             self.rect_wave2.is_started(),
             self.rect_wave1.is_started(),
         ])

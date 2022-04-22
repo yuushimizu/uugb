@@ -2,13 +2,13 @@ const UNIT_CYCLES: u64 = super::SAMPLE_RATE / 256;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Length {
-    max: u8,
+    max: u16,
     is_enabled: bool,
     rest_cycles: u64,
 }
 
 impl Length {
-    pub fn new(max: u8) -> Self {
+    pub fn new(max: u16) -> Self {
         Self {
             max,
             is_enabled: false,
@@ -33,6 +33,6 @@ impl Length {
     }
 
     pub fn set(&mut self, value: u8) {
-        self.rest_cycles = (self.max - (value & (self.max - 1))) as u64 * UNIT_CYCLES;
+        self.rest_cycles = (self.max - ((value as u16) & (self.max - 1))) as u64 * UNIT_CYCLES;
     }
 }

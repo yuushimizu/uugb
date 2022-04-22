@@ -151,11 +151,11 @@ impl RectWave {
     }
 
     pub fn frequency_upper_bits(&self) -> u8 {
-        0b1011_1111 | (self.length.is_enabled() as u8) << 6
+        (self.length.is_enabled() as u8) << 6 | 0b1011_1111
     }
 
     pub fn set_frequency_upper_bits(&mut self, value: u8) {
-        self.frequency = (self.frequency & 0xFF) | (value as u16 & 0b111) << 8;
+        self.frequency = (self.frequency & 0xFF) | ((value as u16) & 0b111) << 8;
         self.length.set_is_enabled(value.bit(6));
         if value.bit(7) {
             self.start();
