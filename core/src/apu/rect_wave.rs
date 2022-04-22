@@ -1,15 +1,15 @@
 use super::envelope::Envelop;
 use super::length::Length;
+use super::sweep::Sweep;
 use crate::util::bits::Bits;
 
 const DUTY_CYCLE_LENGTH: usize = 8;
 
 const FREQUENCY_UNIT_CYCLES: u64 = 64;
 
-const MAX_FREQUENCY: u16 = 2048;
+const MAX_LIMIT: u16 = 2048;
 
-pub const SAMPLE_RATE: u64 =
-    DUTY_CYCLE_LENGTH as u64 * MAX_FREQUENCY as u64 * FREQUENCY_UNIT_CYCLES;
+pub const SAMPLE_RATE: u64 = DUTY_CYCLE_LENGTH as u64 * MAX_LIMIT as u64 * FREQUENCY_UNIT_CYCLES;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct DutyCycle {
@@ -51,6 +51,7 @@ pub struct RectWave {
     duty_cycle_step: usize,
     length: Length,
     frequency: u16,
+    sweep: Sweep,
     envelop: Envelop,
     cycles: u16,
 }
@@ -58,6 +59,7 @@ pub struct RectWave {
 impl RectWave {
     fn initialize(&mut self) {
         self.is_started = true;
+        self.sweep.restart();
         self.envelop.restart();
     }
 
@@ -75,17 +77,21 @@ impl RectWave {
             self.duty_cycle_step = (self.duty_cycle_step + 1) % DUTY_CYCLE_LENGTH;
         }
         self.length.tick();
+        self.frequency = self.sweep.tick(self.frequency);
         self.envelop.tick();
-        if self.length.is_expired() {
+        if self.length.is_expired() || self.frequency >= MAX_LIMIT {
             self.is_started = false;
+        }
+        if self.frequency >= MAX_LIMIT {
+            self.frequency = MAX_LIMIT - 1;
         }
     }
 
     pub fn output(&self) -> u8 {
-        if self.length.is_expired() {
-            0
-        } else {
+        if self.is_started {
             (self.duty_cycle.pattern()[self.duty_cycle_step] as u8) * self.envelop.volume()
+        } else {
+            0
         }
     }
 
@@ -96,14 +102,16 @@ impl RectWave {
     }
 
     fn step_length_cycles(&self) -> u16 {
-        MAX_FREQUENCY - self.frequency
+        MAX_LIMIT - self.frequency
     }
 
     pub fn sweep_bits(&self) -> u8 {
-        0xFF
+        self.sweep.bits()
     }
 
-    pub fn set_sweep_bits(&mut self, value: u8) {}
+    pub fn set_sweep_bits(&mut self, value: u8) {
+        self.sweep.set_bits(value);
+    }
 
     pub fn length_wave_bits(&self) -> u8 {
         self.duty_cycle.bits() << 6 | 0b0011_1111

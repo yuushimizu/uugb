@@ -1,6 +1,7 @@
 mod envelope;
 mod length;
 mod rect_wave;
+mod sweep;
 
 pub use rect_wave::SAMPLE_RATE;
 
