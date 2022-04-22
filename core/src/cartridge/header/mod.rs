@@ -25,8 +25,6 @@ pub use rom_size::RomSize;
 pub use sgb_flag::SgbFlag;
 pub use title::Title;
 
-use std::result;
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Header {
     pub entry_point: EntryPoint,

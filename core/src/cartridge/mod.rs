@@ -4,7 +4,7 @@ mod mbc;
 pub use header::*;
 use mbc::{Mbc, MbcContext};
 
-use std::{rc::Rc, result};
+use std::rc::Rc;
 
 #[derive(Debug)]
 struct State {

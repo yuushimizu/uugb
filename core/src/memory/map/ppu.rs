@@ -14,7 +14,13 @@ pub const VRAM: Segment = Offset(
 pub const OAM: Segment = Offset(
     0xFE00,
     &Leaf(
-        |components, address| components.ppu.oam().read(address),
+        |components, address| {
+            if components.dma.is_running() {
+                0xFF
+            } else {
+                components.ppu.oam().read(address)
+            }
+        },
         |components, address, value| components.ppu.oam_mut().write(address, value),
     ),
 );

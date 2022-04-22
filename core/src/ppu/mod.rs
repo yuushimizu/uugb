@@ -93,7 +93,7 @@ impl Ppu {
         }
     }
 
-    fn object_pixel_color(&self, object: &Object) -> Option<Color> {
+    fn object_pixel(&self, object: &Object) -> u8 {
         let position_in_object =
             object.position_in_object(self.current_position, self.control.uses_large_object());
         let tile_id = if self.control.uses_large_object() {
@@ -105,42 +105,33 @@ impl Ppu {
         } else {
             object.tile_id
         };
-        let color_id = self
-            .vram
+        self.vram
             .tile_data(TileDataArea::Origin, tile_id)
-            .color_id(position_in_object);
-        if color_id == 0b00 {
-            None
-        } else {
-            let palette = if object.palette_number == 0 {
-                &self.object_palette0
-            } else {
-                &self.object_palette1
-            };
-            Some(palette.apply(color_id))
-        }
+            .color_id(position_in_object)
     }
 
-    fn drawn_object(&self) -> Option<(Object, Color)> {
+    fn drawn_object(&self) -> Option<(Object, u8)> {
         self.oam
             .objects_at_position(self.current_position, self.control.uses_large_object())
             .filter_map(|object| {
-                self.object_pixel_color(&object)
-                    .map(|color| (object, color))
+                let pixel = self.object_pixel(&object);
+                if pixel == 0x00 {
+                    None
+                } else {
+                    Some((object, pixel))
+                }
             })
             .min_by_key(|(object, _)| object.position.x)
     }
 
-    fn pixel_color_from_tile_map(&self, tile_map: TileMapArea, position: Vec2) -> Color {
-        self.background_palette.apply(
-            self.vram
-                .tile_map(tile_map, self.control.background_tile_data_area())
-                .color_id(position),
-        )
+    fn pixel_from_tile_map(&self, tile_map: TileMapArea, position: Vec2) -> u8 {
+        self.vram
+            .tile_map(tile_map, self.control.background_tile_data_area())
+            .color_id(position)
     }
 
-    fn background_pixel_color(&self) -> Color {
-        self.pixel_color_from_tile_map(
+    fn background_pixel(&self) -> u8 {
+        self.pixel_from_tile_map(
             self.control.background_tile_map_area(),
             self.current_position.wrapping_add(self.scroll_position),
         )
@@ -152,8 +143,8 @@ impl Ppu {
             && self.current_position.x >= self.window_position.x.wrapping_sub(WINDOW_OFFSET)
     }
 
-    fn window_pixel_color(&self) -> Color {
-        self.pixel_color_from_tile_map(
+    fn window_pixel(&self) -> u8 {
+        self.pixel_from_tile_map(
             self.control.window_tile_map_area(),
             self.current_position
                 .wrapping_sub(self.window_position)
@@ -162,27 +153,35 @@ impl Ppu {
     }
 
     fn render_pixel(&self, renderer: &mut impl Renderer) {
-        let background_pixel_color = if self.control.background_and_window_enabled() {
+        let background_pixel = if self.control.background_and_window_enabled() {
             if self.is_in_window() {
-                self.window_pixel_color()
+                self.window_pixel()
             } else {
-                self.background_pixel_color()
+                self.background_pixel()
             }
         } else {
-            Color::White
+            0x00
         };
         let color = if self.control.object_enabled() {
             self.drawn_object()
-                .map_or(background_pixel_color, |(object, object_pixel)| {
-                    if object.is_under_background {
-                        background_pixel_color
-                    } else {
-                        object_pixel
-                    }
-                })
         } else {
-            background_pixel_color
-        };
+            None
+        }
+        .map_or_else(
+            || self.background_palette.apply(background_pixel),
+            |(object, object_pixel)| {
+                if object.is_under_background && background_pixel != 0x00 {
+                    self.background_palette.apply(background_pixel)
+                } else {
+                    (if object.palette_number == 0 {
+                        &self.object_palette0
+                    } else {
+                        &self.object_palette1
+                    })
+                    .apply(object_pixel)
+                }
+            },
+        );
         renderer.render(self.current_position, color)
     }
 
