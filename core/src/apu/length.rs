@@ -1,14 +1,21 @@
 const UNIT_CYCLES: u64 = 1024 * 1024 / 256;
 
-const MAX: u8 = 0b0100_0000;
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Length {
+    max: u8,
     is_enabled: bool,
     rest_cycles: u64,
 }
 
 impl Length {
+    pub fn new(max: u8) -> Self {
+        Self {
+            max,
+            is_enabled: false,
+            rest_cycles: 0,
+        }
+    }
+
     pub fn tick(&mut self) {
         self.rest_cycles = self.rest_cycles.saturating_sub(1);
     }
@@ -26,6 +33,6 @@ impl Length {
     }
 
     pub fn set(&mut self, value: u8) {
-        self.rest_cycles = (MAX - (value & (MAX - 1))) as u64 * UNIT_CYCLES;
+        self.rest_cycles = (self.max - (value & (self.max - 1))) as u64 * UNIT_CYCLES;
     }
 }

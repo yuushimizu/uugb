@@ -44,7 +44,7 @@ impl DutyCycle {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct RectWave {
     is_started: bool,
     duty_cycle: DutyCycle,
@@ -54,6 +54,21 @@ pub struct RectWave {
     sweep: Sweep,
     envelope: Envelop,
     cycles: u16,
+}
+
+impl Default for RectWave {
+    fn default() -> Self {
+        Self {
+            is_started: false,
+            duty_cycle: Default::default(),
+            duty_cycle_step: 0,
+            length: Length::new(64),
+            frequency: 0,
+            sweep: Default::default(),
+            envelope: Default::default(),
+            cycles: 0,
+        }
+    }
 }
 
 impl RectWave {

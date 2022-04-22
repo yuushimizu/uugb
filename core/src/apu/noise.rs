@@ -2,7 +2,7 @@ use super::envelope::Envelop;
 use super::length::Length;
 use crate::util::bits::Bits;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Noise {
     is_started: bool,
     random: u16,
@@ -13,6 +13,22 @@ pub struct Noise {
     is_short: bool,
     division_ratio: u8,
     cycles: u64,
+}
+
+impl Default for Noise {
+    fn default() -> Self {
+        Self {
+            is_started: false,
+            random: 0xFFFF,
+            output: false,
+            length: Length::new(64),
+            envelope: Default::default(),
+            frequency_shift: 0,
+            is_short: false,
+            division_ratio: 0,
+            cycles: 0,
+        }
+    }
 }
 
 impl Noise {

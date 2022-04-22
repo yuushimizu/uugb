@@ -13,7 +13,7 @@ pub struct Envelop {
 
 impl Envelop {
     pub fn volume(&self) -> u8 {
-        self.volume * 16
+        self.volume
     }
 
     pub fn tick(&mut self) {

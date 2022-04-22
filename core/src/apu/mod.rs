@@ -3,16 +3,24 @@ mod length;
 mod noise;
 mod rect_wave;
 mod sweep;
+mod wave;
 
 pub use rect_wave::SAMPLE_RATE;
 
 use noise::Noise;
 use rect_wave::RectWave;
+use wave::Wave;
 
 use crate::util::bits::Bits;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub struct AudioFrame {
+    pub left: u16,
+    pub right: u16,
+}
+
 pub trait AudioTerminal {
-    fn output(&mut self, volume: (u8, u8));
+    fn output(&mut self, frame: AudioFrame);
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -75,13 +83,13 @@ impl Apu {
             self.rect_wave1.tick();
             self.rect_wave2.tick();
             self.noise.tick();
-            terminal.output(self.output());
+            terminal.output(self.frame());
         } else {
-            terminal.output((0, 0));
+            terminal.output(AudioFrame::default());
         }
     }
 
-    fn output(&self) -> (u8, u8) {
+    fn frame(&self) -> AudioFrame {
         let outputs = [
             self.rect_wave1.output(),
             self.rect_wave2.output(),
@@ -92,17 +100,20 @@ impl Apu {
             outputs
                 .iter()
                 .enumerate()
-                .fold(0u8, |acc, (index, &output)| {
+                .fold(0u16, |acc, (index, &output)| {
                     acc.saturating_add(
                         if self.output_terminal_selection.bit(index as u32 + offset) {
-                            output / 4
+                            output as u16
                         } else {
                             0
                         },
                     )
                 })
         };
-        (mix(4), mix(0))
+        AudioFrame {
+            left: mix(4) * self.left_control.level as u16 * 128,
+            right: mix(0) * self.right_control.level as u16 * 128,
+        }
     }
 
     pub fn rect_wave1(&self) -> &RectWave {
