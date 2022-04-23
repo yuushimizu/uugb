@@ -11,7 +11,10 @@ mod timer;
 
 mod util;
 
-pub use apu::{AudioFrame, AudioTerminal, SAMPLE_RATE as AUDIO_SAMPLE_RATE};
+pub use apu::{
+    AudioFrame, AudioTerminal, MAX_FRAME_VOLUME as MAX_AUDIO_FRAME_VOLUME,
+    SAMPLE_RATE as AUDIO_SAMPLE_RATE,
+};
 pub use cartridge::{Cartridge, Header};
 pub use game_boy::GameBoy;
 pub use joypad::ButtonState;

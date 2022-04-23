@@ -6,7 +6,6 @@ use crate::util::bits::Bits;
 pub struct Noise {
     is_started: bool,
     random: u16,
-    output: bool,
     length: Length,
     envelope: Envelop,
     frequency_shift: u8,
@@ -20,7 +19,6 @@ impl Default for Noise {
         Self {
             is_started: false,
             random: 0xFFFF,
-            output: false,
             length: Length::new(64),
             envelope: Default::default(),
             frequency_shift: 0,
@@ -39,19 +37,18 @@ impl Noise {
     fn start(&mut self) {
         self.is_started = true;
         self.random = 0xFFFF;
-        self.output = true;
         self.cycles = 0;
         self.envelope.restart();
     }
 
     fn step_length(&self) -> u64 {
         (match self.division_ratio {
-            0 => 2,
-            n => 4 * n as u64,
-        }) << (1 + self.frequency_shift)
+            0 => 4,
+            n => 8 * n as u64,
+        }) << self.frequency_shift
     }
 
-    fn step_width(&self) -> u32 {
+    fn lfsr_width(&self) -> u32 {
         if self.is_short {
             7
         } else {
@@ -66,15 +63,9 @@ impl Noise {
         self.cycles += 1;
         if self.cycles >= self.step_length() {
             self.cycles = 0;
-            if self.random == 0 {
-                self.random = 1;
-            }
-            self.random = self.random.wrapping_add(self.random.wrapping_add(
-                ((self.random >> (self.step_width() - 1))
-                    ^ (self.random >> (self.step_width() - 2)))
-                    & 1,
-            ));
-            self.output ^= (self.random & 0b1) == 0b1;
+            self.random = (self.random & !(0b1 << self.lfsr_width())
+                | ((self.random ^ (self.random >> 1)) & 0b1) << self.lfsr_width())
+                >> 1;
         }
         self.length.tick();
         self.envelope.tick();
@@ -85,7 +76,7 @@ impl Noise {
 
     pub fn output(&self) -> u8 {
         if self.is_started {
-            (self.output as u8) * self.envelope.volume()
+            ((self.random & 0b1 == 0b0) as u8) * self.envelope.volume()
         } else {
             0x00
         }

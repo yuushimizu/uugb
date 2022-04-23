@@ -58,16 +58,17 @@ impl AudioOutput {
     }
 }
 
-fn sample_frame<T: cpal::Sample>(source: u16) -> T {
-    cpal::Sample::from::<u16>(&source)
-}
-
 fn create_stream<T: cpal::Sample>(
     device: cpal::Device,
     supported_config: cpal::SupportedStreamConfig,
     receiver: Receiver<core::AudioFrame>,
 ) -> Result<cpal::Stream, AudioError> {
     let channels = supported_config.channels() as usize;
+    let sample_frame = move |source| {
+        cpal::Sample::from::<f32>(
+            &(source as f32 / (core::MAX_AUDIO_FRAME_VOLUME as f32 / 2.0) - 1.0),
+        )
+    };
     Ok(device.build_output_stream(
         &supported_config.config(),
         move |data: &mut [T], _| {

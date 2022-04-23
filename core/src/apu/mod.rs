@@ -7,6 +7,8 @@ mod wave;
 
 pub const SAMPLE_RATE: u64 = 2 * 1024 * 1024;
 
+pub const MAX_FRAME_VOLUME: u16 = 0xF * 4 * 0b111;
+
 use noise::Noise;
 use rect_wave::RectWave;
 use wave::Wave;
@@ -114,8 +116,8 @@ impl Apu {
                 })
         };
         AudioFrame {
-            left: mix(4) * self.left_control.level as u16 * 128,
-            right: mix(0) * self.right_control.level as u16 * 128,
+            left: mix(4) * self.left_control.level as u16,
+            right: mix(0) * self.right_control.level as u16,
         }
     }
 
