@@ -4,10 +4,10 @@ const STEP_UNIT_CYCLES: u64 = super::SAMPLE_RATE / 64;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct Envelop {
-    initial_volume: u8,
+    bits: u8,
+    volume: u8,
     increases: bool,
     step_length: u8,
-    volume: u8,
     cycles: u64,
 }
 
@@ -32,17 +32,17 @@ impl Envelop {
     }
 
     pub fn restart(&mut self) {
-        self.volume = self.initial_volume;
+        self.volume = self.bits >> 4;
+        self.increases = self.bits.bit(3);
+        self.step_length = self.bits & 0b111;
         self.cycles = 0;
     }
 
     pub fn bits(&self) -> u8 {
-        self.initial_volume << 4 | (self.increases as u8) << 3 | self.step_length
+        self.bits
     }
 
     pub fn set_bits(&mut self, value: u8) {
-        self.initial_volume = value >> 4;
-        self.increases = value.bit(3);
-        self.step_length = value & 0b111;
+        self.bits = value;
     }
 }

@@ -75,6 +75,7 @@ impl Default for RectWave {
 impl RectWave {
     fn start(&mut self) {
         self.is_started = true;
+        self.cycles = 0;
         self.sweep.restart();
         self.envelope.restart();
     }
@@ -101,9 +102,9 @@ impl RectWave {
         self.envelope.tick();
         if self.length.is_expired() || self.frequency >= MAX_FREQUENCY {
             self.is_started = false;
-        }
-        if self.frequency >= MAX_FREQUENCY {
-            self.frequency = MAX_FREQUENCY - 1;
+            if self.frequency >= MAX_FREQUENCY {
+                self.frequency = MAX_FREQUENCY - 1;
+            }
         }
     }
 
