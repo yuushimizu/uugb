@@ -38,6 +38,7 @@ impl Noise {
         self.is_started = true;
         self.random = 0xFFFF;
         self.cycles = 0;
+        self.length.restart();
         self.envelope.restart();
     }
 

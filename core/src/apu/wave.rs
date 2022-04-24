@@ -43,6 +43,7 @@ impl Wave {
     fn start(&mut self) {
         self.is_started = true;
         self.step = 0;
+        self.length.restart();
     }
 
     pub fn is_started(&self) -> bool {

@@ -76,6 +76,7 @@ impl RectWave {
     fn start(&mut self) {
         self.is_started = true;
         self.cycles = 0;
+        self.length.restart();
         self.sweep.restart();
         self.envelope.restart();
     }

@@ -16,6 +16,12 @@ impl Length {
         }
     }
 
+    pub fn restart(&mut self) {
+        if self.rest_cycles == 0 {
+            self.rest_cycles = self.max as u64 * UNIT_CYCLES;
+        }
+    }
+
     pub fn tick(&mut self) {
         self.rest_cycles = self.rest_cycles.saturating_sub(1);
     }
