@@ -12,8 +12,15 @@ pub struct Envelop {
 }
 
 impl Envelop {
+    fn is_enabled(&self) -> bool {
+        self.bits & 0b1111_1000 != 0
+    }
     pub fn volume(&self) -> u8 {
-        self.volume
+        if self.is_enabled() {
+            self.volume
+        } else {
+            0
+        }
     }
 
     pub fn tick(&mut self) {
