@@ -140,7 +140,7 @@ impl Ppu {
     fn is_in_window(&self) -> bool {
         self.control.window_enabled()
             && self.current_position.y >= self.window_position.y
-            && self.current_position.x >= self.window_position.x.wrapping_sub(WINDOW_OFFSET)
+            && self.current_position.x.wrapping_add(WINDOW_OFFSET) >= self.window_position.x
     }
 
     fn window_pixel(&self) -> u8 {
