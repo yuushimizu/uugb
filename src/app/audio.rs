@@ -5,7 +5,7 @@ pub struct AudioOutput {
     sender: Sender<core::AudioFrame>,
     sample_rate: cpal::SampleRate,
     frame_counter: u64,
-    stream: cpal::Stream,
+    _stream: cpal::Stream,
 }
 
 impl core::AudioTerminal for AudioOutput {
@@ -49,7 +49,7 @@ impl AudioOutput {
             sender,
             sample_rate: supported_config.sample_rate(),
             frame_counter: 0,
-            stream: match supported_config.sample_format() {
+            _stream: match supported_config.sample_format() {
                 F32 => create_stream::<f32>(device, supported_config, receiver),
                 I16 => create_stream::<i16>(device, supported_config, receiver),
                 U16 => create_stream::<u16>(device, supported_config, receiver),
