@@ -23,26 +23,39 @@ pub struct App {
     last_frame_time: SystemTime,
 }
 
-impl App {
-    pub fn new(filepath: &Path) -> Self {
-        let mut rom = Vec::new();
-        File::open(filepath).unwrap().read_to_end(&mut rom).unwrap();
+impl Default for App {
+    fn default() -> Self {
         Self {
-            game_boy: Some(GameBoy::new(Cartridge::new(rom.into()).unwrap())),
+            game_boy: None,
             renderer: Default::default(),
             texture: None,
             audio_output: AudioOutput::new().unwrap(),
             last_frame_time: SystemTime::now(),
         }
     }
+}
 
-    pub fn run(filepath: &Path) {
-        let app = Self::new(filepath);
+impl App {
+    pub fn boot(&mut self, rom_filepath: &Path) {
+        let mut rom = Vec::new();
+        File::open(rom_filepath)
+            .unwrap()
+            .read_to_end(&mut rom)
+            .unwrap();
+        self.game_boy = Some(GameBoy::new(Cartridge::new(rom.into()).unwrap()))
+    }
+
+    pub fn run(rom_filepath: &Option<&Path>) {
+        let mut app = Self::default();
+        if let Some(rom_filepath) = rom_filepath {
+            app.boot(rom_filepath);
+        }
         let native_options = eframe::NativeOptions {
             initial_window_size: Some(eframe::egui::Vec2::new(
                 core::display_size().x as f32 * 2.0,
                 core::display_size().y as f32 * 2.0,
             )),
+            drag_and_drop_support: true,
             ..Default::default()
         };
         eframe::run_native(Box::new(app), native_options);

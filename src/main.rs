@@ -12,7 +12,7 @@ use std::{fs::File, io::Read, path::Path, path::PathBuf};
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
-    file: PathBuf,
+    file: Option<PathBuf>,
     #[clap(long)]
     info: bool,
     #[clap(long)]
@@ -53,14 +53,18 @@ fn main() {
         .unwrap();
     }
     if args.info {
-        let rom = read_rom(&args.file);
-        info::print_cartridge_info(&load_header(&rom));
+        if let Some(filepath) = args.file {
+            let rom = read_rom(&filepath);
+            info::print_cartridge_info(&load_header(&rom));
+        }
         return;
     }
     if args.logo {
-        let rom = read_rom(&args.file);
-        println!("{}", load_header(&rom).logo.to_ascii_art());
+        if let Some(filepath) = args.file {
+            let rom = read_rom(&filepath);
+            println!("{}", load_header(&rom).logo.to_ascii_art());
+        }
         return;
     }
-    app::App::run(&args.file);
+    app::App::run(&args.file.as_deref());
 }
