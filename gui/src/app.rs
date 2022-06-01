@@ -1,11 +1,7 @@
-mod audio;
-mod renderer;
-
-use audio::AudioOutput;
-use renderer::Renderer;
-
+use crate::audio::AudioOutput;
+use crate::renderer::Renderer;
 use core::{Cartridge, GameBoy};
-use eframe::{egui, epi};
+use eframe::egui;
 use std::{
     fs::File,
     io::Read,
@@ -46,22 +42,6 @@ impl App {
         self.audio_output = AudioOutput::new().unwrap();
     }
 
-    pub fn run(rom_filepath: &Option<&Path>) {
-        let mut app = Self::default();
-        if let Some(rom_filepath) = rom_filepath {
-            app.boot(rom_filepath);
-        }
-        let native_options = eframe::NativeOptions {
-            initial_window_size: Some(eframe::egui::Vec2::new(
-                core::display_size().x as f32 * 2.0,
-                core::display_size().y as f32 * 2.0,
-            )),
-            drag_and_drop_support: true,
-            ..Default::default()
-        };
-        eframe::run_native(Box::new(app), native_options);
-    }
-
     fn advance_frame(&mut self, button_state: core::ButtonState) {
         if let Some(ref mut game_boy) = self.game_boy {
             game_boy.set_button_state(button_state);
@@ -99,24 +79,12 @@ fn button_state(context: &egui::Context) -> core::ButtonState {
     }
 }
 
-impl epi::App for App {
-    fn name(&self) -> &str {
-        "GB Emulator"
-    }
-
-    fn setup(
-        &mut self,
-        _context: &egui::Context,
-        _frame: &epi::Frame,
-        _storage: Option<&dyn epi::Storage>,
-    ) {
-    }
-
-    fn update(&mut self, context: &egui::Context, _frame: &epi::Frame) {
+impl eframe::App for App {
+    fn update(&mut self, context: &egui::Context, _frame: &mut eframe::Frame) {
         self.advance_frame(button_state(context));
         egui::CentralPanel::default()
             .frame(egui::Frame {
-                margin: egui::style::Margin::symmetric(24f32, 16f32),
+                inner_margin: egui::style::Margin::symmetric(24f32, 16f32),
                 fill: egui::Color32::LIGHT_GRAY,
                 ..Default::default()
             })

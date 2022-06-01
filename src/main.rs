@@ -2,7 +2,6 @@
 #![warn(clippy::all, rust_2018_idioms)]
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-mod app;
 mod info;
 
 use clap::Parser;
@@ -66,5 +65,5 @@ fn main() {
         }
         return;
     }
-    app::App::run(&args.file.as_deref());
+    gui::start_native(args.file);
 }
