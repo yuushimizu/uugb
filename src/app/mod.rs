@@ -42,7 +42,8 @@ impl App {
             .unwrap()
             .read_to_end(&mut rom)
             .unwrap();
-        self.game_boy = Some(GameBoy::new(Cartridge::new(rom.into()).unwrap()))
+        self.game_boy = Some(GameBoy::new(Cartridge::new(rom.into()).unwrap()));
+        self.audio_output = AudioOutput::new().unwrap();
     }
 
     pub fn run(rom_filepath: &Option<&Path>) {
@@ -133,6 +134,15 @@ impl epi::App for App {
                         .request_focus();
                 });
             });
+        if let Some(path) = context
+            .input()
+            .raw
+            .dropped_files
+            .first()
+            .and_then(|file| file.path.as_ref())
+        {
+            self.boot(path);
+        }
         context.request_repaint();
     }
 }
