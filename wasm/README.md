@@ -1,12 +1,12 @@
-# Build
+## Build
 
 ```sh
 wasm-pack build --target web
 ```
 
-# Use
+## Use
 
-Import following generated files from JavaScript:
+Copy following generated files:
 
 ```
 pkg/uugb_wasm_bg.wasm
@@ -15,7 +15,13 @@ pkg/uugb_wasm.d.ts
 pkg/uugb_wasm.js
 ```
 
+Import `uugb_wasm.js`.
+
 Call `init` and `start`.
+
+Drop a ROM file into the canvas to start the game.
+
+## Example
 
 ```js
 <canvas id="canvas"></canvas>
@@ -27,5 +33,3 @@ Call `init` and `start`.
     })();
 </script>
 ```
-
-Drop a ROM file into the canvas to start the game.
