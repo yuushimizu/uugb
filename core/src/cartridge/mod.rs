@@ -4,7 +4,7 @@ mod mbc;
 pub use header::*;
 use mbc::{Mbc, MbcContext};
 
-use std::rc::Rc;
+use std::{cmp::max, rc::Rc};
 
 #[derive(Debug)]
 struct State {
@@ -48,21 +48,22 @@ impl From<header::Error> for Error {
 pub fn create_mbc(header: &Header) -> Result<Box<dyn Mbc>, Error> {
     use MbcType::*;
     let cartridge_type = &header.cartridge_type;
-    match cartridge_type.mbc_type() {
-        RomOnly => Ok(Box::new(mbc::RomOnly::default())),
-        Mbc1 => Ok(Box::new(mbc::Mbc1::default())),
-        _ => Err(Error::MbcNotImplemented(cartridge_type.clone())),
-    }
+    Ok(match cartridge_type.mbc_type() {
+        RomOnly => Box::new(mbc::RomOnly::default()),
+        Mbc1 => Box::new(mbc::Mbc1::default()),
+        Mbc2 => Box::new(mbc::Mbc2::default()),
+        _ => Err(Error::MbcNotImplemented(cartridge_type.clone()))?,
+    })
 }
 
 impl Cartridge {
     pub fn new(rom: Rc<Vec<u8>>) -> Result<Self, Error> {
         let header = Header::load(&rom)?;
+        let mbc = create_mbc(&header)?;
         let state = State {
             rom,
-            ram: vec![0xFFu8; header.ram_size.amount()],
+            ram: vec![0xFFu8; max(header.ram_size.amount(), mbc.internal_ram_size())],
         };
-        let mbc = create_mbc(&header)?;
         Ok(Self { header, state, mbc })
     }
 
