@@ -1,4 +1,4 @@
-use cpal::traits::{DeviceTrait, HostTrait};
+use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 use std::sync::mpsc::{Receiver, Sender};
 
 pub struct Connection {
@@ -22,7 +22,8 @@ impl core::AudioTerminal for Connection {
 pub enum AudioError {
     NoDevice,
     ConfigError(cpal::DefaultStreamConfigError),
-    StreamError(cpal::BuildStreamError),
+    BuildStreamError(cpal::BuildStreamError),
+    PlayStreamError(cpal::PlayStreamError),
 }
 
 impl From<cpal::DefaultStreamConfigError> for AudioError {
@@ -33,7 +34,13 @@ impl From<cpal::DefaultStreamConfigError> for AudioError {
 
 impl From<cpal::BuildStreamError> for AudioError {
     fn from(error: cpal::BuildStreamError) -> Self {
-        Self::StreamError(error)
+        Self::BuildStreamError(error)
+    }
+}
+
+impl From<cpal::PlayStreamError> for AudioError {
+    fn from(error: cpal::PlayStreamError) -> Self {
+        Self::PlayStreamError(error)
     }
 }
 
@@ -69,7 +76,7 @@ fn create_stream<T: cpal::Sample>(
             &(source as f32 / (core::MAX_AUDIO_FRAME_VOLUME as f32 / 2.0) - 1.0),
         )
     };
-    Ok(device.build_output_stream(
+    let stream = device.build_output_stream(
         &supported_config.config(),
         move |data: &mut [T], _| {
             for frame in data.chunks_mut(channels) {
@@ -84,7 +91,9 @@ fn create_stream<T: cpal::Sample>(
             }
         },
         |_| {},
-    )?)
+    )?;
+    stream.play()?;
+    Ok(stream)
 }
 
 pub enum AudioOutput {
