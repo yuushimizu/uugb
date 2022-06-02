@@ -1,14 +1,14 @@
 use cpal::traits::{DeviceTrait, HostTrait};
 use std::sync::mpsc::{Receiver, Sender};
 
-pub struct AudioOutput {
+pub struct Connection {
     sender: Sender<core::AudioFrame>,
     sample_rate: cpal::SampleRate,
     frame_counter: u64,
     _stream: cpal::Stream,
 }
 
-impl core::AudioTerminal for AudioOutput {
+impl core::AudioTerminal for Connection {
     fn output(&mut self, frame: core::AudioFrame) {
         self.frame_counter += self.sample_rate.0 as u64;
         while self.frame_counter >= core::AUDIO_SAMPLE_RATE {
@@ -37,8 +37,8 @@ impl From<cpal::BuildStreamError> for AudioError {
     }
 }
 
-impl AudioOutput {
-    pub fn new() -> Result<AudioOutput, AudioError> {
+impl Connection {
+    pub fn new() -> Result<Self, AudioError> {
         use cpal::SampleFormat::*;
         let device = cpal::default_host()
             .default_output_device()
@@ -85,4 +85,24 @@ fn create_stream<T: cpal::Sample>(
         },
         |_| {},
     )?)
+}
+
+pub enum AudioOutput {
+    Connected(Connection),
+    None,
+}
+
+impl Default for AudioOutput {
+    fn default() -> Self {
+        Connection::new().map_or(Self::None, |connection| Self::Connected(connection))
+    }
+}
+
+impl core::AudioTerminal for AudioOutput {
+    fn output(&mut self, frame: core::AudioFrame) {
+        match self {
+            Self::Connected(connection) => connection.output(frame),
+            Self::None => {}
+        }
+    }
 }

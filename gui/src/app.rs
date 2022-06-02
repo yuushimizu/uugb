@@ -2,64 +2,99 @@ use crate::audio::AudioOutput;
 use crate::renderer::Renderer;
 use core::{Cartridge, GameBoy};
 use eframe::egui;
-use std::{
-    fs::File,
-    io::Read,
-    path::Path,
-    time::{Duration, SystemTime},
-};
+use std::rc::Rc;
 
-const NANOS_PER_FRAME: u128 = (1_000_000_000f64 / core::FRAME_RATE) as u128;
+struct State {
+    game_boy: GameBoy,
+    renderer: Renderer,
+    audio_output: AudioOutput,
+    processed_m_cycles: u64,
+    period_start_time_ms: f64,
+}
+
+impl State {
+    pub fn new(rom: Rc<Vec<u8>>) -> Option<Self> {
+        Some(Self {
+            game_boy: GameBoy::new(Cartridge::new(rom).ok()?),
+            renderer: Default::default(),
+            audio_output: Default::default(),
+            processed_m_cycles: 0,
+            period_start_time_ms: instant::now(),
+        })
+    }
+
+    fn advance_cycles(&mut self, button_state: core::ButtonState) {
+        self.game_boy.set_button_state(button_state);
+        let current_time = instant::now();
+        let target_m_cycles = ((core::M_CYCLES as f64) * (current_time - self.period_start_time_ms)
+            / 1000f64)
+            .floor() as u64;
+        while self.processed_m_cycles < target_m_cycles {
+            self.game_boy.tick(
+                &mut self.renderer,
+                &mut self.audio_output,
+                &mut core::NoSerialConnection,
+            );
+            self.processed_m_cycles += 1;
+        }
+        while self.processed_m_cycles > core::M_CYCLES {
+            self.processed_m_cycles -= core::M_CYCLES;
+            self.period_start_time_ms += 1000f64;
+        }
+    }
+}
 
 pub struct App {
-    game_boy: Option<GameBoy>,
-    renderer: Renderer,
+    state: Option<State>,
     texture: Option<egui::TextureHandle>,
-    audio_output: AudioOutput,
-    last_frame_time: SystemTime,
 }
 
 impl Default for App {
     fn default() -> Self {
         Self {
-            game_boy: None,
-            renderer: Default::default(),
+            state: None,
             texture: None,
-            audio_output: AudioOutput::new().unwrap(),
-            last_frame_time: SystemTime::now(),
         }
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+fn dropped_file_bytes(file: &egui::DroppedFile) -> Option<Rc<Vec<u8>>> {
+    use std::{fs::File, io::Read};
+    let mut bytes = Vec::new();
+    file.path
+        .as_ref()
+        .and_then(|path| File::open(path).ok())?
+        .read_to_end(&mut bytes)
+        .ok()?;
+    Some(Rc::new(bytes))
+}
+
+#[cfg(target_arch = "wasm32")]
+fn dropped_file_bytes(file: &egui::DroppedFile) -> Option<Rc<Vec<u8>>> {
+    file.bytes.as_ref().map(|bytes| Rc::new(bytes.to_vec()))
+}
+
 impl App {
-    pub fn boot(&mut self, rom_filepath: &Path) {
-        let mut rom = Vec::new();
-        File::open(rom_filepath)
-            .unwrap()
-            .read_to_end(&mut rom)
-            .unwrap();
-        self.game_boy = Some(GameBoy::new(Cartridge::new(rom.into()).unwrap()));
-        self.audio_output = AudioOutput::new().unwrap();
+    pub fn boot(&mut self, rom: Rc<Vec<u8>>) {
+        self.state = State::new(rom)
     }
 
-    fn advance_frame(&mut self, button_state: core::ButtonState) {
-        if let Some(ref mut game_boy) = self.game_boy {
-            game_boy.set_button_state(button_state);
-            let current_time = SystemTime::now();
-            let duration = current_time
-                .duration_since(self.last_frame_time)
-                .map(|duration| duration.as_nanos())
-                .unwrap_or(0);
-            if duration >= NANOS_PER_FRAME {
-                for _ in 0..core::M_CYCLES_PER_FRAME {
-                    game_boy.tick(
-                        &mut self.renderer,
-                        &mut self.audio_output,
-                        &mut core::NoSerialConnection,
-                    );
-                }
-                self.last_frame_time += Duration::from_nanos(NANOS_PER_FRAME as u64);
-            }
+    fn advance_cycles(&mut self, button_state: core::ButtonState) {
+        if let Some(state) = &mut self.state {
+            state.advance_cycles(button_state);
+        }
+    }
+
+    fn process_dropped_file(&mut self, context: &egui::Context) {
+        if let Some(bytes) = context
+            .input()
+            .raw
+            .dropped_files
+            .first()
+            .and_then(|file| dropped_file_bytes(file))
+        {
+            self.boot(bytes);
         }
     }
 }
@@ -81,36 +116,26 @@ fn button_state(context: &egui::Context) -> core::ButtonState {
 
 impl eframe::App for App {
     fn update(&mut self, context: &egui::Context, _frame: &mut eframe::Frame) {
-        self.advance_frame(button_state(context));
-        egui::CentralPanel::default()
-            .frame(egui::Frame {
-                inner_margin: egui::style::Margin::symmetric(24f32, 16f32),
-                fill: egui::Color32::LIGHT_GRAY,
-                ..Default::default()
-            })
-            .show(context, |ui| {
-                egui::Frame {
-                    stroke: egui::Stroke::new(4f32, egui::Color32::DARK_GRAY),
-                    ..Default::default()
-                }
-                .show(ui, |ui| {
-                    let texture = self.texture.get_or_insert_with(|| {
-                        ui.ctx().load_texture("game-frame", self.renderer.image())
-                    });
-                    texture.set(self.renderer.image());
-                    ui.image(texture, ui.max_rect().max - ui.max_rect().min)
-                        .request_focus();
+        self.advance_cycles(button_state(context));
+        egui::CentralPanel::default().show(context, |ui| {
+            egui::Frame::default().show(ui, |ui| {
+                let texture = self.texture.get_or_insert_with(|| {
+                    ui.ctx()
+                        .load_texture("game-frame", Renderer::default_image())
                 });
+                if let Some(state) = &self.state {
+                    texture.set(state.renderer.image());
+                }
+                ui.image(texture, ui.max_rect().max - ui.max_rect().min)
+                    .request_focus();
             });
-        if let Some(path) = context
-            .input()
-            .raw
-            .dropped_files
-            .first()
-            .and_then(|file| file.path.as_ref())
-        {
-            self.boot(path);
-        }
+        });
+        self.process_dropped_file(context);
         context.request_repaint();
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    fn max_size_points(&self) -> egui::Vec2 {
+        eframe::egui::Vec2::new(core::display_size().x as f32, core::display_size().y as f32)
     }
 }

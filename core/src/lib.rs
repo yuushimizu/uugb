@@ -24,7 +24,3 @@ pub use serial::{NoSerialConnection, SerialConnection};
 pub const CLOCK_CYCLE: u64 = 4194304;
 
 pub const M_CYCLES: u64 = CLOCK_CYCLE / 4;
-
-pub const M_CYCLES_PER_FRAME: u64 = 17556;
-
-pub const FRAME_RATE: f64 = M_CYCLES as f64 / M_CYCLES_PER_FRAME as f64;

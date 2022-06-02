@@ -2,10 +2,8 @@ mod app;
 mod audio;
 mod renderer;
 
-use std::path::PathBuf;
-
 #[cfg(not(target_arch = "wasm32"))]
-pub fn start_native(rom_filepath: Option<PathBuf>) {
+pub fn start_native() {
     eframe::run_native(
         "u_u GB",
         eframe::NativeOptions {
@@ -16,13 +14,7 @@ pub fn start_native(rom_filepath: Option<PathBuf>) {
             drag_and_drop_support: true,
             ..Default::default()
         },
-        Box::new(|_| {
-            let mut app = Box::new(app::App::default());
-            if let Some(rom_filepath) = rom_filepath {
-                app.boot(&rom_filepath);
-            }
-            app
-        }),
+        Box::new(|_| Box::new(app::App::default())),
     );
 }
 

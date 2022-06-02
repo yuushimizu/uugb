@@ -1,5 +1,5 @@
 [workspace]
-members = ["core", "gui"]
+members = ["core", "gui", "wasm"]
 
 [package]
 name = "uugb"
@@ -12,10 +12,5 @@ edition = "2021"
 [dependencies]
 core = { path = "./core" }
 gui = { path = "./gui" }
-
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 clap = { version = "3.1.8", features = ["derive"] }
 simplelog = "0.10.0"
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-wasm-bindgen = "0.2.80"

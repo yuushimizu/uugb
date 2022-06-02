@@ -65,5 +65,5 @@ fn main() {
         }
         return;
     }
-    gui::start_native(args.file);
+    gui::start_native();
 }

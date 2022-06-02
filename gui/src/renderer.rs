@@ -9,17 +9,21 @@ impl Renderer {
     pub fn image(&self) -> egui::ColorImage {
         self.rendered_image.clone()
     }
-}
 
-impl Default for Renderer {
-    fn default() -> Self {
+    pub fn default_image() -> egui::ColorImage {
         let size = [
             core::display_size().x as usize,
             core::display_size().y as usize,
         ];
+        egui::ColorImage::new(size, egui::Color32::BLACK)
+    }
+}
+
+impl Default for Renderer {
+    fn default() -> Self {
         Self {
-            rendered_image: egui::ColorImage::new(size, egui::Color32::BLACK),
-            rendering_image: egui::ColorImage::new(size, egui::Color32::BLACK),
+            rendered_image: Self::default_image(),
+            rendering_image: Self::default_image(),
         }
     }
 }
