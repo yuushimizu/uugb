@@ -94,7 +94,13 @@ pub enum AudioOutput {
 
 impl Default for AudioOutput {
     fn default() -> Self {
-        Connection::new().map_or(Self::None, |connection| Self::Connected(connection))
+        Connection::new().map_or_else(
+            |error| {
+                log::warn!("Could not create the audio connection: {:?}", error);
+                Self::None
+            },
+            |connection| Self::Connected(connection),
+        )
     }
 }
 

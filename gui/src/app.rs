@@ -15,7 +15,14 @@ struct State {
 impl State {
     pub fn new(rom: Rc<Vec<u8>>) -> Option<Self> {
         Some(Self {
-            game_boy: GameBoy::new(Cartridge::new(rom).ok()?),
+            game_boy: GameBoy::new(
+                Cartridge::new(rom)
+                    .map_err(|error| {
+                        log::warn!("Could not load the rom: {:?}", error);
+                        error
+                    })
+                    .ok()?,
+            ),
             renderer: Default::default(),
             audio_output: Default::default(),
             processed_m_cycles: 0,

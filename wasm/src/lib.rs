@@ -13,5 +13,6 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 #[wasm_bindgen]
 pub fn start(canvas_id: &str) {
     utils::set_panic_hook();
+    wasm_logger::init(wasm_logger::Config::new(log::Level::Warn));
     gui::start_wasm(canvas_id);
 }
