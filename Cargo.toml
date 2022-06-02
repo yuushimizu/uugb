@@ -1,4 +1,7 @@
-[workspace]
+[target.'cfg(not(target_arch = "wasm32"))'.workspace]
+members = ["core", "gui"]
+
+[target.'cfg(target_arch = "wasm32")'.workspace]
 members = ["core", "gui", "wasm"]
 
 [package]

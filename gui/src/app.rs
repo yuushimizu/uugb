@@ -1,5 +1,4 @@
-use crate::audio::AudioOutput;
-use crate::renderer::Renderer;
+use crate::{audio::AudioOutput, command, renderer::Renderer};
 use core::{Cartridge, GameBoy};
 use eframe::egui;
 use std::rc::Rc;
@@ -54,15 +53,7 @@ impl State {
 pub struct App {
     state: Option<State>,
     texture: Option<egui::TextureHandle>,
-}
-
-impl Default for App {
-    fn default() -> Self {
-        Self {
-            state: None,
-            texture: None,
-        }
-    }
+    receiver: command::Receiver,
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -83,6 +74,14 @@ fn dropped_file_bytes(file: &egui::DroppedFile) -> Option<Rc<Vec<u8>>> {
 }
 
 impl App {
+    pub fn new(receiver: command::Receiver) -> Self {
+        Self {
+            state: None,
+            texture: None,
+            receiver,
+        }
+    }
+
     pub fn boot(&mut self, rom: Rc<Vec<u8>>) {
         self.state = State::new(rom)
     }
@@ -102,6 +101,15 @@ impl App {
             .and_then(|file| dropped_file_bytes(file))
         {
             self.boot(bytes);
+        }
+    }
+
+    fn process_command(&mut self) {
+        if let Ok(command) = self.receiver.try_recv() {
+            use command::Command::*;
+            match command {
+                Rom(bytes) => self.boot(Rc::new(bytes)),
+            }
         }
     }
 }
@@ -138,6 +146,7 @@ impl eframe::App for App {
             });
         });
         self.process_dropped_file(context);
+        self.process_command();
         context.request_repaint();
     }
 
