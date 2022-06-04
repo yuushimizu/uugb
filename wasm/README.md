@@ -1,7 +1,7 @@
 ## Build
 
 ```sh
-wasm-pack build --target web
+wasm-pack build --release --target web
 ```
 
 ## Use

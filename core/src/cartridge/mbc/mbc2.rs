@@ -1,4 +1,5 @@
 use super::{Mbc, MbcContext};
+use std::cmp::max;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Mbc2 {
@@ -32,7 +33,7 @@ impl Mbc for Mbc2 {
         match address {
             0x0000..=0x3FFF => {
                 if address & 0x0100 == 0x0100 {
-                    self.rom_bank_number = value & 0xF;
+                    self.rom_bank_number = max(1, value & 0xF);
                 } else {
                     self.ram_enabled = value == 0xA;
                 }
@@ -42,7 +43,11 @@ impl Mbc for Mbc2 {
     }
 
     fn read_ram(&self, context: &dyn MbcContext, address: u16) -> u8 {
-        context.get_from_ram_bank(0, address % 0x200)
+        if self.ram_enabled {
+            context.get_from_ram_bank(0, address % 0x200)
+        } else {
+            0xFF
+        }
     }
 
     fn write_ram(&mut self, context: &mut dyn MbcContext, address: u16, value: u8) {

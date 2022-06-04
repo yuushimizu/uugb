@@ -86,7 +86,11 @@ impl Mbc for Mbc1 {
     }
 
     fn read_ram(&self, context: &dyn MbcContext, address: u16) -> u8 {
-        context.get_from_ram_bank(self.ram_bank_number(), address)
+        if self.ram_enabled {
+            context.get_from_ram_bank(self.ram_bank_number(), address)
+        } else {
+            0xFF
+        }
     }
 
     fn write_ram(&mut self, context: &mut dyn MbcContext, address: u16, value: u8) {
