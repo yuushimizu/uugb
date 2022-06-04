@@ -11,10 +11,10 @@ pub struct Flags {
 impl Default for Flags {
     fn default() -> Self {
         Self {
-            z: true,
+            z: false,
             n: false,
-            h: true,
-            c: true,
+            h: false,
+            c: false,
         }
     }
 }
@@ -55,12 +55,12 @@ impl Default for Registers {
         Self {
             a: 0x01,
             f: Default::default(),
-            b: 0x00,
+            b: 0xFF,
             c: 0x13,
             d: 0x00,
-            e: 0xD8,
-            h: 0x01,
-            l: 0x4D,
+            e: 0xC1,
+            h: 0x84,
+            l: 0x03,
             pc: 0x0100,
             sp: 0xFFFE,
         }

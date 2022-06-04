@@ -1,12 +1,14 @@
 mod mbc1;
 mod mbc2;
 mod mbc3;
+mod mbc5;
 mod mbc_context;
 mod rom_only;
 
 pub use mbc1::Mbc1;
 pub use mbc2::Mbc2;
 pub use mbc3::Mbc3;
+pub use mbc5::Mbc5;
 pub use mbc_context::MbcContext;
 pub use rom_only::RomOnly;
 

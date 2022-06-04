@@ -5,9 +5,9 @@ use std::cmp::max;
 
 #[derive(Debug, Clone)]
 pub struct Mbc3 {
-    rom_bank_number: u8,
+    rom_bank_number: usize,
     ram_and_rtc_enabled: bool,
-    ram_bank_number_or_rtc_register_select: u8,
+    ram_bank_number_or_rtc_register_select: usize,
     latched_datetime: DateTime<Local>,
     ready_to_latch: bool,
     day_counter: u64,
@@ -41,8 +41,8 @@ impl Mbc3 {
 impl Mbc for Mbc3 {
     fn read_rom(&self, context: &dyn MbcContext, address: u16) -> u8 {
         match address {
-            0x0000..=0x3FFF => context.get_from_rom_bank(0, address),
-            0x4000..=0x7FFF => context.get_from_rom_bank(self.rom_bank_number, address - 0x4000),
+            0x0000..=0x3FFF => context.read_from_rom_bank(0, address),
+            0x4000..=0x7FFF => context.read_from_rom_bank(self.rom_bank_number, address - 0x4000),
             _ => unreachable!(),
         }
     }
@@ -50,13 +50,13 @@ impl Mbc for Mbc3 {
     fn write_rom(&mut self, _: &mut dyn MbcContext, address: u16, value: u8) {
         match address {
             0x0000..=0x1FFF => {
-                self.ram_and_rtc_enabled = value == 0xA;
+                self.ram_and_rtc_enabled = value & 0xF == 0xA;
             }
             0x2000..=0x3FFF => {
-                self.rom_bank_number = max(1, value & 0b0111_1111);
+                self.rom_bank_number = max(1, value & 0b0111_1111) as usize;
             }
             0x4000..=0x5FFF => {
-                self.ram_bank_number_or_rtc_register_select = value;
+                self.ram_bank_number_or_rtc_register_select = value as usize;
             }
             0x6000..=0x7FFF => {
                 if self.ready_to_latch && value == 0x01 {
@@ -87,7 +87,7 @@ impl Mbc for Mbc3 {
         }
         match self.ram_bank_number_or_rtc_register_select {
             0x00..=0x03 => {
-                context.get_from_ram_bank(self.ram_bank_number_or_rtc_register_select, address)
+                context.read_from_ram_bank(self.ram_bank_number_or_rtc_register_select, address)
             }
             0x08 => self.latched_datetime.second() as u8,
             0x09 => self.latched_datetime.minute() as u8,
@@ -107,9 +107,11 @@ impl Mbc for Mbc3 {
             return;
         }
         match self.ram_bank_number_or_rtc_register_select {
-            0x00..=0x03 => {
-                context.set_to_ram_bank(self.ram_bank_number_or_rtc_register_select, address, value)
-            }
+            0x00..=0x03 => context.write_to_ram_bank(
+                self.ram_bank_number_or_rtc_register_select,
+                address,
+                value,
+            ),
             0x08 => {
                 self.set_datetime(self.latched_datetime.with_second(value as u32));
             }

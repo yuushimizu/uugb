@@ -53,6 +53,7 @@ pub fn create_mbc(header: &Header) -> Result<Box<dyn Mbc>, Error> {
         Mbc1 => Box::new(mbc::Mbc1::default()),
         Mbc2 => Box::new(mbc::Mbc2::default()),
         Mbc3 => Box::new(mbc::Mbc3::default()),
+        Mbc5 => Box::new(mbc::Mbc5::default()),
         _ => Err(Error::MbcNotImplemented(cartridge_type.clone()))?,
     })
 }
